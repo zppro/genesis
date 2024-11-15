@@ -10,7 +10,14 @@ import {
   UserCog2
 } from "lucide-react"
 import type { UserResource } from "@clerk/types"
-import { useNavigate } from "@remix-run/react";
+
+import { UserProfile } from '@clerk/remix'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "~/components/ui/dialog"
+
 import {
   Avatar,
   AvatarFallback,
@@ -32,13 +39,15 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 
+import { useState } from "react"
+
 
 export function NavUser({
   user,
 }: {
   user: UserResource
 }) {
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false)
   const { isMobile } = useSidebar()
   const email = user.primaryEmailAddress?.emailAddress
   const username = email?.split("@")[0]
@@ -102,7 +111,7 @@ export function NavUser({
                   <Bell />
                   Notifications
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { navigate("/user") }} >
+                <DropdownMenuItem onClick={() => setIsOpen(true)} >
                   <UserCog2 />Settings
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -115,6 +124,12 @@ export function NavUser({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger></DialogTrigger>
+        <DialogContent className={"lg:max-w-screen-lg overflow-y-scroll max-h-screen flex justify-center items-center"}>
+          <UserProfile />
+        </DialogContent>
+      </Dialog>
     </>
 
   )

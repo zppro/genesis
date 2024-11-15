@@ -3,7 +3,6 @@ import { useRootLoaderData } from "~/root"
 
 export type AppEnv = {
   CONVEX_URL: string
-  CLERK_PUBLISHABLE_KEY: string
 }
 
 export function useEnv(): AppEnv {

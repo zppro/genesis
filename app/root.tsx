@@ -18,11 +18,9 @@ import tailwindHref from "./tailwind.css?url";
 // Export as the root route loader
 export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, () => {
   const CONVEX_URL = process.env["CONVEX_URL"]!;
-  const CLERK_PUBLISHABLE_KEY = process.env["CLERK_PUBLISHABLE_KEY"]!;
   return {
     ENV: {
       CONVEX_URL,
-      CLERK_PUBLISHABLE_KEY,
     }
   };
 });
