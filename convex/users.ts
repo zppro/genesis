@@ -15,8 +15,10 @@ export const upsertFromClerk = internalMutation({
     console.log('data:', data)
     const email = data.email_addresses.find(em => em.id === data.primary_email_address_id)!.email_address
     console.log('email', email)
+    let name = (data.first_name ?? "") + (data.last_name ?? "")
+    name = name ? name: email.split('@')[0]
     const userAttributes = {
-      name: `${data.first_name} ${data.last_name}`,
+      name: name,
       email: email,
       image_url: data.has_image ? data.image_url : undefined,
       externalId: data.id,

@@ -18,12 +18,18 @@ import tailwindHref from "./tailwind.css?url";
 // Export as the root route loader
 export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, () => {
   const CONVEX_URL = process.env["CONVEX_URL"]!;
+  const CLERK_PUBLISHABLE_KEY = process.env["CLERK_PUBLISHABLE_KEY"]!;
   return {
     ENV: {
-      CONVEX_URL
+      CONVEX_URL,
+      CLERK_PUBLISHABLE_KEY,
     }
   };
 });
+
+export function useRootLoaderData() {
+  return useRouteLoaderData<typeof loader>("root")
+}
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: tailwindHref },

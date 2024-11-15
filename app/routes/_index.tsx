@@ -8,7 +8,7 @@ export const loader: LoaderFunction = async (args) => {
   if (!userId) {
     return redirect('/sign-in')
   }
-  return {}
+  return redirect('/dashboard')
 }
 
 export const meta: MetaFunction = () => {

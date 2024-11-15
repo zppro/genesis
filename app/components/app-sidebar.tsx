@@ -11,6 +11,7 @@ import {
   Settings2,
   SquareTerminal,
 } from "lucide-react"
+import { useUser } from "@clerk/remix";
 
 import { NavMain } from "~/components/nav-main"
 import { NavProjects } from "~/components/nav-projects"
@@ -154,7 +155,16 @@ const data = {
   ],
 }
 
+const DotIcon = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+      <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+    </svg>
+  )
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const {isSignedIn, user} = useUser()
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -165,7 +175,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {isSignedIn && <NavUser user={user} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
