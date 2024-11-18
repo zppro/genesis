@@ -10,6 +10,7 @@ import {
   UserCog2
 } from "lucide-react"
 import type { UserResource } from "@clerk/types"
+import { SignOutButton } from '@clerk/remix'
 import { useNavigate } from "@remix-run/react";
 import {
   Avatar,
@@ -31,6 +32,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar"
+import {
+  Button
+} from "~/components/ui/button"
 
 
 export function NavUser({
@@ -107,9 +111,11 @@ export function NavUser({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut />
-                Log out
+              <DropdownMenuItem asChild>
+                <SignOutButton>
+                  <div className="w-full"><LogOut />
+                  Log out</div>
+                </SignOutButton>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

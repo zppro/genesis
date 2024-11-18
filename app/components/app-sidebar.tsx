@@ -10,13 +10,16 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Globe,
+  Music,
+  SquareUserRound,
 } from "lucide-react"
 import { useUser } from "@clerk/remix";
 
 import { NavMain } from "~/components/nav-main"
 import { NavProjects } from "~/components/nav-projects"
 import { NavUser } from "~/components/nav-user"
-import { TeamSwitcher } from "~/components/team-switcher"
+import { WorldSwitcher } from "~/components/world-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -27,53 +30,48 @@ import {
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
+  worlds: [
     {
-      name: "Acme Inc",
+      name: "ai-town",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
     {
-      name: "Acme Corp.",
+      name: "steampunk",
       logo: AudioWaveform,
       plan: "Startup",
     },
     {
-      name: "Evil Corp.",
+      name: "minecrate",
       logo: Command,
       plan: "Free",
     },
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Scenes",
       url: "#",
-      icon: SquareTerminal,
+      icon: Globe,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "scene",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "map",
           url: "#",
         },
         {
-          title: "Settings",
+          title: "music",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Characters",
       url: "#",
-      icon: Bot,
+      icon: SquareUserRound,
       items: [
         {
           title: "Genesis",
@@ -90,9 +88,32 @@ const data = {
       ],
     },
     {
-      title: "Documentation",
+      title: "Maps",
       url: "#",
-      icon: BookOpen,
+      icon: Map,
+      items: [
+        {
+          title: "Introduction",
+          url: "#",
+        },
+        {
+          title: "Get Started",
+          url: "#",
+        },
+        {
+          title: "Tutorials",
+          url: "#",
+        },
+        {
+          title: "Changelog",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Musics",
+      url: "#",
+      icon: Music,
       items: [
         {
           title: "Introduction",
@@ -147,11 +168,6 @@ const data = {
       url: "#",
       icon: PieChart,
     },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
   ],
 }
 
@@ -168,7 +184,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <WorldSwitcher worlds={data.worlds} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
