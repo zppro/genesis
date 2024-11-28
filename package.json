@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "genesis",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -8,7 +8,8 @@
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "le": "vite src/editor/"
   },
   "dependencies": {
     "@clerk/remix": "^4.2.50",
@@ -31,7 +32,8 @@
     "react-dom": "^18.2.0",
     "svix": "^1.40.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "pixi.js": "^7.2.4"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.14.0",
