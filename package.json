@@ -28,12 +28,13 @@
     "convex": "^1.17.0",
     "isbot": "^4.1.0",
     "lucide-react": "^0.456.0",
+    "pixi.js": "^7.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-toastify": "^10.0.6",
     "svix": "^1.40.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7",
-    "pixi.js": "^7.2.4"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.14.0",

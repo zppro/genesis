@@ -2,6 +2,19 @@ import { internalMutation, query, QueryCtx } from "./_generated/server";
 import { UserJSON } from "@clerk/backend";
 import { v, Validator } from "convex/values";
 
+export const userTable = 'users'
+export const UserID = v.id(userTable)
+
+
+
+export const userSerialized = {
+  name: v.string(),
+  email: v.string(),
+  image_url: v.optional(v.string()),
+  // this the Clerk ID, stored in the subject JWT field
+  externalId: v.string(),
+}
+
 async function userByExternalId(ctx: QueryCtx, externalId: string) {
   return await ctx.db
     .query("users")
@@ -16,7 +29,7 @@ export const upsertFromClerk = internalMutation({
     const email = data.email_addresses.find(em => em.id === data.primary_email_address_id)!.email_address
     console.log('email', email)
     let name = (data.first_name ?? "") + (data.last_name ?? "")
-    name = name ? name: email.split('@')[0]
+    name = name ? name : email.split('@')[0]
     const userAttributes = {
       name: name,
       email: email,
