@@ -21,9 +21,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import { useQuery } from "convex/react";
+import { api } from "@/_generated/api";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const worlds = useQuery(api.worlds.list);
+  console.log('worlds=>', worlds)
   return (
     <SidebarProvider>
       <AppSidebar />

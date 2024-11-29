@@ -1,6 +1,7 @@
 import { ObjectType, v } from 'convex/values';
 import { action, MutationCtx, internalMutation, mutation, internalQuery, query } from './_generated/server';
-import { internal } from "./_generated/api";
+import { internal, api } from "./_generated/api";
+import { Doc } from "../convex/_generated/dataModel";
 
 export const worldTable = 'worlds'
 export const WorldType = v.union(v.literal('normal'), v.literal('super'))
@@ -13,12 +14,12 @@ export const worldSerialized = {
   startTime: v.optional(v.number()),
   desc: v.optional(v.string()),
 };
-
 const { startTime, ...insertArgs } = worldSerialized
 const { type, timeSpeedRatio, ..._updateArgs } = insertArgs
 const updateArgs = { id: WorldID, ..._updateArgs }
 const deleteArgs = { id: WorldID }
 
+type WorldTable = typeof worldTable
 export type SerializedWorld = ObjectType<typeof worldSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -38,6 +39,20 @@ export const createWorld = action({
     return await ctx.runMutation(internal.worlds.create, args);
   },
 });
+
+export const list = query({
+  handler: async (ctx) => {
+    return await ctx.db.query(worldTable).collect();
+  },
+})
+
+export const listWorlds = action({
+  handler: async (ctx): Promise<Doc<WorldTable>[]> => {
+    const lists = await ctx.runQuery(api.worlds.list);
+    return lists
+  },
+});
+
 
 export const update = internalMutation({
   args: updateArgs,
