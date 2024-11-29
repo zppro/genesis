@@ -1,7 +1,8 @@
 import {
   Outlet,
 } from "@remix-run/react";
-import type { NavItem } from "~/components/app-sidebar"
+import type { SerializedWorld } from "@/worlds"
+import type { NavItem } from "~/components/nav-main"
 import { AppSidebar } from "~/components/app-sidebar"
 import {
   Breadcrumb,
@@ -17,11 +18,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import { Doc } from "@/_generated/dataModel"
 
-export default function Layout({ children, navMain }: { children: React.ReactNode, navMain: NavItem[] }) {
+export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: Doc<"worlds">[] }) {
   return (
     <SidebarProvider>
-      <AppSidebar navMain={navMain} />
+      <AppSidebar navMain={navMain} worlds={worlds} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

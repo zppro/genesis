@@ -26,7 +26,7 @@ export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 // export type UpdateArgs = Omit<ObjectType<typeof updateArgs>, "startTime" | "type">;
 
-export const create = internalMutation({
+export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
     return await ctx.db.insert(worldTable, args);
@@ -36,7 +36,7 @@ export const create = internalMutation({
 export const createWorld = action({
   args: insertArgs,
   handler: async (ctx, args): Promise<string> => {
-    return await ctx.runMutation(internal.worlds.create, args);
+    return await ctx.runMutation(api.worlds.create, args);
   },
 });
 

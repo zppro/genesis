@@ -14,9 +14,10 @@ import {
   Music,
   SquareUserRound,
   LucideProps,
+  type LucideIcon,
 } from "lucide-react"
 import { useUser } from "@clerk/remix";
-import { NavMain } from "~/components/nav-main"
+import { NavMain, type NavItem } from "~/components/nav-main"
 import { NavProjects } from "~/components/nav-projects"
 import { NavUser } from "~/components/nav-user"
 import { WorldSwitcher } from "~/components/world-switcher"
@@ -27,8 +28,8 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "~/components/ui/sidebar"
-
-
+import type { SerializedWorld } from "@/worlds"
+import { Doc } from "@/_generated/dataModel"
 // This is sample data.
 const data = {
   worlds: [
@@ -70,20 +71,14 @@ const DotIcon = () => {
   )
 }
 
-export type NavItem = {
-  title: string;
-  url: string;
-  icon?: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
-  isActive?: boolean;
-  items?: NavItem[]
-}
 
-export function AppSidebar({ navMain, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[] }) {
+
+export function AppSidebar({ navMain, worlds, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[], worlds: Doc<"worlds">[] }) {
   const { isSignedIn, user } = useUser()
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <WorldSwitcher worlds={data.worlds} />
+        <WorldSwitcher worlds={worlds} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />

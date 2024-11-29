@@ -1,14 +1,24 @@
-import { Link } from "@remix-run/react";
+import { Link, useOutletContext } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { getAuth } from '@clerk/remix/ssr.server'
 import { LoaderFunction, redirect } from '@remix-run/node'
+import { useQuery } from "convex/react";
+import { api } from "@/_generated/api";
+import { useRootContext } from "~/hooks/use-context"
+import { useNavigate } from "@remix-run/react";
+import { useEffect } from 'react';
+import { hasNoWorld } from "~/data/convexProxy/index"
 
 export const loader: LoaderFunction = async (args) => {
+  console.log('_index')
   const { userId } = await getAuth(args)
   if (!userId) {
     return redirect('/sign-in')
   }
-  return redirect('/dashboard')
+  if (await hasNoWorld()) {
+    return redirect('/world/add')
+  }
+  return {}
 }
 
 export const meta: MetaFunction = () => {

@@ -5,19 +5,16 @@ import {
   useActionData,
   useNavigation,
 } from "@remix-run/react";
-
-import { toastOnError } from "~/toasts"
+import { api } from "@/_generated/api"
+import { useAction } from "convex/react";
+import type { InsertArgs } from "@/worlds"
 
 export async function action({
   request,
 }: ActionFunctionArgs) {
   const formData = await request.formData();
-  // const errors = await validateRecipeFormData(formData);
-  // if (errors) {
-  //   return json({ errors });
-  // }
-  // const recipe = await db.recipes.create(formData);
-  const worldId = 'a'
+  const createWorld = useAction(api.worlds.createWorld)
+  const worldId = await createWorld(formData as unknown as InsertArgs)
   return redirect(`/dashboard?world=${worldId}`);
 }
 

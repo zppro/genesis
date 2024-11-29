@@ -6,7 +6,7 @@ import {
   SquareUserRound,
   LucideProps,
 } from "lucide-react"
-import type { NavItem } from "~/components/app-sidebar"
+import type { NavItem } from "~/components/nav-main"
 
 
 export const appNavItems: NavItem[] = [

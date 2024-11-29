@@ -11,17 +11,25 @@ import { rootAuthLoader } from "@clerk/remix/ssr.server";
 import { ClerkApp, useAuth } from "@clerk/remix";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Toaster } from "~/components/ui/toaster"
 
+import { useLocalStorage } from "~/hooks/use-localStorage"
+import { Doc } from "@/_generated/dataModel"
 import tailwindHref from "./tailwind.css?url";
+import { listWorlds } from "~/data/convexProxy/index"
 
 // Export as the root route loader
-export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, () => {
+export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, async () => {
   const CONVEX_URL = process.env["CONVEX_URL"]!;
+
+  const worlds = await listWorlds()
+  console.log("worlds=>", worlds, typeof worlds)
   return {
     ENV: {
       CONVEX_URL,
-    }
+    },
+    initWorlds: worlds,
   };
 });
 
@@ -54,7 +62,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster />
         <ScrollRestoration />
+        {/* <script
+          dangerouslySetInnerHTML={{
+            __html: `window.process = ${JSON.stringify({
+              env: {},
+            })}`,
+          }}
+        /> */}
         <Scripts />
       </body>
     </html>
@@ -62,12 +78,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { ENV } = useRouteLoaderData<typeof loader>("root");
+  const { ENV, initWorlds } = useRootLoaderData()
   const [convex] = useState(() => new ConvexReactClient(ENV.CONVEX_URL));
-
+  const [worlds, setWorlds] = useState(initWorlds as Doc<"worlds">[])
+  const [localWorldId, setLocalWorldId] = useLocalStorage("localWorldId", "")
+  if (worlds.length > 0 && !localWorldId) {
+    typeof setLocalWorldId === 'function' && setLocalWorldId(worlds[0]._id)
+  }
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      <Outlet />
+      <Outlet context={{ worlds, setWorlds }} />
     </ConvexProviderWithClerk>
   )
 }

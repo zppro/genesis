@@ -4,7 +4,7 @@ import { appNavItems } from "~/data/nav";
 
 export default function Index() {
   return (
-    <Layout navMain={appNavItems}>
+    <Layout navMain={appNavItems} worlds={[]}>
       <Outlet context={appNavItems} />
     </Layout>
   )
