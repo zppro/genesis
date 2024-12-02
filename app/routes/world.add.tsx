@@ -3,7 +3,6 @@ import {
   DialogContent,
 } from "~/components/ui/dialog"
 import { useNavigate, useNavigation, Form } from "@remix-run/react";
-import { Skeleton } from "~/components/ui/skeleton"
 import { Button } from "~/components/ui/button"
 import {
   Card,
@@ -15,6 +14,7 @@ import {
 } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
+import { Textarea } from "~/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ import { api } from "@/_generated/api";
 import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 import type { ClientActionFunctionArgs } from "@remix-run/react";
 import { useAction } from "convex/react";
-import type { InsertArgs } from "@/worlds"
+import { type InsertArgs, WorldType } from "@/worlds"
 import { useRootContext } from "~/hooks/use-context"
 import { useLocalStorage } from "~/hooks/use-localStorage"
 import { useToast } from "~/hooks/use-toast"
@@ -39,6 +39,8 @@ export default function AddWorld() {
   const isSubmitting = navigation.formAction === "/world/add";
   const createFunc = useMutation(api.worlds.create)
   const [_, setLocalWorldId] = useLocalStorage("localWorldId", "")
+  const wordTypes = [...WorldType.members.map(a => a.value)]
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let formData = new FormData(e.currentTarget);
@@ -67,28 +69,33 @@ export default function AddWorld() {
       <Form method="post" onSubmit={handleSubmit}>
         <Card className="w-[350px]">
           <CardHeader>
-            <CardTitle>Create project</CardTitle>
-            <CardDescription>Deploy your new project in one-click.</CardDescription>
+            <CardTitle>Create world</CardTitle>
+            <CardDescription>create your new world in one-click.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" placeholder="Name of your project" />
+                <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
+                <Input id="name" name="name" placeholder="Name of your world"  />
               </div>
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="framework">Framework</Label>
-                <Select name="type">
-                  <SelectTrigger id="framework">
-                    <SelectValue placeholder="Select" />
+                <Label htmlFor="timeSpeedRatio">TimeSpeedRatio<span className="text-red-500">*</span></Label>
+                <Input id="timeSpeedRatio" name="timeSpeedRatio" placeholder="realworld:gameworld i.e 1:1" defaultValue={"1:1"} />
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="worldtype">WorldType</Label>
+                <Select name="type" defaultValue={wordTypes?.[0]}>
+                  <SelectTrigger id="worldtype">
+                    <SelectValue placeholder="Select World Type" />
                   </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value="next">Next.js</SelectItem>
-                    <SelectItem value="sveltekit">SvelteKit</SelectItem>
-                    <SelectItem value="astro">Astro</SelectItem>
-                    <SelectItem value="nuxt">Nuxt.js</SelectItem>
+                  <SelectContent position="popper" >
+                    {wordTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="desc">Description</Label>
+                <Textarea id="desc" name="desc" placeholder="Description of your world" />
               </div>
             </div>
           </CardContent>
