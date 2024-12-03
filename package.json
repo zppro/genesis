@@ -29,6 +29,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "convex": "^1.17.0",
+    "debounce": "^2.2.0",
     "isbot": "^4.1.0",
     "lucide-react": "^0.456.0",
     "pixi.js": "^7.2.4",

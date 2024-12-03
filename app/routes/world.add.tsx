@@ -37,6 +37,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { FormErrorTip } from "~/components/form-error-tip"
 import formcssHref from "~/form.css?url";
+import debounce from "debounce"
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -56,16 +57,18 @@ export default function AddWorld() {
   const createFunc = useMutation(api.worlds.create)
   const [_, setLocalWorldId] = useLocalStorage("localWorldId", "")
   const [errors, setErrors] = useState<Record<string, any>>();
-  const handleChange = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('e=>', e.currentTarget)
-    let formData = new FormData(e.currentTarget);
+
+  const debouncedHandleChange = debounce((formData) => {
     const formPayload = Object.fromEntries(formData)
-    console.log('changed formPayload=>', formPayload)
+    // console.log('changed formPayload=>', formPayload)
     const result = createWorldFormSchema.safeParse(formPayload);
     setErrors(result.success ? {} : result.error.formErrors.fieldErrors)
+  }, 200);
 
+  function handleChange(e: React.FormEvent<HTMLFormElement>) {
+    debouncedHandleChange(new FormData(e.currentTarget));
   }
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let formData = new FormData(e.currentTarget);
