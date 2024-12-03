@@ -1,0 +1,6 @@
+.form-field-err-tip {
+  @apply text-red-500 text-xs;
+}
+.form-input-err {
+  @apply border-2 border-red-500 focus:border-red-500 focus:ring-red-500;
+}

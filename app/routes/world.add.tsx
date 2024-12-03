@@ -22,15 +22,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { parseArgumentErrors, parseConvexError } from "@/error";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/_generated/api";
-import { redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { ConvexError } from "convex/values";
+import { redirect, type LinksFunction } from "@remix-run/node";
 import type { ClientActionFunctionArgs } from "@remix-run/react";
 import { useAction } from "convex/react";
-import { type InsertArgs, WorldType } from "@/worlds"
+import { type InsertArgs, WORLD_TYPES } from "@/worlds"
 import { useRootContext } from "~/hooks/use-context"
 import { useLocalStorage } from "~/hooks/use-localStorage"
 import { useToast } from "~/hooks/use-toast"
+import { useState } from "react";
+import { z } from "zod";
+import { FormErrorTip } from "~/components/form-error-tip"
+import formcssHref from "~/form.css?url";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: formcssHref },
+];
+const createWorldFormSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  desc: z.string(),
+  timeSpeedRatio: z.string().refine(v => v.match(/^\d+:\d+$/g)),
+  type: z.enum(WORLD_TYPES),
+});
 
 export default function AddWorld() {
   const navigate = useNavigate();
@@ -39,34 +55,58 @@ export default function AddWorld() {
   const isSubmitting = navigation.formAction === "/world/add";
   const createFunc = useMutation(api.worlds.create)
   const [_, setLocalWorldId] = useLocalStorage("localWorldId", "")
-  const wordTypes = [...WorldType.members.map(a => a.value)]
+  const [errors, setErrors] = useState<Record<string, any>>();
+  const handleChange = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('e=>', e.currentTarget)
+    let formData = new FormData(e.currentTarget);
+    const formPayload = Object.fromEntries(formData)
+    console.log('changed formPayload=>', formPayload)
+    const result = createWorldFormSchema.safeParse(formPayload);
+    setErrors(result.success ? {} : result.error.formErrors.fieldErrors)
 
+  }
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let formData = new FormData(e.currentTarget);
     const formPayload = Object.fromEntries(formData)
     console.log('formPayload=>', formPayload)
-    try {
-      const newWorldId = await createFunc(formPayload as InsertArgs)
-      console.log("newWorldId=>", newWorldId)
-      typeof setLocalWorldId === 'function' && setLocalWorldId(newWorldId)
-      navigate(`/world/${newWorldId}/dashboard`)
-    } catch (e) {
-      toast({
-        title: "create world error:",
-        description: (e as Error).message,
-      })
+    const result = createWorldFormSchema.safeParse(formPayload);
+    if (result.success) {
+      try {
+        const newWorldId = await createFunc(formPayload as InsertArgs)
+        console.log("newWorldId=>", newWorldId)
+        typeof setLocalWorldId === 'function' && setLocalWorldId(newWorldId)
+        navigate(`/world/${newWorldId}/dashboard`)
+      } catch (error) {
+        // {field1: errorMessage, ...}
+        let fieldErrors = parseArgumentErrors(error)
+        let errorMessage = ""
+        if (!fieldErrors) {
+          errorMessage = parseConvexError(error);
+        } else {
+          setErrors(fieldErrors)
+        }
+        toast({
+          title: "create world error:",
+          description: errorMessage,
+        })
+      }
+    } else {
+      // Handle validation errors
+      console.warn(result.error.formErrors.fieldErrors)
+      setErrors(result.error.formErrors.fieldErrors);
     }
+
   }
   const closeAndBack = () => navigate(-1);
-
   return <Dialog open={true} onOpenChange={(isOpen) => {
     if (!isOpen) {
       closeAndBack()
     }
   }}>
     <DialogContent className={"lg:max-w-screen-lg overflow-y-scroll max-h-screen flex justify-center items-center"}>
-      <Form method="post" onSubmit={handleSubmit}>
+      <Form method="post" onSubmit={handleSubmit} onChange={handleChange}>
         <Card className="w-[350px]">
           <CardHeader>
             <CardTitle>Create world</CardTitle>
@@ -76,20 +116,22 @@ export default function AddWorld() {
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
-                <Input id="name" name="name" placeholder="Name of your world"  />
+                <Input id="name" name="name" placeholder="Name of your world" className={errors?.name ? "form-input-err" : undefined} />
+                {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="timeSpeedRatio">TimeSpeedRatio<span className="text-red-500">*</span></Label>
-                <Input id="timeSpeedRatio" name="timeSpeedRatio" placeholder="realworld:gameworld i.e 1:1" defaultValue={"1:1"} />
+                <Input id="timeSpeedRatio" name="timeSpeedRatio" placeholder="realworld:gameworld i.e 1:1" defaultValue={"1:1"} className={errors?.timeSpeedRatio ? "form-input-err" : undefined} />
+                {errors?.timeSpeedRatio ? <FormErrorTip tip={errors.timeSpeedRatio} /> : null}
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="worldtype">WorldType</Label>
-                <Select name="type" defaultValue={wordTypes?.[0]}>
+                <Select name="type" defaultValue={WORLD_TYPES?.[0]}>
                   <SelectTrigger id="worldtype">
                     <SelectValue placeholder="Select World Type" />
                   </SelectTrigger>
                   <SelectContent position="popper" >
-                    {wordTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {WORLD_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

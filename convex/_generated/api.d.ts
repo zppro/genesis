@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as error from "../error.js";
 import type * as http from "../http.js";
 import type * as users from "../users.js";
 import type * as worlds from "../worlds.js";
@@ -26,6 +27,7 @@ import type * as worlds from "../worlds.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  error: typeof error;
   http: typeof http;
   users: typeof users;
   worlds: typeof worlds;

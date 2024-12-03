@@ -4,15 +4,18 @@ import { internal, api } from "./_generated/api";
 import { Doc } from "../convex/_generated/dataModel";
 
 export const worldTable = 'worlds'
-export const WorldType = v.union(v.literal('normal'), v.literal('super'))
 export const WorldID = v.id(worldTable)
+
+export const WORLD_TYPES = ['normal', 'super'] as const
+export const WorldType = v.union(...WORLD_TYPES.map(w => v.literal(w)))
+
 
 export const worldSerialized = {
   name: v.string(),
   type: WorldType,
   timeSpeedRatio: v.string(),
   startTime: v.optional(v.number()),
-  desc: v.optional(v.string()),
+  desc: v.optional(v.string())
 };
 const { startTime, ...insertArgs } = worldSerialized
 const { type, timeSpeedRatio, ..._updateArgs } = insertArgs
