@@ -29,7 +29,7 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar"
 import type { SerializedWorld } from "@/worlds"
-import { Doc } from "@/_generated/dataModel"
+import { type WorldDoc } from "@/worlds"
 // This is sample data.
 const data = {
   worlds: [
@@ -73,7 +73,7 @@ const DotIcon = () => {
 
 
 
-export function AppSidebar({ navMain, worlds, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[], worlds: Doc<"worlds">[] }) {
+export function AppSidebar({ navMain, worlds, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[], worlds: WorldDoc[] }) {
   const { isSignedIn, user } = useUser()
   return (
     <Sidebar collapsible="icon" {...props}>

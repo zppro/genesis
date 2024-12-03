@@ -1,23 +1,25 @@
 import { ObjectType, v } from 'convex/values';
-import { IdWorld } from '../worlds';
+import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { internalMutation, mutation, query } from '../_generated/server';
-
+import { Doc, Id } from "../_generated/dataModel";
 
 export const table = 'scenes';
 export const indexName_ByWorldId = 'byWorldId';
-export const IdScene = v.id(table);
+export const idScene = v.id(table);
 export const sceneSerialized = {
   name: v.string(),
   desc: v.optional(v.string()),
-  worldId: IdWorld,
+  worldId: idWorld,
 };
 const { ...insertArgs } = sceneSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
-const updateArgs = { id: IdScene, ..._updateArgs }
-const deleteArgs = { id: IdScene }
+const updateArgs = { id: idScene, ..._updateArgs }
+const deleteArgs = { id: idScene }
 
-type SceneTable = typeof table
+export type SceneTable = typeof table
+export type SceneId = Id<SceneTable>
+export type SceneDoc = Doc<SceneTable>
 export type SerializedScene = ObjectType<typeof sceneSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -33,7 +35,7 @@ export const create = mutation({
 });
 
 export const list = query({
-  args: { worldId: IdWorld },
+  args: { worldId: idWorld },
   handler: async (ctx, args) => {
     const { worldId } = args
     return await ctx.db.query(table).withIndex(indexName_ByWorldId, (q) =>

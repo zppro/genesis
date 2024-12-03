@@ -15,16 +15,15 @@ import { useState, useEffect } from "react";
 import { Toaster } from "~/components/ui/toaster"
 
 import { useLocalStorage } from "~/hooks/use-localStorage"
-import { Doc } from "@/_generated/dataModel"
+import { type WorldDoc } from "@/worlds"
 import tailwindHref from "./tailwind.css?url";
-import { listWorlds } from "~/data/convexProxy/index"
+import { listWorlds } from "~/data/convexProxy/world"
 
 // Export as the root route loader
 export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, async () => {
   const CONVEX_URL = process.env["CONVEX_URL"]!;
 
   const worlds = await listWorlds()
-  console.log("worlds=>", worlds, typeof worlds)
   return {
     ENV: {
       CONVEX_URL,
@@ -80,7 +79,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 function App() {
   const { ENV, initWorlds } = useRootLoaderData()
   const [convex] = useState(() => new ConvexReactClient(ENV.CONVEX_URL));
-  const [worlds, setWorlds] = useState(initWorlds as Doc<"worlds">[])
+  const [worlds, setWorlds] = useState<WorldDoc[]>(initWorlds)
   const [localWorldId, setLocalWorldId] = useLocalStorage("localWorldId", "")
   if (worlds.length > 0 && !localWorldId) {
     typeof setLocalWorldId === 'function' && setLocalWorldId(worlds[0]._id)

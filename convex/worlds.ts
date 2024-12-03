@@ -2,10 +2,10 @@ import { ObjectType, v } from 'convex/values';
 import { defineTable } from "convex/server";
 import { action, internalMutation, mutation, query } from './_generated/server';
 import { internal, api } from "./_generated/api";
-import { Doc } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 
 export const table = 'worlds'
-export const IdWorld = v.id(table)
+export const idWorld = v.id(table)
 
 export const WORLD_TYPES = ['normal', 'super'] as const
 
@@ -18,10 +18,13 @@ export const worldSerialized = {
 };
 const { startTime, ...insertArgs } = worldSerialized
 const { type, timeSpeedRatio, ..._updateArgs } = insertArgs
-const updateArgs = { id: IdWorld, ..._updateArgs }
-const deleteArgs = { id: IdWorld }
+const updateArgs = { id: idWorld, ..._updateArgs }
+const deleteArgs = { id: idWorld }
 
-type WorldTable = typeof table
+export type WorldTable = typeof table
+export type WorldId = Id<WorldTable>;
+export type WorldDoc = Doc<WorldTable>;
+
 export type SerializedWorld = ObjectType<typeof worldSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;

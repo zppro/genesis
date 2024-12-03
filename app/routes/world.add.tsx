@@ -50,6 +50,8 @@ const createWorldFormSchema = z.object({
 });
 
 export default function AddWorld() {
+  const rootContext = useRootContext()
+  console.log("world add rootContext=>", rootContext)
   const navigate = useNavigate();
   const navigation = useNavigation();
   const { toast } = useToast()

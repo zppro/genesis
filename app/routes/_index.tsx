@@ -7,7 +7,7 @@ import { api } from "@/_generated/api";
 import { useRootContext } from "~/hooks/use-context"
 import { useNavigate } from "@remix-run/react";
 import { useEffect } from 'react';
-import { hasNoWorld } from "~/data/convexProxy/index"
+import { hasNoWorld } from "~/data/convexProxy/world"
 
 export const loader: LoaderFunction = async (args) => {
   console.log('_index')

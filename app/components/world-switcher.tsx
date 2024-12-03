@@ -17,12 +17,12 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { useLocalStorage } from "~/hooks/use-localStorage"
-import { Doc } from "@/_generated/dataModel"
+import { type WorldDoc } from "@/worlds"
 
 export function WorldSwitcher({
   worlds,
 }: {
-  worlds: Doc<"worlds">[]
+  worlds: WorldDoc[]
 }) {
   const { isMobile } = useSidebar()
   const [localWorldId, setLocalWorldId] = useLocalStorage("localWorldId", "")

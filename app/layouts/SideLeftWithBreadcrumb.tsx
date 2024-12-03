@@ -1,7 +1,3 @@
-import {
-  Outlet,
-} from "@remix-run/react";
-import type { SerializedWorld } from "@/worlds"
 import type { NavItem } from "~/components/nav-main"
 import { AppSidebar } from "~/components/app-sidebar"
 import {
@@ -18,9 +14,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
-import { Doc } from "@/_generated/dataModel"
+import { type WorldDoc } from "@/worlds";
 
-export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: Doc<"worlds">[] }) {
+export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: WorldDoc[] }) {
   return (
     <SidebarProvider>
       <AppSidebar navMain={navMain} worlds={worlds} />
