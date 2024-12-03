@@ -1,5 +1,4 @@
 import { ConvexError } from "convex/values";
-import { } from "convex/values"
 
 export const parseConvexError = (error: any, failMsg: string = "Unexpected error occurred") => {
   console.log('error=>', error.message.length)

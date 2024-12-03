@@ -1,10 +1,11 @@
 import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
 
-import { userTable, userSerialized } from "./users"
-import { worldTable, worldSerialized } from "./worlds"
+import { table as userTable, tableSchema as userTableSchema } from "./users"
+import { table as worldTable, tableSchema as worldTableSchema } from "./worlds"
+import { table as sceneTable, tableSchema as sceneTableSchema } from "./world/scenes"
 
 export default defineSchema({
-  [userTable]: defineTable(userSerialized).index("byExternalId", ["externalId"]),
-  [worldTable]: defineTable(worldSerialized),
+  [userTable]: userTableSchema,
+  [worldTable]: worldTableSchema,
+  [sceneTable]: sceneTableSchema,
 });

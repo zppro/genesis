@@ -16,6 +16,7 @@ import type {
 import type * as error from "../error.js";
 import type * as http from "../http.js";
 import type * as users from "../users.js";
+import type * as world_scenes from "../world/scenes.js";
 import type * as worlds from "../worlds.js";
 
 /**
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   error: typeof error;
   http: typeof http;
   users: typeof users;
+  "world/scenes": typeof world_scenes;
   worlds: typeof worlds;
 }>;
 export declare const api: FilterApi<

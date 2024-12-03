@@ -1,38 +1,39 @@
 import { ObjectType, v } from 'convex/values';
-import { action, MutationCtx, internalMutation, mutation, internalQuery, query } from './_generated/server';
+import { defineTable } from "convex/server";
+import { action, internalMutation, mutation, query } from './_generated/server';
 import { internal, api } from "./_generated/api";
-import { Doc } from "../convex/_generated/dataModel";
+import { Doc } from "./_generated/dataModel";
 
-export const worldTable = 'worlds'
-export const WorldID = v.id(worldTable)
+export const table = 'worlds'
+export const IdWorld = v.id(table)
 
 export const WORLD_TYPES = ['normal', 'super'] as const
-export const WorldType = v.union(...WORLD_TYPES.map(w => v.literal(w)))
-
 
 export const worldSerialized = {
   name: v.string(),
-  type: WorldType,
+  type: v.union(...WORLD_TYPES.map(w => v.literal(w))),
   timeSpeedRatio: v.string(),
   startTime: v.optional(v.number()),
   desc: v.optional(v.string())
 };
 const { startTime, ...insertArgs } = worldSerialized
 const { type, timeSpeedRatio, ..._updateArgs } = insertArgs
-const updateArgs = { id: WorldID, ..._updateArgs }
-const deleteArgs = { id: WorldID }
+const updateArgs = { id: IdWorld, ..._updateArgs }
+const deleteArgs = { id: IdWorld }
 
-type WorldTable = typeof worldTable
+type WorldTable = typeof table
 export type SerializedWorld = ObjectType<typeof worldSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 // export type UpdateArgs = Omit<ObjectType<typeof updateArgs>, "startTime" | "type">;
 
+export const tableSchema = defineTable(worldSerialized)
+
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(worldTable, args);
+    return await ctx.db.insert(table, args);
   },
 });
 
@@ -45,7 +46,7 @@ export const createWorld = action({
 
 export const list = query({
   handler: async (ctx) => {
-    return await ctx.db.query(worldTable).collect();
+    return await ctx.db.query(table).collect();
   },
 })
 
@@ -61,9 +62,9 @@ export const update = internalMutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    const world = await ctx.db.get(id);
-    if (!world) {
-      throw new Error(`Invalid world ID: ${args.id}`);
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
     return await ctx.db.patch(id, patchData);
   },

@@ -12,7 +12,6 @@ export const hasNoWorld = async () => {
 }
 
 export const listWorlds = async () => {
-  const proxy = queryProxy()
   const worlds = await queryProxy().query(api.worlds.list)
   return worlds
 }

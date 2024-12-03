@@ -1,11 +1,11 @@
 import { internalMutation, query, QueryCtx } from "./_generated/server";
+import { defineTable } from "convex/server";
 import { UserJSON } from "@clerk/backend";
 import { v, Validator } from "convex/values";
 
-export const userTable = 'users'
-export const UserID = v.id(userTable)
-
-
+export const table = 'users'
+export const indexName_ByExternalId = 'byExternalId';
+export const IdUser = v.id(table)
 
 export const userSerialized = {
   name: v.string(),
@@ -15,19 +15,19 @@ export const userSerialized = {
   externalId: v.string(),
 }
 
+export const tableSchema = defineTable(userSerialized).index(indexName_ByExternalId, ["externalId"])
+
 async function userByExternalId(ctx: QueryCtx, externalId: string) {
   return await ctx.db
-    .query("users")
-    .withIndex("byExternalId", (q) => q.eq("externalId", externalId))
+    .query(table)
+    .withIndex(indexName_ByExternalId, (q) => q.eq("externalId", externalId))
     .unique();
 }
 
 export const upsertFromClerk = internalMutation({
   args: { data: v.any() as Validator<UserJSON> }, // no runtime validation, trust Clerk
   async handler(ctx, { data }) {
-    console.log('data:', data)
     const email = data.email_addresses.find(em => em.id === data.primary_email_address_id)!.email_address
-    console.log('email', email)
     let name = (data.first_name ?? "") + (data.last_name ?? "")
     name = name ? name : email.split('@')[0]
     const userAttributes = {
@@ -39,7 +39,7 @@ export const upsertFromClerk = internalMutation({
 
     const user = await userByExternalId(ctx, data.id);
     if (user === null) {
-      await ctx.db.insert("users", userAttributes);
+      await ctx.db.insert(table, userAttributes);
     } else {
       await ctx.db.patch(user._id, userAttributes);
     }
