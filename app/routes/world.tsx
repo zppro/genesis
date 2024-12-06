@@ -1,10 +1,8 @@
 import Layout from "~/layouts/SideLeftWithBreadcrumb"
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { SerializedWorld } from "@/worlds";
 import { useRootContext } from "~/hooks/use-context"
-import { redirect } from "@remix-run/node";
 import { appNavItems } from "~/data/nav";
-import { LinksFunction, LoaderFunction, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 
 export async function loader({
   params,

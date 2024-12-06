@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 
-export const parseConvexError = (error: any, failMsg: string = "Unexpected error occurred") => {
+
+export const parseConvexErrorToString = (error: any, failMsg: string = "Unexpected error occurred") => {
   console.log('error=>', error.message.length)
 
   console.log('error.cause=>', Object.keys(error))
@@ -14,7 +15,20 @@ export const parseConvexError = (error: any, failMsg: string = "Unexpected error
     failMsg;
 }
 
-export const parseArgumentErrors = (error: any, failMsg: string = "Unexpected error occurred") => {
+//去除换行 
+const ClearBr = (key: string) => {
+  key = key.replace(/<\/?.+?>/g, "");
+  key = key.replace(/[\r\n]/g, "");
+  return key;
+}
+
+export const parseIsNotFoundRecordError = (error: any) => {
+  const regexp = /ArgumentValidationError:.*Path:\s*\.id/gm;
+
+  return error instanceof Error && (error.message.includes("ArgumentValidationError:") && regexp.test(ClearBr(error.message)))
+}
+
+export const parseMutationArgumentErrorsToObject = (error: any, failMsg: string = "Unexpected error occurred") => {
   return (error instanceof Error && error.message.includes("ArgumentValidationError:") ? { [extractArgumentFields(error.message)]: extractValidateMsg(error.message) } : null);
 }
 

@@ -17,7 +17,7 @@ import { Toaster } from "~/components/ui/toaster"
 import { useLocalStorage } from "~/hooks/use-localStorage"
 import { type WorldDoc } from "@/worlds"
 import tailwindHref from "./tailwind.css?url";
-import { listWorlds } from "~/data/convexProxy/world"
+import { listWorlds } from "~/data/convexProxy/world.server"
 
 // Export as the root route loader
 export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, async () => {

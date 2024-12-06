@@ -34,6 +34,13 @@ export const create = mutation({
   },
 });
 
+export const read = query({
+  args: { id: idScene },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 export const list = query({
   args: { worldId: idWorld },
   handler: async (ctx, args) => {
@@ -45,7 +52,7 @@ export const list = query({
   },
 })
 
-export const update = internalMutation({
+export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
@@ -57,7 +64,7 @@ export const update = internalMutation({
   },
 });
 
-export const delete_ = internalMutation({
+export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
     return await ctx.db.delete(args.id);

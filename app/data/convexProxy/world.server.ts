@@ -1,4 +1,4 @@
-import { queryProxy } from "~/data/convexProxy"
+import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 
 export const hasNoWorld = async () => {
@@ -7,6 +7,6 @@ export const hasNoWorld = async () => {
 }
 
 export const listWorlds = async () => {
-  const worlds = await queryProxy().query(api.worlds.list)
+  const worlds = await proxy().query(api.worlds.list)
   return worlds
 }

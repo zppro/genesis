@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronsUpDown, Plus, Globe } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -43,6 +43,7 @@ export function WorldSwitcher({
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 {/* <activeWorld.logo className="size-4" /> */}
+                {<Globe className="size-4" />}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -70,6 +71,7 @@ export function WorldSwitcher({
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
                   {/* <world.logo className="size-4 shrink-0" /> */}
+                  {<Globe className="size-4 shrink-0" />}
                 </div>
                 {world.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

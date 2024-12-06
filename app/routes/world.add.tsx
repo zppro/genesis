@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { parseArgumentErrors, parseConvexError } from "@/error";
+import { parseMutationArgumentErrorsToObject, parseConvexErrorToString } from "@/error";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/_generated/api";
 import { ConvexError } from "convex/values";
@@ -85,10 +85,10 @@ export default function AddWorld() {
         navigate(`/world/${newWorldId}/dashboard`)
       } catch (error) {
         // {field1: errorMessage, ...}
-        let fieldErrors = parseArgumentErrors(error)
+        let fieldErrors = parseMutationArgumentErrorsToObject(error)
         let errorMessage = ""
         if (!fieldErrors) {
-          errorMessage = parseConvexError(error);
+          errorMessage = parseConvexErrorToString(error);
         } else {
           setErrors(fieldErrors)
         }
