@@ -24,22 +24,23 @@ const ClearBr = (key: string) => {
 
 export const parseIsNotFoundRecordError = (error: any) => {
   const regexp = /ArgumentValidationError:.*Path:\s*\.id/gm;
-
-  return error instanceof Error && (error.message.includes("ArgumentValidationError:") && regexp.test(ClearBr(error.message)))
+  const cleared = ClearBr(error.message)
+  return error instanceof Error && (cleared.includes("ArgumentValidationError:") && regexp.test(cleared))
 }
 
 export const parseMutationArgumentErrorsToObject = (error: any, failMsg: string = "Unexpected error occurred") => {
-  return (error instanceof Error && error.message.includes("ArgumentValidationError:") ? { [extractArgumentFields(error.message)]: extractValidateMsg(error.message) } : null);
+  const cleared = ClearBr(error.message)
+  return (error instanceof Error && cleared.includes("ArgumentValidationError:") ? { [extractArgumentFields(cleared)]: extractValidateMsg(cleared) } : null);
 }
 
 const extractArgumentFields = (str: string) => {
-  const regexp = /ArgumentValidationError:.*`(\S+)`\./gm;
+  const regexp = /ArgumentValidationError:.*`(\S+)`/gm;
   const array = [...str.matchAll(regexp)];
   return array.map(m => m[1]).join();
 }
 
 const extractValidateMsg = (str: string) => {
-  const regexp = /ArgumentValidationError:((?!`\.).+)`\./gm;
+  const regexp = /ArgumentValidationError:((?!`\.).+)`/gm;
   const array = [...str.matchAll(regexp)];
   return array.map(m => m[1]).join();
 }

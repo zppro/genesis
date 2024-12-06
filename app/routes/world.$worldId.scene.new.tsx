@@ -1,13 +1,14 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import SceneForm from "~/components/forms/scene-form"
-import { z } from "zod";
+import { z, type ZodObject } from "zod";
 import { parseMutationArgumentErrorsToObject, parseConvexErrorToString } from "@/error";
 import { createWorldScene } from "~/data/convexProxy/scene.server"
 import { type InsertArgs, table } from "@/world/scenes";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
+import { parseFormError } from "~/lib/error.server"
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -36,14 +37,17 @@ export async function action({
       return redirect(`/world/${worldId}/scene/${newSceneId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      let fieldErrors = parseMutationArgumentErrorsToObject(error)
-      let errorMessage = ""
-      if (!fieldErrors) {
-        errorMessage = parseConvexErrorToString(error);
-        errors = { "__err__": errorMessage }
-      } else {
-        errors = { ...fieldErrors }
-      }
+      const fields = Object.keys(createSceneFormSchema.keyof())
+      errors = parseFormError(error, fields)
+
+      // let fieldErrors = parseMutationArgumentErrorsToObject(error)
+      // let errorMessage = ""
+      // if (!fieldErrors) {
+      //   errorMessage = parseConvexErrorToString(error);
+      //   errors = { "__err__": errorMessage }
+      // } else {
+      //   errors = { ...fieldErrors }
+      // }
     }
   } else {
     // Handle validation errors
@@ -67,13 +71,12 @@ export default function NewScene() {
   console.log("in new")
   const { worldId } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/scene/new`;
   console.log(isSubmitting)
   return (
     <div className="h-full">
-      <SceneForm isSubmitting={isSubmitting} errors={actionData?.errors}>
+      <SceneForm errors={actionData?.errors} schema={createSceneFormSchema}>
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />
       </SceneForm>

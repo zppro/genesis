@@ -60,6 +60,8 @@ export const update = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
+    console.log('entity=>', entity)
+    console.log('patchData=>', patchData)
     return await ctx.db.patch(id, patchData);
   },
 });
