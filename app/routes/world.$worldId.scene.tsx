@@ -29,7 +29,8 @@ export default function Scene() {
     <>
       <ResizablePanelGroup
         direction="horizontal"
-        className="h-full max-h-[800px] items-stretch"
+        className="h-full  items-stretch"
+        // max-h-[800px]
       >
         <ResizablePanel defaultSize={25} minSize={25}>
           <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
