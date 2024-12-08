@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Search, Plus } from "lucide-react"
 import { Input } from "~/components/ui/input"
 import { WorldId } from "@/worlds";
-import { ResouceDoc, ResourceTypes } from "@/world/resources";
+import { ResourceDoc, ResourceTypes } from "@/world/resources";
 import {
   Pagination,
   PaginationContent,
@@ -19,7 +19,7 @@ import {
   PaginationPrevious,
 } from "~/components/ui/pagination"
 
-export default function SceneScrollList({ worldId, type, resources }: { worldId: WorldId, type: ResourceTypes, resources: ResouceDoc[] }) {
+export default function SceneScrollList({ worldId, type, resources }: { worldId: WorldId, type: ResourceTypes, resources: ResourceDoc[] }) {
   // const { worldId, resources } = useRouteLoaderData<typeof loader>("routes/world.$worldId.resource")!;
   return (
     <div className="flex flex-col h-full">

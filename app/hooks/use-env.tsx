@@ -3,6 +3,7 @@ import { useRootLoaderData } from "~/root"
 
 export type AppEnv = {
   CONVEX_URL: string
+  CONVEX_SITE_URL: string
 }
 
 export function useEnv(): AppEnv {

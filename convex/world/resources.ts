@@ -3,6 +3,7 @@ import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
+import { idStorage, StorageId } from "../shared/types"
 
 export const table = 'resources';
 export const indexName_ByWorldId = 'byWorldId';
@@ -17,16 +18,17 @@ export const resourceSerialized = {
   desc: v.optional(v.string()),
   worldId: idWorld,
   type: VResourceTypes,
+  storageId: idStorage,
   url: v.optional(v.string()),
 };
-const { ...insertArgs } = resourceSerialized
+const { url: _url, ...insertArgs } = resourceSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idResource, ..._updateArgs }
 const deleteArgs = { id: idResource }
 
 export type ResouceTable = typeof table
 export type ResourceId = Id<ResouceTable>
-export type ResouceDoc = Doc<ResouceTable>
+export type ResourceDoc = Doc<ResouceTable>
 export type ResourceTypes = typeof RESOURCE_TYPES[number];
 export type SerializedScene = ObjectType<typeof resourceSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
@@ -37,10 +39,22 @@ export const tableSchema = defineTable(resourceSerialized)
   .index(indexName_ByWorldId, ["worldId"])
   .index(indexName_ByWorldIdAndType, ["worldId", "type"])
 
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
+});
+
+export const generateDownloadUrl = query({
+  args: { id: idStorage },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.id);
+  },
+});
+
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const url = await ctx.storage.getUrl(args.storageId) ?? undefined
+    return await ctx.db.insert(table, { ...args, url });
   },
 });
 
@@ -71,7 +85,13 @@ export const update = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
-    return await ctx.db.patch(id, patchData);
+    if (args.storageId !== entity.storageId) {
+      const url = await ctx.storage.getUrl(args.storageId) ?? undefined
+      return await ctx.db.patch(id, { ...patchData, url });
+    } else {
+      return await ctx.db.patch(id, patchData);
+    }
+
   },
 });
 

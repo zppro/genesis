@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as error from "../error.js";
 import type * as http from "../http.js";
+import type * as shared_types from "../shared/types.js";
 import type * as users from "../users.js";
 import type * as world_resources from "../world/resources.js";
 import type * as world_scenes from "../world/scenes.js";
@@ -31,6 +32,7 @@ import type * as worlds from "../worlds.js";
 declare const fullApi: ApiFromModules<{
   error: typeof error;
   http: typeof http;
+  "shared/types": typeof shared_types;
   users: typeof users;
   "world/resources": typeof world_resources;
   "world/scenes": typeof world_scenes;

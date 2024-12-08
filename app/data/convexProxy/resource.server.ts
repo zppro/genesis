@@ -4,6 +4,11 @@ import { type WorldId } from "@/worlds"
 import type { ResourceId, ResourceTypes, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/resources";
 // import { parseNotFoundRecordError, parseConvexError } from "@/error";
 
+
+// export const generateUploadUrl = async () => {
+//   return await proxy().mutation(api.world.resources.generateUploadUrl)
+// }
+
 export const getWorldResource = async (id: ResourceId) => {
   return await proxy().query(api.world.resources.read, { id })
 }
@@ -11,6 +16,11 @@ export const getWorldResource = async (id: ResourceId) => {
 export const listWorldResourcsByType = async (worldId: WorldId, type: ResourceTypes) => {
   const scenes = await proxy().query(api.world.resources.list, { worldId, type })
   return scenes
+}
+
+export const createWorldResource = async (args: InsertArgs) => {
+  const newResourceId = await proxy().mutation(api.world.resources.create, { ...args })
+  return newResourceId
 }
 
 export const updateWorldResource = async (args: UpdateArgs) => {

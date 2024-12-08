@@ -22,10 +22,11 @@ import { listWorlds } from "~/data/convexProxy/world.server"
 // Export as the root route loader
 export const loader: LoaderFunction = (args: LoaderFunctionArgs) => rootAuthLoader(args, async () => {
   const CONVEX_URL = process.env["CONVEX_URL"]!;
-
+  const CONVEX_SITE_URL = process.env["CONVEX_SITE_URL"]!;
   const worlds = await listWorlds()
   return {
     ENV: {
+      CONVEX_SITE_URL,
       CONVEX_URL,
     },
     initWorlds: worlds,
