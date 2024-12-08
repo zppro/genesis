@@ -5,7 +5,7 @@ import { Separator } from "~/components/ui/separator"
 import { cn } from "~/lib/utils"
 import { Link, useRouteLoaderData } from "@remix-run/react";
 import { type SceneDoc } from "@/world/scenes"
-import { loader } from "~/routes/world.$worldId.scene"
+import { loader } from "~/routes/world.$worldId.scene/route"
 import { useState } from "react";
 
 export default function SceneScrollList({ scenes }: { scenes: SceneDoc[] }) {

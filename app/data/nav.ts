@@ -39,7 +39,7 @@ export const appNavItems = (worldId: WorldId) => {
       items: [
         {
           title: "Map",
-          url: `${baseUrl}/resource?type=map`,
+          url: `${baseUrl}/resource/map`,
         },
         {
           title: "Get Started",

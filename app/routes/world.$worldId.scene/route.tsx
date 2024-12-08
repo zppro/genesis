@@ -9,7 +9,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
-import SceneScrollList from "~/routes/world.$worldId.scene.list"
+import SceneScrollList from "~/routes/world.$worldId.scene/list"
 
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -30,7 +30,7 @@ export default function Scene() {
       <ResizablePanelGroup
         direction="horizontal"
         className="h-full  items-stretch"
-        // max-h-[800px]
+      // max-h-[800px]
       >
         <ResizablePanel defaultSize={25} minSize={25}>
           <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">

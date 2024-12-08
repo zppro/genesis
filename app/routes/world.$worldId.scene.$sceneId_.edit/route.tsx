@@ -4,9 +4,8 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import SceneForm from "~/components/forms/scene-form"
+import SceneForm from "~/routes/world.$worldId.scene.$sceneId/form"
 import { z } from "zod";
-import { parseMutationArgumentErrorsToObject, parseConvexErrorToString } from "@/error";
 import { getWorldScene, updateWorldScene } from "~/data/convexProxy/scene.server"
 import { type SceneId, type UpdateArgs, table } from "@/world/scenes";
 import formcssHref from "~/form.css?url";

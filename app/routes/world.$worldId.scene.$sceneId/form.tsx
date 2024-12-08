@@ -19,7 +19,7 @@ export default function SceneForm<T extends z.AnyZodObject>({ children, errors, 
   const debouncedHandleChange = debounce((formData) => {
     const formPayload = Object.fromEntries(formData)
     const result = schema.safeParse(formPayload);
-    setInnerErrors(result.success ? undefined : {...result.error.formErrors.fieldErrors})
+    setInnerErrors(result.success ? undefined : { ...result.error.formErrors.fieldErrors })
   }, 200);
 
   function handleChange(e: React.FormEvent<HTMLFormElement>) {
@@ -41,7 +41,7 @@ export default function SceneForm<T extends z.AnyZodObject>({ children, errors, 
     <Form method="post" onChange={handleChange} className="flex flex-col h-full">
       {children}
       <ScrollArea className="h-full">
-        
+
         <div className="w-[350px] p-2">
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">

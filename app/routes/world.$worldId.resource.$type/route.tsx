@@ -12,16 +12,14 @@ import { ResourceTypes } from "@/world/resources";
 
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  let type = url.searchParams.get("type");
-  if (!type) {
-    throw new Error("invalid search param!");
-  }
-  const { worldId } = params;
+  const { worldId, type } = params;
   if (!worldId) {
-    throw new Error("invalid params!");
+    throw new Error("invalid world params!");
   }
-  console.log('resource worldId=>', worldId)
+  if (!type) {
+    throw new Error("invalid type param!");
+  }
+  console.log('resource params=>', worldId, type)
   const resources = await listWorldResourcsByType(worldId as WorldId, type as ResourceTypes)
 
   return { worldId: worldId as WorldId, type: type as ResourceTypes, resources }
