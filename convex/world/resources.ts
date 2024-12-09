@@ -22,7 +22,7 @@ export const resourceSerialized = {
   url: v.optional(v.string()),
 };
 const { url: _url, ...insertArgs } = resourceSerialized
-const { worldId: _, ..._updateArgs } = insertArgs
+const { worldId: _, type: _type, ..._updateArgs } = insertArgs
 const updateArgs = { id: idResource, ..._updateArgs }
 const deleteArgs = { id: idResource }
 
@@ -87,17 +87,24 @@ export const update = mutation({
     }
     if (args.storageId !== entity.storageId) {
       const url = await ctx.storage.getUrl(args.storageId) ?? undefined
-      return await ctx.db.patch(id, { ...patchData, url });
+      await ctx.db.patch(id, { ...patchData, url });
+      await ctx.storage.delete(entity.storageId)
+      // 删除旧的stoargeId
     } else {
-      return await ctx.db.patch(id, patchData);
+      await ctx.db.patch(id, patchData);
     }
-
   },
 });
 
 export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.delete(args.id);
+    const { id } = args
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    }
+    await ctx.db.delete(id);
+    await ctx.storage.delete(entity.storageId)
   },
 });

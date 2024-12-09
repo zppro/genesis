@@ -32,14 +32,13 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
   }, 200);
 
   function handleChange(e: React.FormEvent<HTMLFormElement>) {
-    console.log('new FormData(e.currentTarget)=>', new FormData(e.currentTarget))
     debouncedHandleChange(new FormData(e.currentTarget));
   }
 
   useEffect(() => {
     if (errors?.["__err__"]) {
       toast({
-        title: "create resource error:",
+        title: "save resource error:",
         description: errors["__err__"],
         variant: "destructive",
       })
@@ -93,6 +92,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name" className="capitalize">{type}<span className="text-red-500">*</span></Label>
+              {resource?.url? (resource.type === "map"? <img src={resource.url} className="resource-map" />: null) : null}
               <input
                 type="file"
                 accept={type === "music" ? "audio/*" : "image/*"}

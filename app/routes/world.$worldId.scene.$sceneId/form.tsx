@@ -23,7 +23,6 @@ export default function SceneForm<T extends z.AnyZodObject>({ children, errors, 
   }, 200);
 
   function handleChange(e: React.FormEvent<HTMLFormElement>) {
-    console.log('new FormData(e.currentTarget)=>', new FormData(e.currentTarget))
     debouncedHandleChange(new FormData(e.currentTarget));
   }
 

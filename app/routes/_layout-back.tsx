@@ -27,7 +27,6 @@ import { api } from "@/_generated/api";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const worlds = useQuery(api.worlds.list);
-  console.log('worlds=>', worlds)
   return (
     <SidebarProvider>
       <AppSidebar navMain={[]} worlds={[]} />

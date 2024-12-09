@@ -3,7 +3,6 @@ import { ConvexError } from "convex/values";
 
 export function GetOneErrorBoundary() {
   const error = useRouteError();
-  console.log('GetOneErrorBoundary err:', error)
   if (isRouteErrorResponse(error)) {
     switch (error.status) {
       case 404:

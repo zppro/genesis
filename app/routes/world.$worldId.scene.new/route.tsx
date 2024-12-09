@@ -24,7 +24,6 @@ export async function action({
 }: ActionFunctionArgs) {
   const { worldId } = params;
   const formData = await request.formData();
-  console.log('new formData=>', formData)
   const formPayload = { ...Object.fromEntries(formData), worldId }
   let errors: Record<string, any> = {}
   const result = createSceneFormSchema.safeParse(formPayload);
@@ -32,7 +31,6 @@ export async function action({
     try {
       const newSceneId = await createWorldScene(formPayload as InsertArgs)
       // const newSceneId = ''
-      console.log("newSceneId=>", newSceneId)
       return redirect(`/world/${worldId}/scene/${newSceneId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
@@ -67,12 +65,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 
 export default function NewScene() {
-  console.log("in new")
   const { worldId } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/scene/new`;
-  console.log(isSubmitting)
   return (
     <div className="h-full">
       <SceneForm errors={actionData?.errors} schema={createSceneFormSchema}>

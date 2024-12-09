@@ -68,12 +68,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 
 export default function NewScene() {
-  console.log("resouce in new")
   const { worldId, type } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/resource/new`;
-  console.log(isSubmitting)
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/resource/${type}/new`;
   return (
     <div className="h-full">
       <ResourceForm errors={actionData?.errors} type={type} schema={createSceneFormSchema}>

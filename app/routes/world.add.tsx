@@ -51,7 +51,6 @@ const createWorldFormSchema = z.object({
 
 export default function AddWorld() {
   const rootContext = useRootContext()
-  console.log("world add rootContext=>", rootContext)
   const navigate = useNavigate();
   const navigation = useNavigation();
   const { toast } = useToast()
@@ -62,7 +61,6 @@ export default function AddWorld() {
 
   const debouncedHandleChange = debounce((formData) => {
     const formPayload = Object.fromEntries(formData)
-    // console.log('changed formPayload=>', formPayload)
     const result = createWorldFormSchema.safeParse(formPayload);
     setErrors(result.success ? {} : result.error.formErrors.fieldErrors)
   }, 200);
@@ -75,12 +73,10 @@ export default function AddWorld() {
     e.preventDefault();
     let formData = new FormData(e.currentTarget);
     const formPayload = Object.fromEntries(formData)
-    console.log('formPayload=>', formPayload)
     const result = createWorldFormSchema.safeParse(formPayload);
     if (result.success) {
       try {
         const newWorldId = await createFunc(formPayload as InsertArgs)
-        console.log("newWorldId=>", newWorldId)
         typeof setLocalWorldId === 'function' && setLocalWorldId(newWorldId)
         navigate(`/world/${newWorldId}/dashboard`)
       } catch (error) {

@@ -12,7 +12,6 @@ export async function loader({
   params,
 }: LoaderFunctionArgs) {
   const { resourceId } = params;
-  console.log("$resourceId page =====")
   // let resource: ResourceDoc | null = null
   let resource = null
   try {
@@ -42,7 +41,6 @@ export function ErrorBoundary() {
 }
 
 export default function Index() {
-  console.log("$resourceId page")
   const { resource } = useLoaderData<typeof loader>();
   return (
     <div className="flex h-full items-start flex-col">

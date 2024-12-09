@@ -10,7 +10,6 @@ import { useEffect } from 'react';
 import { hasNoWorld } from "~/data/convexProxy/world.server"
 
 export const loader: LoaderFunction = async (args) => {
-  console.log('_index')
   const { userId } = await getAuth(args)
   if (!userId) {
     return redirect('/sign-in')

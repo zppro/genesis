@@ -17,7 +17,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid params!");
   }
-  console.log('scene worldId=>', worldId)
   const scenes = await listWorldScenes(worldId as WorldId)
 
   return { worldId, scenes }

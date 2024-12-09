@@ -2,9 +2,6 @@ import { ConvexError } from "convex/values";
 
 
 export const parseConvexErrorToString = (error: any, failMsg: string = "Unexpected error occurred") => {
-  console.log('error=>', error.message.length)
-
-  console.log('error.cause=>', Object.keys(error))
   return error instanceof ConvexError // Check whether the error is an application error
     ? // Access data and cast it to the type we expect
     (error.data as { message: string }).message

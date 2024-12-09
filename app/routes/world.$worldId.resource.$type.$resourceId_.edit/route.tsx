@@ -4,10 +4,10 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import SceneForm from "~/routes/world.$worldId.scene.$sceneId/form"
+import SceneForm from "~/routes/world.$worldId.resource.$type/form"
 import { z } from "zod";
-import { getWorldScene, updateWorldScene } from "~/data/convexProxy/scene.server"
-import { type SceneId, type UpdateArgs, table } from "@/world/scenes";
+import { getWorldResource, updateWorldResource } from "~/data/convexProxy/resource.server"
+import { type ResourceId, type UpdateArgs, table } from "@/world/resources";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
@@ -20,21 +20,31 @@ export const links: LinksFunction = () => [
 const updateSceneFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   desc: z.string(),
+  storageId: z.string().min(1, { message: "File is required" })
 });
 
 export async function action({
   request,
   params,
 }: ActionFunctionArgs) {
-  const { worldId, sceneId } = params;
+  const { worldId, type, resourceId } = params;
+  if (!worldId) {
+    throw new Error("invalid world params!");
+  }
+  if (!type) {
+    throw new Error("invalid type param!");
+  }
+  if (!resourceId) {
+    throw new Error("invalid resourceId param!");
+  }
   const formData = await request.formData();
-  const formPayload = { ...Object.fromEntries(formData), id: sceneId as SceneId }
+  const formPayload = { ...Object.fromEntries(formData), id: resourceId as ResourceId }
   let errors: Record<string, any> = {}
   const result = updateSceneFormSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      await updateWorldScene(formPayload as UpdateArgs)
-      return redirect(`/world/${worldId}/scene/${sceneId}`)
+      await updateWorldResource(formPayload as UpdateArgs)
+      return redirect(`/world/${worldId}/resource/${type}/${resourceId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(updateSceneFormSchema.keyof())
@@ -52,10 +62,20 @@ export async function action({
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { sceneId } = params;
+  const { worldId, type, resourceId } = params;
+  if (!worldId) {
+    throw new Error("invalid world params!");
+  }
+  if (!type) {
+    throw new Error("invalid type param!");
+  }
+  if (!resourceId) {
+    throw new Error("invalid resourceId param!");
+  }
+
+  let resource = null
   try {
-    const scene = await getWorldScene(sceneId as SceneId)
-    return { scene }
+    resource = await getWorldResource(resourceId as ResourceId)
   } catch (error) {
     let isNotFoundError = parseIsNotFoundRecordError(error)
     if (isNotFoundError) {
@@ -65,6 +85,14 @@ export async function loader({
       });
     }
     throw error
+  } finally {
+    if (resource === null) {
+      throw new Response(null, {
+        status: 404,
+        statusText: "Not Found",
+      });
+    }
+    return { resource }
   }
 }
 
@@ -74,13 +102,13 @@ export function ErrorBoundary() {
 
 
 export default function EditScene() {
-  const { scene } = useLoaderData<typeof loader>();
+  const { resource } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${scene?.worldId}/scene/${scene?._id}/edit`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${resource?.worldId}/resource/${resource?.type}/${resource?._id}/edit`;
   return (
     <div className="h-full">
-      <SceneForm errors={actionData?.errors} scene={scene!} schema={updateSceneFormSchema}>
+      <SceneForm errors={actionData?.errors} resource={resource!} type={resource.type} schema={updateSceneFormSchema}>
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />
       </SceneForm>

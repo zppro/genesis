@@ -19,7 +19,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!type) {
     throw new Error("invalid type param!");
   }
-  console.log('resource params=>', worldId, type)
   const resources = await listWorldResourcsByType(worldId as WorldId, type as ResourceTypes)
 
   return { worldId: worldId as WorldId, type: type as ResourceTypes, resources }
