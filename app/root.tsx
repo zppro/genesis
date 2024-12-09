@@ -17,6 +17,7 @@ import { Toaster } from "~/components/ui/toaster"
 import { useLocalStorage } from "~/hooks/use-localStorage"
 import { type WorldDoc } from "@/worlds"
 import tailwindHref from "./tailwind.css?url";
+import globalHref from "./global.css?url";
 import { listWorlds } from "~/data/convexProxy/world.server"
 
 // Export as the root route loader
@@ -39,6 +40,7 @@ export function useRootLoaderData() {
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: tailwindHref },
+  { rel: "stylesheet", href: globalHref },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

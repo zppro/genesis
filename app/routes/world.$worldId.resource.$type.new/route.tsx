@@ -43,7 +43,7 @@ export async function action({
       const newResourceId = await createWorldResource(formPayload as InsertArgs)
       // const newSceneId = ''
       console.log("newResourceId=>", newResourceId)
-      return redirect(`/world/${worldId}/resource/${newResourceId}?type=${type}`)
+      return redirect(`/world/${worldId}/resource/${type}/${newResourceId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(createSceneFormSchema.keyof())

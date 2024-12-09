@@ -28,7 +28,7 @@ export default function SceneScrollList({ worldId, type, resources }: { worldId:
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search" className="pl-8" />
-            <Link to={`/world/${worldId}/resource/new?type=${type}`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
+            <Link to={`/world/${worldId}/resource/${type}/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
           </div>
         </form>
       </div>
@@ -37,7 +37,7 @@ export default function SceneScrollList({ worldId, type, resources }: { worldId:
           {resources.map((item) => (
             <Link
               key={item._id}
-              to={`/world/${worldId}/resource/${item._id}`}
+              to={`/world/${worldId}/resource/${item.type}/${item._id}`}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
                 // mail.selected === item._id && "bg-muted"
@@ -77,12 +77,12 @@ export default function SceneScrollList({ worldId, type, resources }: { worldId:
             <PaginationItem>
               <PaginationPrevious href="#" />
             </PaginationItem>
-            <PaginationItem>
+            {/* <PaginationItem>
               <PaginationLink href="#">1</PaginationLink>
             </PaginationItem>
             <PaginationItem>
               <PaginationEllipsis />
-            </PaginationItem>
+            </PaginationItem> */}
             <PaginationItem>
               <PaginationNext href="#" />
             </PaginationItem>

@@ -95,6 +95,7 @@ export default function AddWorld() {
         toast({
           title: "create world error:",
           description: errorMessage,
+          variant: "destructive",
         })
       }
     } else {

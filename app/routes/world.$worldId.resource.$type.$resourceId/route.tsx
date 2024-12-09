@@ -59,7 +59,7 @@ export default function Index() {
         </div>
         <Separator />
         <div className="p-4">
-          {resource?.url ? <img src={resource.url} height="300px" width="auto" /> : null}
+          {resource?.url ? <img src={resource.url} className="resource-map" /> : null}
         </div>
         <div className="flex-1 whitespace-pre-wrap p-4 text-sm">
           {resource?.desc}

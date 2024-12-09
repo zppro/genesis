@@ -32,6 +32,7 @@ export default function SceneForm<T extends z.AnyZodObject>({ children, errors, 
       toast({
         title: "create world error:",
         description: errors["__err__"],
+        variant: "destructive",
       })
     }
     return () => { }

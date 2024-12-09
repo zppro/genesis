@@ -41,6 +41,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
       toast({
         title: "create resource error:",
         description: errors["__err__"],
+        variant: "destructive",
       })
     }
     return () => { }
@@ -70,7 +71,15 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
       imageInput.current!.value = "";
       console.log('after formPayload=>', Object.fromEntries(formData))
       console.log("==exit handleSendImage==")
-
+    }
+    if (!storageIdInput.current!.value) {
+      toast({
+        title: "create resource error:",
+        description: "not set resource!!!",
+        variant: "destructive",
+      })
+      setInnerErrors({"__resource__": "not set resource!"})
+      return
     }
     submit(formData, { method: "post" })
   }
@@ -95,6 +104,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
                 ref={imageInput}
                 onChange={(event) => setSelectedImage(event.target.files![0])}
                 disabled={selectedImage !== null}
+                className={innerErrors?.["__resource__"] ? "form-input-err" : undefined}
               />
               {resource?.url ? <img src={resource?.url} height="300px" width="auto" /> : null}
             </div>
