@@ -4,11 +4,12 @@ import ResourceForm from "~/routes/world.$worldId.resource.$type/form"
 import { z, type ZodObject } from "zod";
 import { parseMutationArgumentErrorsToObject, parseConvexErrorToString } from "@/error";
 import { createWorldResource } from "~/data/convexProxy/resource.server"
-import { type InsertArgs, table } from "@/world/resources";
+import { type InsertArgs, ResourceTypes, table } from "@/world/resources";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
+import { WorldId } from "@/worlds";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -31,18 +32,14 @@ export async function action({
   if (!type) {
     throw new Error("invalid type param!");
   }
-  console.log('action resource params=>', worldId, type)
-
   const formData = await request.formData();
   const formPayload = { ...Object.fromEntries(formData), worldId, type }
-  console.log('new formPayload=>', formPayload)
+  // console.log('new formPayload=>', formPayload)
   let errors: Record<string, any> = {}
   const result = createSceneFormSchema.safeParse(formPayload);
   if (result.success) {
     try {
       const newResourceId = await createWorldResource(formPayload as InsertArgs)
-      // const newSceneId = ''
-      console.log("newResourceId=>", newResourceId)
       return redirect(`/world/${worldId}/resource/${type}/${newResourceId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
@@ -58,25 +55,28 @@ export async function action({
 }
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const { worldId } = params;
+  const { worldId, type } = params;
   if (!worldId) {
-    throw new Error("invalid params!");
+    throw new Error("invalid world params!");
   }
-  return { worldId }
+  if (!type) {
+    throw new Error("invalid type param!");
+  }
+  return { worldId: worldId as WorldId, type: type as ResourceTypes }
 }
 
 
 
 export default function NewScene() {
   console.log("resouce in new")
-  const { worldId } = useLoaderData<typeof loader>();
+  const { worldId, type } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/resource/new`;
   console.log(isSubmitting)
   return (
     <div className="h-full">
-      <ResourceForm errors={actionData?.errors} schema={createSceneFormSchema}>
+      <ResourceForm errors={actionData?.errors} type={type} schema={createSceneFormSchema}>
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />
       </ResourceForm>

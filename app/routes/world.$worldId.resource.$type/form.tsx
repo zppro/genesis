@@ -8,19 +8,19 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import debounce from "debounce"
-import { type ResourceDoc } from "@/world/resources";
+import { type ResourceDoc, type ResourceTypes } from "@/world/resources";
 import { api } from "@/_generated/api";
 import { useMutation } from "convex/react";
 
-export default function ResourceForm<T extends z.AnyZodObject>({ children, errors, resource, schema }: { children?: React.ReactNode, errors?: Record<string, any>, resource?: ResourceDoc, schema: T }) {
+export default function ResourceForm<T extends z.AnyZodObject>({ children, errors, resource, type, schema }: { children?: React.ReactNode, errors?: Record<string, any>, resource?: ResourceDoc, type: ResourceTypes, schema: T }) {
   const { toast } = useToast()
   const submit = useSubmit();
   // console.log('errors=>', errors)
   const [innerErrors, setInnerErrors] = useState(errors)
 
-  const imageInput = useRef<HTMLInputElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const storageIdInput = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const generateUploadUrl = useMutation(api.world.resources.generateUploadUrl);
 
   // console.log('innerErrors=>', innerErrors)
@@ -47,30 +47,25 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
     return () => { }
   }, [errors?.["__err__"]])
 
-  async function handleSendImage(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSendFile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log('selectedImage=>', selectedImage)
+    /// todo: file-size file-suffix can control and save to db
     const formData = new FormData(e.currentTarget);
-    if (selectedImage) {
+    if (selectedFile) {
       // Step 1: Get a short-lived upload URL
       const postUrl = await generateUploadUrl();
       // // Step 2: POST the file to the URL
       const result = await fetch(postUrl, {
         method: "POST",
-        headers: { "Content-Type": selectedImage!.type },
-        body: selectedImage,
+        headers: { "Content-Type": selectedFile!.type },
+        body: selectedFile,
       });
       const { storageId } = await result.json();
-      console.log('storageId=>', storageId)
-
       formData.append('storageId', storageId);
-
       // // Step 3: Save the newly allocated storage id to the database
       storageIdInput.current!.value = storageId
-      setSelectedImage(null);
-      imageInput.current!.value = "";
-      console.log('after formPayload=>', Object.fromEntries(formData))
-      console.log("==exit handleSendImage==")
+      setSelectedFile(null);
+      fileInput.current!.value = "";
     }
     if (!storageIdInput.current!.value) {
       toast({
@@ -78,14 +73,14 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
         description: "not set resource!!!",
         variant: "destructive",
       })
-      setInnerErrors({"__resource__": "not set resource!"})
+      setInnerErrors({ "__resource__": "not set resource!" })
       return
     }
     submit(formData, { method: "post" })
   }
 
   return (
-    <Form method="post" onSubmit={handleSendImage} onChange={handleChange} className="flex flex-col h-full">
+    <Form method="post" onSubmit={handleSendFile} onChange={handleChange} className="flex flex-col h-full">
       {children}
       <ScrollArea className="h-full">
         <input name="storageId" ref={storageIdInput} type="hidden" defaultValue={resource?.storageId} />
@@ -97,16 +92,15 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
               {innerErrors?.name ? <FormErrorTip tip={innerErrors.name} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Image<span className="text-red-500">*</span></Label>
+              <Label htmlFor="name" className="capitalize">{type}<span className="text-red-500">*</span></Label>
               <input
                 type="file"
-                accept="image/*"
-                ref={imageInput}
-                onChange={(event) => setSelectedImage(event.target.files![0])}
-                disabled={selectedImage !== null}
+                accept={type === "music" ? "audio/*" : "image/*"}
+                ref={fileInput}
+                onChange={(event) => setSelectedFile(event.target.files![0])}
+                disabled={selectedFile !== null}
                 className={innerErrors?.["__resource__"] ? "form-input-err" : undefined}
               />
-              {resource?.url ? <img src={resource?.url} height="300px" width="auto" /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="desc">Description</Label>
