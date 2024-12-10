@@ -15,3 +15,13 @@ export function CreateConfirm(tip: string) {
     }
   }
 }
+
+export function calcFileSize(n: number) {
+  if (n < 1e3) {
+    return `${n} bytes`;
+  } else if (n >= 1e3 && n < 1e6) {
+    return `${(n / 1e3).toFixed(1)} KB`;
+  } else {
+    return `${(n / 1e6).toFixed(1)} MB`;
+  }
+}

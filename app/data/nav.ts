@@ -38,12 +38,12 @@ export const appNavItems = (worldId: WorldId) => {
       icon: Map,
       items: [
         {
-          title: "Map",
-          url: `${baseUrl}/resource/map`,
+          title: "TileSets",
+          url: `${baseUrl}/resource/tileset`,
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "TileMaps",
+          url: `${baseUrl}/resource/tilemap`,
         },
         {
           title: "Tutorials",

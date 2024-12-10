@@ -10,7 +10,9 @@ export const indexName_ByWorldId = 'byWorldId';
 export const indexName_ByWorldIdAndType = 'byWorldIdAndType';
 export const idResource = v.id(table);
 
-export const RESOURCE_TYPES = ['map', 'item', 'music'] as const
+// tileset => tile png
+// tilemap => tilemap.json
+export const RESOURCE_TYPES = ['tileset', 'tilemap', 'item', 'music'] as const
 const VResourceTypes = v.union(...RESOURCE_TYPES.map(t => v.literal(t)))
 
 export const resourceSerialized = {

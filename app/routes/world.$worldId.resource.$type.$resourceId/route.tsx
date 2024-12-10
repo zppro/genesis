@@ -7,6 +7,7 @@ import { type ResourceId, table } from "@/world/resources";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import { FileJson, FileAudio } from "lucide-react"
 
 export async function loader({
   params,
@@ -57,7 +58,15 @@ export default function Index() {
         </div>
         <Separator />
         <div className="p-4">
-          {resource?.url ? <img src={resource.url} className="resource-map" /> : null}
+          {
+            resource?.url ? (
+              <div>
+                {resource.type === "tileset" || resource.type === "item" ? <img src={resource.url} className="resource-tileset" /> : null}
+                {resource.type === "tilemap" ? <a href={resource.url}><FileJson className="h-12 w-12" /></a> : null}
+                {resource.type === "music" ? <a href={resource.url}><FileAudio className="h-12 w-12" /></a> : null}
+              </div>
+            ) : null
+          }
         </div>
         <div className="flex-1 whitespace-pre-wrap p-4 text-sm">
           {resource?.desc}

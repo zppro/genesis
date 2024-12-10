@@ -4,3 +4,7 @@
 .form-input-err {
   @apply border-2 border-red-500 focus:border-red-500 focus:ring-red-500;
 }
+
+.form-label-err {
+  @apply text-red-500;
+}
