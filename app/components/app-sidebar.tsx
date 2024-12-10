@@ -28,7 +28,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "~/components/ui/sidebar"
-import type { SerializedWorld } from "@/worlds"
+import type { SerializedWorld, WorldId } from "@/worlds"
 import { type WorldDoc } from "@/worlds"
 // This is sample data.
 const data = {

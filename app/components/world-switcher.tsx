@@ -1,4 +1,4 @@
-import * as React from "react"
+import { useState, useEffect } from "react"
 import { ChevronsUpDown, Plus, Globe } from "lucide-react"
 
 import {
@@ -17,7 +17,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { useLocalStorage } from "~/hooks/use-localStorage"
-import { type WorldDoc } from "@/worlds"
+import type { WorldDoc } from "@/worlds"
 
 export function WorldSwitcher({
   worlds,
@@ -30,7 +30,11 @@ export function WorldSwitcher({
   if (localWorldId) {
     defaultWorld = worlds.find(w => w._id === localWorldId) ?? defaultWorld
   }
-  const [activeWorld, setActiveWorld] = React.useState(defaultWorld)
+  const [activeWorld, setActiveWorld] = useState(defaultWorld)
+
+  useEffect(() => {
+    setActiveWorld(defaultWorld)
+  }, [defaultWorld])
 
   return (
     <SidebarMenu>

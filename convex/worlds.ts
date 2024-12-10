@@ -47,6 +47,13 @@ export const createWorld = action({
   },
 });
 
+export const read = query({
+  args: { id: idWorld },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 export const list = query({
   handler: async (ctx) => {
     return await ctx.db.query(table).collect();
@@ -60,8 +67,7 @@ export const listWorlds = action({
   },
 });
 
-
-export const update = internalMutation({
+export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
@@ -73,12 +79,24 @@ export const update = internalMutation({
   },
 });
 
-export const updateWorld = action({
-  args: updateArgs,
-  handler: async (ctx, args) => {
-    await ctx.runMutation(internal.worlds.update, args);
-  },
-});
+// export const update = internalMutation({
+//   args: updateArgs,
+//   handler: async (ctx, args) => {
+//     const { id, ...patchData } = args
+//     const entity = await ctx.db.get(id);
+//     if (!entity) {
+//       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+//     }
+//     return await ctx.db.patch(id, patchData);
+//   },
+// });
+
+// export const updateWorld = action({
+//   args: updateArgs,
+//   handler: async (ctx, args) => {
+//     await ctx.runMutation(internal.worlds.update, args);
+//   },
+// });
 
 export const delete_ = internalMutation({
   args: deleteArgs,

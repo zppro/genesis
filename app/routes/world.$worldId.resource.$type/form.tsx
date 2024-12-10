@@ -142,7 +142,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
-              <Input id="name" ref={nameInput} name="name" defaultValue={resource?.name} placeholder="Name of your scene" className={innerErrors?.name ? "form-input-err" : undefined} />
+              <Input id="name" ref={nameInput} name="name" defaultValue={resource?.name} placeholder="Name of your world" className={innerErrors?.name ? "form-input-err" : undefined} />
               {innerErrors?.name ? <FormErrorTip tip={innerErrors.name} /> : null}
             </div>
             {resource?.url ? <div className="flex flex-col space-y-1.5">
@@ -177,7 +177,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="desc">Description</Label>
-              <Textarea id="desc" name="desc" defaultValue={resource?.desc} placeholder="Description of your scene" />
+              <Textarea id="desc" name="desc" defaultValue={resource?.desc} placeholder="Description of your world" />
             </div>
           </div>
         </div>

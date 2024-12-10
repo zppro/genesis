@@ -123,7 +123,7 @@ export const appNavItems = (worldId: WorldId) => {
       items: [
         {
           title: "General",
-          url: "#",
+          url: `${baseUrl}/settings`,
         },
         {
           title: "Team",
