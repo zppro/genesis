@@ -14,8 +14,8 @@ export const getWorldResource = async (id: ResourceId) => {
 }
 
 export const listWorldResourcsByType = async (worldId: WorldId, type: ResourceTypes) => {
-  const scenes = await proxy().query(api.world.resources.list, { worldId, type })
-  return scenes
+  const resources = await proxy().query(api.world.resources.list, { worldId, type })
+  return resources
 }
 
 export const createWorldResource = async (args: InsertArgs) => {

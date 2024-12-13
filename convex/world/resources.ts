@@ -3,7 +3,7 @@ import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
-import { idStorage, StorageId } from "../shared/types"
+import { idStorage, StorageId } from "../shared/storage"
 
 export const table = 'resources';
 export const indexName_ByWorldId = 'byWorldId';
@@ -32,7 +32,7 @@ export type ResouceTable = typeof table
 export type ResourceId = Id<ResouceTable>
 export type ResourceDoc = Doc<ResouceTable>
 export type ResourceTypes = typeof RESOURCE_TYPES[number];
-export type SerializedScene = ObjectType<typeof resourceSerialized>;
+export type SerializedResource = ObjectType<typeof resourceSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;

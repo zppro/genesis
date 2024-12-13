@@ -1,10 +1,9 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import ResourceForm from "~/routes/world.$worldId.resource.$type/form"
-import { z, type ZodObject } from "zod";
-import { parseMutationArgumentErrorsToObject, parseConvexErrorToString } from "@/error";
-import { createWorldResource } from "~/data/convexProxy/resource.server"
-import { type InsertArgs, ResourceTypes, table } from "@/world/resources";
+import CharacterForm from "~/routes/world.$worldId.character/form"
+import { z } from "zod";
+import { createWorldCharacter } from "~/data/convexProxy/character.server"
+import { type InsertArgs, table } from "@/world/characters";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
@@ -16,9 +15,10 @@ export const links: LinksFunction = () => [
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  desc: z.string(),
+  speed: z.number().gt(0),
   worldId: z.string(),
-  storageId: z.string(),
+  textureStorageId: z.string(),
+  spritesheetStorageId: z.string(),
 });
 
 export async function action({
@@ -29,18 +29,15 @@ export async function action({
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!type) {
-    throw new Error("invalid type param!");
-  }
   const formData = await request.formData();
-  const formPayload = { ...Object.fromEntries(formData), worldId, type }
+  const formPayload = { ...Object.fromEntries(formData), worldId }
   // console.log('new formPayload=>', formPayload)
   let errors: Record<string, any> = {}
   const result = createSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      const newResourceId = await createWorldResource(formPayload as InsertArgs)
-      return redirect(`/world/${worldId}/resource/${type}/${newResourceId}`)
+      const newCharacterId = await createWorldCharacter(formPayload as InsertArgs)
+      return redirect(`/world/${worldId}/character/${newCharacterId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(createSchema.keyof())
@@ -55,29 +52,26 @@ export async function action({
 }
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const { worldId, type } = params;
+  const { worldId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!type) {
-    throw new Error("invalid type param!");
-  }
-  return { worldId: worldId as WorldId, type: type as ResourceTypes }
+  return { worldId: worldId as WorldId }
 }
 
 
 
 export default function NewScene() {
-  const { worldId, type } = useLoaderData<typeof loader>();
+  const { worldId } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/resource/${type}/new`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/character/new`;
   return (
     <div className="h-full">
-      <ResourceForm errors={actionData?.errors} type={type} schema={createSchema}>
+      <CharacterForm errors={actionData?.errors} schema={createSchema}>
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />
-      </ResourceForm>
+      </CharacterForm>
     </div>
   )
 }
