@@ -8,6 +8,8 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { FileJson, FileAudio } from "lucide-react"
+import { ImageDialog }  from "~/components/ui/image-dialog";
+import { useState } from "react";
 
 export async function loader({
   params,
@@ -57,13 +59,7 @@ export default function Index() {
         </div>
         <Separator />
         <div className="p-4">
-          {
-            texture?.url ? (
-              <div>
-                <img src={texture.url} className="image-file" />
-              </div>
-            ) : null
-          }
+          <ImageDialog src={texture?.url} maxWidth={400} maxHeight={300} />
         </div>
         <Separator className="mt-auto" />
         <div className="p-2">
