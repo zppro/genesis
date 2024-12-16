@@ -6,6 +6,7 @@ import {
   Music,
   SquareUserRound,
   Sword,
+  Boxes
 } from "lucide-react"
 import type { NavItem } from "~/components/nav-main"
 
@@ -112,6 +113,21 @@ export const appNavItems = (worldId: WorldId) => {
         },
         {
           title: "Changelog",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Materials",
+      url: "#",
+      icon: Boxes,
+      items: [
+        {
+          title: "Textures",
+          url: `${baseUrl}/texture`,
+        },
+        {
+          title: "Spritesheets",
           url: "#",
         },
       ],
