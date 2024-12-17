@@ -27,11 +27,25 @@ export const parseIsNotFoundRecordError = (error: any) => {
 
 export const parseMutationArgumentErrorsToObject = (error: any, failMsg: string = "Unexpected error occurred") => {
   const cleared = ClearBr(error.message)
-  return (error instanceof Error && cleared.includes("ArgumentValidationError:") ? { [extractArgumentFields(cleared)]: extractValidateMsg(cleared) } : null);
+  // console.log('cleared:', cleared)
+  let key = extractArgumentFields(cleared)
+  let msg = 'fk validator not match'
+  if (!key) {
+    key = extractArgumentFieldAsFK(cleared)
+  } else {
+    msg = extractValidateMsg(cleared)
+  }
+  return (error instanceof Error && cleared.includes("ArgumentValidationError:") ? { [key]: msg } : null);
 }
 
 const extractArgumentFields = (str: string) => {
   const regexp = /ArgumentValidationError:.*`(\S+)`/gm;
+  const array = [...str.matchAll(regexp)];
+  return array.map(m => m[1]).join();
+}
+
+const extractArgumentFieldAsFK = (str: string) => {
+  const regexp = /ArgumentValidationError:.*Path:[\s]*\.(\S*)Value:.*Validator:[\s]*v.id\(\"/gm;
   const array = [...str.matchAll(regexp)];
   return array.map(m => m[1]).join();
 }

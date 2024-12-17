@@ -37,7 +37,7 @@ export async function action({
       return redirect(`/world/${worldId}/scene/${sceneId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(updateSceneFormSchema.keyof())
+      const fields = Object.keys(updateSceneFormSchema.keyof().Values)
       errors = parseFormError(error, fields)
     }
   } else {

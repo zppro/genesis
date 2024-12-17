@@ -34,7 +34,7 @@ export async function action({
       return redirect(`/world/${worldId}/scene/${newSceneId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(createSceneFormSchema.keyof())
+      const fields = Object.keys(createSceneFormSchema.keyof().Values)
       errors = parseFormError(error, fields)
 
       // let fieldErrors = parseMutationArgumentErrorsToObject(error)

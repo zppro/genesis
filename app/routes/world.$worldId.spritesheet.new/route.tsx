@@ -4,6 +4,7 @@ import SpritesheetForm from "~/routes/world.$worldId.spritesheet/form"
 import { z } from "zod";
 import { zodSpritesheet } from "~/lib/spritesheet";
 import { createWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
+import { listWorldTextures } from "~/data/convexProxy/texture.server"
 import { type InsertArgs, table } from "@/world/spritesheets";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
@@ -11,14 +12,17 @@ import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
 import { WorldId } from "@/worlds";
 import JSON5 from 'json5'
+import { TextureComboxProvider, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
+import debounce from "debounce"
+import { useState, useEffect } from 'react'
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  worldId: z.string(),
-  data: z.string(),
+  textureId: z.string().min(1, { message: "Texture is required" }),
+  data: z.string().min(1, { message: "Spritesheet data is required" }),
 });
 
 export async function action({
@@ -36,13 +40,13 @@ export async function action({
   try {
     data = JSON5.parse(_form["data"].toString());
   } catch (ex) {
-    errors["__err__"] = "parse json err"
+    errors["data"] = "parse json err"
     return { errors }
   }
   const result0 = zodSpritesheet.safeParse(data);
   if (!result0.success) {
     errors = { ...result0.error.formErrors.fieldErrors }
-    errors["__err__"] = "parse json as spritesheet err"
+    errors["data"] = "parse json as spritesheet err"
     console.error(errors)
     return { errors }
   }
@@ -55,7 +59,9 @@ export async function action({
       return redirect(`/world/${worldId}/spritesheet/${newSpritesheetId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(createSchema.keyof())
+      // console.log('createSchema.keyof()=>', createSchema.keyof().Values)
+      const fields = Object.keys(createSchema.keyof().Values)
+
       errors = parseFormError(error, fields)
     }
   } else {
@@ -71,22 +77,56 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  return { worldId: worldId as WorldId }
+  const textures = await listWorldTextures(worldId as WorldId)
+  return { worldId: worldId as WorldId, textures }
 }
 
 
 
 export default function NewTexture() {
-  const { worldId } = useLoaderData<typeof loader>();
+  const { worldId, textures } = useLoaderData<typeof loader>();
+  const items = textures.map<TextureComboxItem>(t => ({
+    textureId: t._id, name: t.name, textureUrl: t.url
+  }))
   const actionData = useActionData<typeof action>();
+  const [errors, setErrors] = useState(actionData?.errors)
+  
+  useEffect(() => {
+    if (actionData && "errors" in actionData) {
+      setErrors(actionData.errors)
+    }
+  }, [actionData])
+
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/spritesheet/new`;
+
+
+  console.log('errors outer=>', errors)
+  const debouncedHandleChange = debounce((formData) => {
+    const formPayload = Object.fromEntries(formData)
+    const result = createSchema.safeParse(formPayload);
+    console.log('==debouncedHandleChange==')
+    setErrors(result.success ? undefined : { ...result.error.formErrors.fieldErrors })
+  }, 200);
+
+  function handleChange(e: React.FormEvent<HTMLFormElement>) {
+    debouncedHandleChange(new FormData(e.currentTarget));
+  }
+  function validateFormData(formData: FormData) {
+    const formPayload = Object.fromEntries(formData)
+    const result = createSchema.safeParse(formPayload);
+    console.log('==debouncedHandleChange==', formPayload, result.error?.formErrors.fieldErrors)
+    setErrors(result.success ? undefined : { ...result.error.formErrors.fieldErrors })
+  }
+
   return (
     <div className="h-full">
-      <SpritesheetForm errors={actionData?.errors} schema={createSchema}>
-        <Toolbar isSubmitting={isSubmitting} entityName={table} />
-        <Separator />
-      </SpritesheetForm>
+      <TextureComboxProvider value={{ items }}>
+        <SpritesheetForm errors={errors} onValidateFormData={validateFormData} schema={createSchema}>
+          <Toolbar isSubmitting={isSubmitting} entityName={table} />
+          <Separator />
+        </SpritesheetForm>
+      </TextureComboxProvider>
     </div>
   )
 }

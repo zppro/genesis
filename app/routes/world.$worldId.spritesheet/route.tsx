@@ -1,4 +1,5 @@
 import { listWorldSpritesheets } from "~/data/convexProxy/spritesheet.server"
+
 import { useLoaderData, Outlet } from "@remix-run/react";
 import {
   ResizableHandle,
@@ -16,6 +17,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Error("invalid world params!");
   }
   const spritesheets = await listWorldSpritesheets(worldId as WorldId)
+  
 
   return { worldId: worldId as WorldId,  spritesheets }
 }

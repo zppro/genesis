@@ -40,7 +40,7 @@ export async function action({
       return redirect(`/world/${worldId}/character/${newCharacterId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(createSchema.keyof())
+      const fields = Object.keys(createSchema.keyof().Values)
       errors = parseFormError(error, fields)
     }
   } else {

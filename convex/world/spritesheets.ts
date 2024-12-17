@@ -1,5 +1,6 @@
 import { ObjectType, v } from 'convex/values';
 import { idWorld } from '../worlds';
+import { idTexture } from "./textures";
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
@@ -7,11 +8,13 @@ import { pixiSpritesheetSerialized } from "../shared/spritesheet"
 
 export const table = 'spritesheets';
 export const indexName_ByWorldId = 'byWorldId';
+export const indexName_ByWorldIdAndTextureId = 'byWorldIdAndTextureId';
 export const idSpritesheet = v.id(table);
 
 export const spritesheetSerialized = {
   name: v.string(),
   worldId: idWorld,
+  textureId: idTexture,
   data: v.string(),
 };
 
@@ -31,6 +34,7 @@ export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(spritesheetSerialized)
   .index(indexName_ByWorldId, ["worldId"])
+  .index(indexName_ByWorldIdAndTextureId, ["worldId", "textureId"])
 
 
 export const create = mutation({
@@ -54,6 +58,18 @@ export const list = query({
     return await ctx.db.query(table).withIndex(indexName_ByWorldId, (q) =>
       q
         .eq("worldId", worldId)
+    ).collect();
+  },
+})
+
+export const listByTexture = query({
+  args: { worldId: idWorld, textureId: idTexture },
+  handler: async (ctx, args) => {
+    const { worldId, textureId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndTextureId, (q) =>
+      q
+        .eq("worldId", worldId)
+        .eq("textureId", textureId)
     ).collect();
   },
 })

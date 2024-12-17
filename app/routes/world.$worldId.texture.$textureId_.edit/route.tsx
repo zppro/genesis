@@ -43,7 +43,7 @@ export async function action({
       return redirect(`/world/${worldId}/texture/${textureId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(updateSchema.keyof())
+      const fields = Object.keys(updateSchema.keyof().Values)
       errors = parseFormError(error, fields)
     }
   } else {
