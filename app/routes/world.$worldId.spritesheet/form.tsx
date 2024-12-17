@@ -10,27 +10,33 @@ import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { cn } from "~/lib/utils";
 import debounce from "debounce"
-
 import ComboboxForTexture from "./combox-for-texture"
 import { useTextureCombox, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
+import { FormErrors, ClientErrors } from "~/lib/errorTypes";
+
 export type SpritesheetFormProps<T extends z.AnyZodObject> = {
   children?: React.ReactNode;
-  errors?: Record<string, any>;
+  errors?: FormErrors;
   spritesheet?: SpritesheetDoc;
   schema: T;
-  onValidateFormData: (formData: FormData) => void;
-  // onSubmitChange: (e: React.FormEvent<HTMLFormElement>) => void;
+  onClientErrors: (clientErrors: ClientErrors) => void;
 }
-export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onValidateFormData }: SpritesheetFormProps<T>) {
+export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onClientErrors }: SpritesheetFormProps<T>) {
   const { toast } = useToast()
   const textureCombox = useTextureCombox()
-  console.log('errors0=>', errors)
   const [textureId, setTextureId] = useState(spritesheet?.textureId)
   const textureIdInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const debouncedHandleChange = debounce(onValidateFormData, 200);
+  function validateFormData(formData: FormData) {
+    const formPayload = Object.fromEntries(formData)
+    const result = schema.safeParse(formPayload);
+    return { ...result.error?.formErrors.fieldErrors }
+  }
 
+  const debouncedHandleChange = debounce((formData) => {
+    onClientErrors(validateFormData(formData))
+  }, 200);
   function handleChange(e: React.FormEvent<HTMLFormElement>) {
     debouncedHandleChange(new FormData(e.currentTarget));
   }
@@ -38,10 +44,9 @@ export default function SpritesheetForm<T extends z.AnyZodObject>({ children, er
   function onTextureChange(item: TextureComboxItem) {
     console.log('==onTextureChange==')
     textureIdInput.current!.value = item.textureId;
-    onValidateFormData(new FormData(formRef.current!))
-    // textureIdInput.current?.dispatchEvent(new Event('change', { bubbles: true }))
+    const formData = new FormData(formRef.current!)
+    onClientErrors(validateFormData(formData))
     setTextureId(item.textureId)
-    // setInnerErrors({ ...innerErrors, textureId: 'dsdf' })
   }
 
   useEffect(() => {
@@ -54,7 +59,7 @@ export default function SpritesheetForm<T extends z.AnyZodObject>({ children, er
     }
     return () => { }
   }, [errors?.["__err__"]])
-  
+
   return (
     <Form method="post" ref={formRef} onChange={handleChange} onSubmit={() => { console.log('===onSubmit===') }} className="flex flex-col h-full">
       {children}
