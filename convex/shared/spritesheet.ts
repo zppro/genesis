@@ -9,7 +9,7 @@ import { frameSerialized } from "./frame"
 //   };
 // };
 
-export const spritesheetSerialized = v.object({
+export const pixiSpritesheetSerialized = v.object({
   frames: v.record(v.string(), frameSerialized),
   animations: v.optional(v.record(v.string(), v.array(v.string()))),
   meta: v.object({
@@ -17,4 +17,4 @@ export const spritesheetSerialized = v.object({
   })
 })
 
-export type Spritesheet = Infer<typeof spritesheetSerialized>;
+export type PixiSpritesheet = Infer<typeof pixiSpritesheetSerialized>;

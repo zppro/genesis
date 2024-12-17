@@ -1,4 +1,4 @@
-import { listWorldTextures } from "~/data/convexProxy/texture.server"
+import { listWorldSpritesheets } from "~/data/convexProxy/spritesheet.server"
 import { useLoaderData, Outlet } from "@remix-run/react";
 import {
   ResizableHandle,
@@ -15,9 +15,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  const textures = await listWorldTextures(worldId as WorldId)
+  const spritesheets = await listWorldSpritesheets(worldId as WorldId)
 
-  return { worldId: worldId as WorldId,  textures }
+  return { worldId: worldId as WorldId,  spritesheets }
 }
 
 export default function Scene() {

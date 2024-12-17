@@ -128,7 +128,7 @@ export const appNavItems = (worldId: WorldId) => {
         },
         {
           title: "Spritesheets",
-          url: "#",
+          url: `${baseUrl}/spritesheet`,
         },
       ],
     },

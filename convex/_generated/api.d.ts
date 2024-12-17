@@ -22,6 +22,7 @@ import type * as users from "../users.js";
 import type * as world_characters from "../world/characters.js";
 import type * as world_resources from "../world/resources.js";
 import type * as world_scenes from "../world/scenes.js";
+import type * as world_spritesheets from "../world/spritesheets.js";
 import type * as world_textures from "../world/textures.js";
 import type * as worlds from "../worlds.js";
 
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   "world/characters": typeof world_characters;
   "world/resources": typeof world_resources;
   "world/scenes": typeof world_scenes;
+  "world/spritesheets": typeof world_spritesheets;
   "world/textures": typeof world_textures;
   worlds: typeof worlds;
 }>;
