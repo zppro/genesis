@@ -2,6 +2,10 @@
   @apply text-red-500 text-xs;
 }
 
+.form-field-info-tip {
+  @apply text-gray-500 text-xs italic;
+}
+
 .form-input-err {
   @apply border-2 border-red-500 focus:border-red-500 focus:ring-red-500;
 }
@@ -9,6 +13,8 @@
 .form-label-err {
   @apply text-red-500;
 }
+
+
 
 img.image-file {
   display: block;

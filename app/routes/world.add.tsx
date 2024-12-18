@@ -35,7 +35,7 @@ import { useLocalStorage } from "~/hooks/use-localStorage"
 import { useToast } from "~/hooks/use-toast"
 import { useState } from "react";
 import { z } from "zod";
-import { FormErrorTip } from "~/components/form-error-tip"
+import { FormErrorTip } from "~/components/convex/form"
 import formcssHref from "~/form.css?url";
 import debounce from "debounce"
 

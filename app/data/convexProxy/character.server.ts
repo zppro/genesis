@@ -13,6 +13,10 @@ export const getWorldCharacter = async (id: CharacterId) => {
   return await proxy().query(api.world.characters.read, { id })
 }
 
+export const getWorldCharacterExtend = async (id: CharacterId) => {
+  return await proxy().query(api.world.characters.readEx, { id })
+}
+
 export const listWorldCharacters = async (worldId: WorldId) => {
   const characters = await proxy().query(api.world.characters.list, { worldId })
   return characters

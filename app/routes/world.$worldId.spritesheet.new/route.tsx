@@ -14,7 +14,7 @@ import { WorldId } from "@/worlds";
 import JSON5 from 'json5'
 import { TextureComboxProvider, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
 import { useState, useEffect } from 'react'
-import { ServerErrors, ClientErrors } from "~/lib/errorTypes";
+import { ServerErrors, ClientErrors } from "~/components/convex/type";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -37,10 +37,10 @@ export async function action({
 
   // data json formatter validation
   const formData = await request.formData();
-  const _form = Object.fromEntries(formData);
+  const _formData = Object.fromEntries(formData);
   let data = null
   try {
-    data = JSON5.parse(_form["data"].toString());
+    data = JSON5.parse(_formData["data"].toString());
   } catch (ex) {
     serverErrors["data"] = "parse json err"
     return { serverErrors }
@@ -53,7 +53,7 @@ export async function action({
     return { serverErrors }
   }
 
-  const formPayload = { ..._form, worldId }
+  const formPayload = { ..._formData, worldId }
   // console.log('new formPayload=>', formPayload)
 
   // payload z schema validation
@@ -66,7 +66,6 @@ export async function action({
       // {field1: errorMessage, ...}
       // console.log('createSchema.keyof()=>', createSchema.keyof().Values)
       const fields = Object.keys(createSchema.keyof().Values)
-
       serverErrors = parseFormError(error, fields)
     }
   } else {

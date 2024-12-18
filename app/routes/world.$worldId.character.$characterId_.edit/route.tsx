@@ -4,21 +4,21 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import SpritesheetForm from "~/routes/world.$worldId.spritesheet/form"
+import CharacterForm from "~/routes/world.$worldId.character/form"
 import { z } from "zod";
-import { zodSpritesheet } from "~/lib/spritesheet";
-import { getWorldSpritesheet, updateWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
-import { listWorldTextures } from "~/data/convexProxy/texture.server"
-import { type SpritesheetId, type UpdateArgs, table } from "@/world/spritesheets";
+import { getWorldCharacter, updateWorldCharacter } from "~/data/convexProxy/character.server"
+import { listWorldSpritesheetExtends } from "~/data/convexProxy/spritesheet.server"
+import { type CharacterId, type UpdateArgs, table } from "@/world/characters";
+import { type SpritesheetTable } from "@/world/spritesheets";
 import { WorldId } from "@/worlds";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
-import { TextureComboxProvider, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
-import JSON5 from 'json5'
 import { useState, useEffect } from 'react'
+import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
+import { convertFormDataToObject } from "~/lib/form";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -26,49 +26,33 @@ export const links: LinksFunction = () => [
 
 const updateSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  textureId: z.string().min(1, { message: "Texture is required" }),
-  data: z.string().min(1, { message: "Spritesheet data is required" }),
+  speed: z.number().gt(0),
+  spritesheetId: z.string().min(1, { message: "Spritesheet is required" }),
 });
 
 export async function action({
   request,
   params,
 }: ActionFunctionArgs) {
-  const { worldId, spritesheetId } = params;
+  const { worldId, characterId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!spritesheetId) {
-    throw new Error("invalid spritesheetId param!");
+  if (!characterId) {
+    throw new Error("invalid characterId param!");
   }
   let serverErrors: ServerErrors = {}
 
-  // data json formatter validation
   const formData = await request.formData();
-  const _formData = Object.fromEntries(formData);
-  let data = null
-  try {
-    data = JSON5.parse(_formData["data"].toString());
-  } catch (ex) {
-    serverErrors["data"] = "parse json err"
-    return { serverErrors }
-  }
-  const result0 = zodSpritesheet.safeParse(data);
-  if (!result0.success) {
-    serverErrors = { ...result0.error.formErrors.fieldErrors }
-    serverErrors["data"] = "parse json as spritesheet err"
-    console.error(serverErrors)
-    return { serverErrors }
-  }
+  const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"] });
+  const formPayload = { ..._formData, id: characterId as CharacterId }
 
-  // const formPayload = { ...Object.fromEntries(formData), id: spritesheetId as SpritesheetId }
-  const formPayload = { ..._formData, id: spritesheetId as SpritesheetId }
-
+  // payload z schema validation
   const result = updateSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      await updateWorldSpritesheet(formPayload as UpdateArgs)
-      return redirect(`/world/${worldId}/spritesheet/${spritesheetId}`)
+      await updateWorldCharacter(formPayload as UpdateArgs)
+      return redirect(`/world/${worldId}/character/${characterId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(updateSchema.keyof().Values)
@@ -86,17 +70,17 @@ export async function action({
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { worldId, spritesheetId } = params;
+  const { worldId, characterId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!spritesheetId) {
-    throw new Error("invalid spritesheetId param!");
+  if (!characterId) {
+    throw new Error("invalid characterId param!");
   }
-  const textures = await listWorldTextures(worldId as WorldId)
-  let spritesheet = null
+  const spritesheetExs = await listWorldSpritesheetExtends(worldId as WorldId)
+  let character = null
   try {
-    spritesheet = await getWorldSpritesheet(spritesheetId as SpritesheetId)
+    character = await getWorldCharacter(characterId as CharacterId)
   } catch (error) {
     let isNotFoundError = parseIsNotFoundRecordError(error)
     if (isNotFoundError) {
@@ -107,13 +91,13 @@ export async function loader({
     }
     throw error
   } finally {
-    if (spritesheet === null) {
+    if (character === null) {
       throw new Response(null, {
         status: 404,
         statusText: "Not Found",
       });
     }
-    return { spritesheet, textures }
+    return { character, spritesheetExs }
   }
 }
 
@@ -123,9 +107,9 @@ export function ErrorBoundary() {
 
 
 export default function EditScene() {
-  const { spritesheet, textures } = useLoaderData<typeof loader>();
-  const items = textures.map<TextureComboxItem>(t => ({
-    textureId: t._id, name: t.name, textureUrl: t.url
+  const { character, spritesheetExs } = useLoaderData<typeof loader>();
+  const items = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
+    key: t._id, text: t.name, imageUrl: t.texture.url
   }))
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
@@ -135,21 +119,22 @@ export default function EditScene() {
       setErrors(actionData.serverErrors)
     }
   }, [actionData])
+
   function onClientErrors(clientErrors: ClientErrors) {
     // { ...actionData?.serverErrors, ...clientErrors }
     setErrors(clientErrors)
   }
 
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${spritesheet?.worldId}/spritesheet/${spritesheet?._id}/edit`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${character?.worldId}/character/${character?._id}/edit`;
   return (
     <div className="h-full">
-      <TextureComboxProvider value={{ items }}>
-        <SpritesheetForm errors={errors} onClientErrors={onClientErrors} spritesheet={spritesheet!} schema={updateSchema}>
+      <ConvexComboxProvider value={{ items }}>
+        <CharacterForm errors={errors} onClientErrors={onClientErrors} doc={character} schema={updateSchema}>
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
-        </SpritesheetForm>
-      </TextureComboxProvider>
+        </CharacterForm>
+      </ConvexComboxProvider>
     </div>
   )
 }

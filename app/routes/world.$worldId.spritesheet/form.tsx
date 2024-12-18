@@ -2,7 +2,7 @@ import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { FormErrorTip } from "~/components/form-error-tip"
+import { FormErrorTip } from "~/components/convex/form"
 import { type SpritesheetDoc } from "@/world/spritesheets";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
@@ -12,7 +12,7 @@ import { cn } from "~/lib/utils";
 import debounce from "debounce"
 import ComboboxForTexture from "./combox-for-texture"
 import { useTextureCombox, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
-import { FormErrors, ClientErrors } from "~/lib/errorTypes";
+import { FormErrors, ClientErrors } from "~/components/convex/type";
 
 export type SpritesheetFormProps<T extends z.AnyZodObject> = {
   children?: React.ReactNode;
@@ -73,11 +73,12 @@ export default function SpritesheetForm<T extends z.AnyZodObject>({ children, er
               {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
+            <Label>Texture<span className="text-red-500">*</span></Label>
               <ComboboxForTexture errClass={errors?.textureId ? "form-input-err" : undefined} {...textureCombox} defaultItemId={spritesheet?.textureId} onSelectChange={onTextureChange} />
               {errors?.textureId ? <FormErrorTip tip={errors.textureId} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="data">Spritesheet data</Label>
+              <Label htmlFor="data">Spritesheet data<span className="text-red-500">*</span></Label>
               <Textarea id="data" name="data" defaultValue={spritesheet?.data}
                 className={cn('h-96', errors?.data ? "form-input-err" : undefined)}
                 placeholder="Description of your spritesheet" />

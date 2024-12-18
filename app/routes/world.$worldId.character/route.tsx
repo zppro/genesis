@@ -11,7 +11,7 @@ import SceneScrollList from "./list"
 
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const { worldId, type } = params;
+  const { worldId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }

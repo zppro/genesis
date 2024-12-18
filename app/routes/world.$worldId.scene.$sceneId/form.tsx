@@ -2,7 +2,7 @@ import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { FormErrorTip } from "~/components/form-error-tip"
+import { FormErrorTip } from "~/components/convex/form"
 import { type SceneDoc } from "@/world/scenes";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"

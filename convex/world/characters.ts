@@ -3,11 +3,23 @@ import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
-import { idStorage, StorageId } from "../shared/storage"
-// import { spritesheetSerialized } from "../shared/spritesheet";
+import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
+import { TextureDoc, read as readTexture } from "./textures"
+
+
+import {
+  getAll,
+  getOneFrom,
+  getOneFromOrThrow,
+  getManyFrom,
+  getManyVia,
+} from "convex-helpers/server/relationships";
+// import { asyncMap } from "convex-helpers";
+
 
 export const table = 'characters';
 export const indexName_ByWorldId = 'byWorldId';
+export const indexName_ByWorldIdAndSpritesheetId = 'byWorldIdAndSpritesheetId';
 export const idCharacter = v.id(table);
 
 export const characterSerialized = {
@@ -15,14 +27,13 @@ export const characterSerialized = {
   worldId: idWorld,
   // The speed of the animation. Can be tuned depending on the side and speed of the NPC.
   speed: v.number(),
-  textureStorageId: idStorage,
-  textureUrl: v.string(),
   // spritesheet as pixijs definition 
-  spritesheetStorageId: idStorage,
-  spritesheetUrl: v.string(),
+  spritesheetId: idSpritesheet,
 };
 
-const { textureUrl: _textureUrl, ...insertArgs } = characterSerialized
+
+
+const { ...insertArgs } = characterSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idCharacter, ..._updateArgs }
 const deleteArgs = { id: idCharacter }
@@ -30,6 +41,10 @@ const deleteArgs = { id: idCharacter }
 export type CharacterTable = typeof table
 export type CharacterId = Id<CharacterTable>
 export type CharacterDoc = Doc<CharacterTable>
+export type CharacterExtendDoc = CharacterDoc & {
+  spritesheet: SpritesheetDoc,
+  texture: TextureDoc,
+};
 export type SerializedCharacter = ObjectType<typeof characterSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -37,13 +52,13 @@ export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(characterSerialized)
   .index(indexName_ByWorldId, ["worldId"])
+  .index(indexName_ByWorldIdAndSpritesheetId, ["worldId", "spritesheetId"])
 
 
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    const url = await ctx.storage.getUrl(args.textureStorageId) ?? undefined
-    return await ctx.db.insert(table, { ...args, textureUrl: url ?? "" });
+    return await ctx.db.insert(table, args);
   },
 });
 
@@ -51,6 +66,17 @@ export const read = query({
   args: { id: idCharacter },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+export const readEx = query({
+  args: { id: idCharacter },
+  handler: async (ctx, args) => {
+    const entity = await read(ctx, args)
+    const spritesheet = await readSpritesheet(ctx, { id: entity?.spritesheetId! })
+    const texture = await readTexture(ctx, { id: spritesheet?.textureId! })
+    const extendEntity: CharacterExtendDoc = { ...entity!, spritesheet: spritesheet!, texture: texture! }
+    return extendEntity
   },
 });
 
@@ -65,6 +91,18 @@ export const list = query({
   },
 })
 
+export const listBySpritesheet = query({
+  args: { worldId: idWorld, spritesheetId: idSpritesheet },
+  handler: async (ctx, args) => {
+    const { worldId, spritesheetId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndSpritesheetId, (q) =>
+      q
+        .eq("worldId", worldId)
+        .eq("spritesheetId", spritesheetId)
+    ).collect();
+  },
+})
+
 export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
@@ -73,14 +111,7 @@ export const update = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
-    if (args.textureStorageId !== entity.textureStorageId) {
-      const url = await ctx.storage.getUrl(args.textureStorageId) ?? undefined
-      await ctx.db.patch(id, { ...patchData, textureUrl: url ?? "" });
-      await ctx.storage.delete(entity.textureStorageId)
-      // 删除旧的stoargeId
-    } else {
-      await ctx.db.patch(id, patchData);
-    }
+    await ctx.db.patch(id, patchData);
   },
 });
 
@@ -93,6 +124,5 @@ export const delete_ = mutation({
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
     await ctx.db.delete(id);
-    await ctx.storage.delete(entity.textureStorageId)
   },
 });

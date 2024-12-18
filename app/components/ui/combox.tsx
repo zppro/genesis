@@ -18,43 +18,43 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover"
-import { type TextureId } from "@/world/textures"
+import { Id } from "@/_generated/dataModel"
+import { ConvexTables } from "../convex/type"
 
-export type TextureCombox = {
-  defaultItemId?: TextureId;
-  items: TextureComboxItem[];
+export type ConvexCombox<T extends ConvexTables> = {
+  defaultItemKey?: Id<T>;
+  items: ConvexComboxItem<T>[];
 }
 
-const TextureComboxContext = React.createContext<TextureCombox>(
-  undefined as unknown as TextureCombox,
+export type ConvexComboxItem<T extends ConvexTables> = {
+  key: Id<T>;
+  text: string;
+  imageUrl?: string;
+}
+
+
+const ConvexComboxContext = React.createContext<ConvexCombox<any>>(
+  undefined as unknown as ConvexCombox<any>,
 );
 
-export function useTextureCombox(): TextureCombox {
-  return useContext(TextureComboxContext);
+export function useConvexCombox<T extends ConvexTables>(): ConvexCombox<T> {
+  return useContext(ConvexComboxContext);
 }
 
-export const TextureComboxProvider: React.FC<{
-  value: TextureCombox;
+export const ConvexComboxProvider = <T extends ConvexTables>({ value, children }: {
+  value: ConvexCombox<T>;
   children?: React.ReactNode;
-}> = ({ value, children }) => {
+}) => {
   return React.createElement(
-    TextureComboxContext.Provider,
+    ConvexComboxContext.Provider,
     { value },
     children,
   );
 };
 
-export type TextureComboxItem = {
-  textureId: TextureId;
-  name: string;
-  textureUrl: string;
-}
-
-
-
-export default function ComboboxForTexture({ errClass, items, defaultItemId, onSelectChange }: { errClass?: string, items?: TextureComboxItem[], defaultItemId?: TextureId, onSelectChange: (item: TextureComboxItem) => void; }) {
+export default function ComboboxForTexture<T extends ConvexTables>({ errClass, items, defaultItemKey, onSelectChange }: { errClass?: string, items?: ConvexComboxItem<T>[], defaultItemKey?: Id<T>, onSelectChange: (item: ConvexComboxItem<T>) => void; }) {
   const [open, setOpen] = useState(false)
-  const defaultItem = items?.find(i => i.textureId === defaultItemId)
+  const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
 
   return (
@@ -67,36 +67,36 @@ export default function ComboboxForTexture({ errClass, items, defaultItemId, onS
           className={cn('w-full justify-between', errClass)}
         >
           {selectItem
-            ? items?.find((item) => item.textureId === selectItem.textureId)?.name
-            : "Select textures..."}
+            ? items?.find((item) => item.key === selectItem.key)?.text
+            : "Select item..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Search texture..." className="h-9" />
+          <CommandInput placeholder="Search data..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No texture found.</CommandEmpty>
+            <CommandEmpty>No data found.</CommandEmpty>
             <CommandGroup>
               {items?.map((item) => (
                 <CommandItem
-                  key={item.textureId}
-                  value={item.name}
+                  key={item.key}
+                  value={item.text}
                   onSelect={(currentValue) => {
-                    const v = items?.find(i => i.name === currentValue)
-                    if (selectItem?.textureId !== v?.textureId) {
+                    const v = items?.find(i => i.text === currentValue)
+                    if (selectItem?.key !== v?.key) {
                       setSelectItem(v)
                       v && onSelectChange(v)
                     }
                     setOpen(false)
                   }}
                 >
-                  <img src={item.textureUrl} className="list-image-file" />
-                  {item.name}
+                  {item.imageUrl && <img src={item.imageUrl} className="list-image-file" />}
+                  {item.text}
                   <Check
                     className={cn(
                       "ml-auto",
-                      selectItem?.name === item.name ? "opacity-100" : "opacity-0"
+                      selectItem?.text === item.text ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

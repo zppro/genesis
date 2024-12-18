@@ -4,7 +4,17 @@ import { idTexture } from "./textures";
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
-import { pixiSpritesheetSerialized } from "../shared/spritesheet"
+import { TextureDoc } from "./textures"
+
+import {
+  getAll,
+  getOneFrom,
+  getOneFromOrThrow,
+  getManyFrom,
+  getManyVia,
+} from "convex-helpers/server/relationships";
+import { asyncMap } from "convex-helpers";
+
 
 export const table = 'spritesheets';
 export const indexName_ByWorldId = 'byWorldId';
@@ -27,6 +37,9 @@ const deleteArgs = { id: idSpritesheet }
 export type SpritesheetTable = typeof table
 export type SpritesheetId = Id<SpritesheetTable>
 export type SpritesheetDoc = Doc<SpritesheetTable>
+export type SpritesheetExtendDoc = SpritesheetDoc & {
+  texture: TextureDoc,
+};
 export type SerializedSpritesheet = ObjectType<typeof spritesheetSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -59,6 +72,21 @@ export const list = query({
       q
         .eq("worldId", worldId)
     ).collect();
+  },
+})
+
+export const listEx = query({
+  args: { worldId: idWorld },
+  handler: async (ctx, args) => {
+    const { worldId } = args
+    const entityExs: SpritesheetExtendDoc[] = await asyncMap(
+      await list(ctx, args),
+      async (entity) => {
+        const texture = await ctx.db.get(entity.textureId)
+        return { ...entity, texture: texture! }
+      }
+    );
+    return entityExs
   },
 })
 

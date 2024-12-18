@@ -3,7 +3,7 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { FormErrorTip } from "~/components/form-error-tip"
+import { FormErrorTip } from "~/components/convex/form"
 import { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import type { WorldId, UpdateArgs } from "@/worlds";
 import { getWorld, updateWorld, listWorlds } from "~/data/convexProxy/world.server"

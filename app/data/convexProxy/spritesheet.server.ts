@@ -12,6 +12,10 @@ export const listWorldSpritesheets = async (worldId: WorldId) => {
   return await proxy().query(api.world.spritesheets.list, { worldId })
 }
 
+export const listWorldSpritesheetExtends = async (worldId: WorldId) => {
+  return await proxy().query(api.world.spritesheets.listEx, { worldId })
+}
+
 export const listWorldSpritesheetsByTexture = async (worldId: WorldId, textureId: TextureId) => {
   return await proxy().query(api.world.spritesheets.listByTexture, { worldId, textureId })
 }
