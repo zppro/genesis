@@ -9,6 +9,9 @@ import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
 import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import { ImageDialog } from "~/components/ui/image-dialog";
+import { getWorldTexture } from "~/data/convexProxy/texture.server"
+import { type TextureId } from "@/world/textures";
 
 export async function loader({
   params,
@@ -33,7 +36,28 @@ export async function loader({
         statusText: "Not Found",
       });
     }
-    return { spritesheet }
+    let texture = null
+    const { textureId } = spritesheet
+    try {
+      texture = await getWorldTexture(textureId as TextureId)
+    } catch (error) {
+      let isNotFoundError = parseIsNotFoundRecordError(error)
+      if (isNotFoundError) {
+        throw new Response(null, {
+          status: 404,
+          statusText: "Not Found",
+        });
+      }
+      throw error
+    } finally {
+      if (texture === null) {
+        throw new Response(null, {
+          status: 404,
+          statusText: "Not Found",
+        });
+      }
+    }
+    return { spritesheet, texture }
   }
 }
 
@@ -42,7 +66,7 @@ export function ErrorBoundary() {
 }
 
 export default function Index() {
-  const { spritesheet } = useLoaderData<typeof loader>();
+  const { spritesheet, texture } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex h-full items-start flex-col">
@@ -58,8 +82,11 @@ export default function Index() {
           )}
         </div>
         <Separator />
+        <div className="p-4">
+          <ImageDialog src={texture?.url} maxWidth={400} maxHeight={300} />
+        </div>
         <div className="flex-1 h-full whitespace-pre-wrap p-4 text-sm flex flex-col">
-          <ScrollArea className="h-full w-full flex-1 max-h-[calc(100vh-240px)]">
+          <ScrollArea className="h-full w-full flex-1 max-h-[calc(100vh-540px)]">
             <JsonPretty data={spritesheet?.data} />
           </ScrollArea>
         </div>
