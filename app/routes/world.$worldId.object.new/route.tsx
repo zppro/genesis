@@ -1,16 +1,16 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import CharacterForm from "~/routes/world.$worldId.character/form"
+import ObjectForm from "~/routes/world.$worldId.object/form"
 import { z } from "zod";
-import { createWorldCharacter } from "~/data/convexProxy/character.server"
+import { createWorldObject } from "~/data/convexProxy/object.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server";
-import { type InsertArgs, table } from "@/world/characters";
+import { type InsertArgs, table, OBJECT_TYPES } from "@/world/objects";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
 import { WorldId } from "@/worlds";
-import { type SpritesheetTable, SPRITESHEET_TYPES, type SpritesheetTypes } from "@/world/spritesheets";
+import { type SpritesheetTable } from "@/world/spritesheets";
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
@@ -20,7 +20,7 @@ export const links: LinksFunction = () => [
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  speed: z.number().gt(0),
+  type: z.enum(OBJECT_TYPES, { message: "Type is required" }),
   spritesheetId: z.string().min(1, { message: "Spritesheet is required" }),
 });
 
@@ -35,7 +35,7 @@ export async function action({
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
-  const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"] });
+  const _formData = convertFormDataToObject(formData);
   const formPayload = { ..._formData, worldId }
   // console.log('new formPayload=>', formPayload)
 
@@ -43,8 +43,8 @@ export async function action({
   const result = createSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      const newCharacterId = await createWorldCharacter(formPayload as InsertArgs)
-      return redirect(`/world/${worldId}/character/${newCharacterId}`)
+      const newObjectId = await createWorldObject(formPayload as InsertArgs)
+      return redirect(`/world/${worldId}/object/${newObjectId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(createSchema.keyof().Values)
@@ -63,17 +63,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
+  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "object")
   const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
     key: t._id, text: t.name, imageUrl: t.texture.url
   }))
   return { worldId: worldId as WorldId, comboxitems }
 }
 
-
-
 export default function NewScene() {
   const { worldId, comboxitems } = useLoaderData<typeof loader>();
+
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
 
@@ -84,7 +83,7 @@ export default function NewScene() {
   }, [actionData])
 
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/character/new`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/object/new`;
   function onClientErrors(clientErrors: ClientErrors) {
     // { ...actionData?.serverErrors, ...clientErrors }
     setErrors(clientErrors)
@@ -92,10 +91,10 @@ export default function NewScene() {
   return (
     <div className="h-full">
       <ConvexComboxProvider value={{ items: comboxitems }}>
-        <CharacterForm errors={errors} onClientErrors={onClientErrors} schema={createSchema} >
+        <ObjectForm errors={errors} onClientErrors={onClientErrors} schema={createSchema} >
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
-        </CharacterForm>
+        </ObjectForm>
       </ConvexComboxProvider>
     </div>
   )

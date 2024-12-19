@@ -1,38 +1,30 @@
 import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import { Textarea } from "~/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
-import { type SpritesheetDoc, SpritesheetTable, SPRITESHEET_TYPES } from "@/world/spritesheets";
+import { ObjectTable, OBJECT_TYPES } from "@/world/objects";
+import { SpritesheetTable } from "@/world/spritesheets";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
-import { cn } from "~/lib/utils";
 import debounce from "debounce"
-import ComboboxForTexture from "./combox-for-texture"
-import { useTextureCombox, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
-import { FormErrors, ClientErrors } from "~/components/convex/type";
+import Combobox, { useConvexCombox, type ConvexComboxItem } from "~/components/ui/combox"
 import { ConvexFormProps, FormErrorTip } from "~/components/convex/form"
+import { convertFormDataToObject } from "~/lib/form";
 
-// export type SpritesheetFormProps<T extends z.AnyZodObject> = {
-//   children?: React.ReactNode;
-//   errors?: FormErrors;
-//   spritesheet?: SpritesheetDoc;
-//   schema: T;
-//   onClientErrors: (clientErrors: ClientErrors) => void;
-// }
 
-export default function SpritesheetForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: ConvexFormProps<SpritesheetTable, S>) {
-// export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onClientErrors }: SpritesheetFormProps<T>) {
+export default function ObjectForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: ConvexFormProps<ObjectTable, S>) {
   const { toast } = useToast()
-  const textureCombox = useTextureCombox()
-  const [textureId, setTextureId] = useState(doc?.textureId)
-  const textureIdInput = useRef<HTMLInputElement>(null);
+  const spritesheetCombox = useConvexCombox<SpritesheetTable>()
+  const [spritesheetId, setSpritesheetId] = useState(doc?.spritesheetId)
+  const spritesheetIdInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   function validateFormData(formData: FormData) {
-    const formPayload = Object.fromEntries(formData)
+    const formPayload = convertFormDataToObject(formData)
+    // form number
+    console.log('validateFormData=>', formPayload)
     const result = schema.safeParse(formPayload);
     return { ...result.error?.formErrors.fieldErrors }
   }
@@ -44,12 +36,12 @@ export default function SpritesheetForm<S extends z.AnyZodObject>({ children, er
     debouncedHandleChange(new FormData(e.currentTarget));
   }
 
-  function onTextureChange(item: TextureComboxItem) {
-    console.log('==onTextureChange==')
-    textureIdInput.current!.value = item.textureId;
+  function onComboxItemChange(item: ConvexComboxItem<SpritesheetTable>) {
+    console.log(`==onComboxItemChange spritesheet==`, item.key)
+    spritesheetIdInput.current!.value = item.key;
     const formData = new FormData(formRef.current!)
     onClientErrors(validateFormData(formData))
-    setTextureId(item.textureId)
+    setSpritesheetId(item.key)
   }
 
   useEffect(() => {
@@ -66,7 +58,7 @@ export default function SpritesheetForm<S extends z.AnyZodObject>({ children, er
   return (
     <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
       {children}
-      <input name="textureId" ref={textureIdInput} type="hidden" defaultValue={textureId} />
+      <input name="spritesheetId" ref={spritesheetIdInput} type="hidden" defaultValue={spritesheetId} />
       <ScrollArea className="h-full">
         <div className="w-[350px] p-2">
           <div className="grid w-full items-center gap-4">
@@ -76,9 +68,9 @@ export default function SpritesheetForm<S extends z.AnyZodObject>({ children, er
               {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-              <RadioGroup name="type" defaultValue={doc?.type}>
+              <RadioGroup name="type" defaultValue={doc?.type || (OBJECT_TYPES.length && OBJECT_TYPES[0])}>
                 {
-                  SPRITESHEET_TYPES.map(ty =>
+                  OBJECT_TYPES.map(ty =>
                     <div key={ty} className="flex items-center space-x-2">
                       <RadioGroupItem value={ty} id={ty} />
                       <Label htmlFor={ty}>{ty}</Label>
@@ -89,16 +81,8 @@ export default function SpritesheetForm<S extends z.AnyZodObject>({ children, er
               {errors?.type ? <FormErrorTip tip={errors.type} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label>Texture<span className="text-red-500">*</span></Label>
-              <ComboboxForTexture errClass={errors?.textureId ? "form-input-err" : undefined} {...textureCombox} defaultItemId={doc?.textureId} onSelectChange={onTextureChange} />
-              {errors?.textureId ? <FormErrorTip tip={errors.textureId} /> : null}
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="data">Spritesheet data<span className="text-red-500">*</span></Label>
-              <Textarea id="data" name="data" defaultValue={doc?.data}
-                className={cn('h-96', errors?.data ? "form-input-err" : undefined)}
-                placeholder="Description of your spritesheet" />
-              {errors?.data ? <FormErrorTip tip={errors.data} /> : null}
+              <Combobox errClass={errors?.spritesheetId ? "form-input-err" : undefined} {...spritesheetCombox} defaultItemKey={doc?.spritesheetId} onSelectChange={onComboxItemChange} />
+              {errors?.spritesheetId ? <FormErrorTip tip={errors.spritesheetId} /> : null}
             </div>
           </div>
         </div>

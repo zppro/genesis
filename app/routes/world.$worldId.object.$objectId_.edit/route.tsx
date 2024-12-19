@@ -4,11 +4,11 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import CharacterForm from "~/routes/world.$worldId.character/form"
+import ObjectForm from "~/routes/world.$worldId.object/form"
 import { z } from "zod";
-import { getWorldCharacter, updateWorldCharacter } from "~/data/convexProxy/character.server"
+import { getWorldObject, updateWorldObject } from "~/data/convexProxy/object.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server"
-import { type CharacterId, type UpdateArgs, table } from "@/world/characters";
+import { type ObjectId, type UpdateArgs, table, OBJECT_TYPES } from "@/world/objects";
 import { type SpritesheetTable } from "@/world/spritesheets";
 import { WorldId } from "@/worlds";
 import formcssHref from "~/form.css?url";
@@ -26,7 +26,7 @@ export const links: LinksFunction = () => [
 
 const updateSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  speed: z.number().gt(0),
+  type: z.enum(OBJECT_TYPES, { message: "Type is required" }),
   spritesheetId: z.string().min(1, { message: "Spritesheet is required" }),
 });
 
@@ -34,25 +34,25 @@ export async function action({
   request,
   params,
 }: ActionFunctionArgs) {
-  const { worldId, characterId } = params;
+  const { worldId, objectId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!characterId) {
-    throw new Error("invalid characterId param!");
+  if (!objectId) {
+    throw new Error("invalid objectId param!");
   }
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
-  const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"] });
-  const formPayload = { ..._formData, id: characterId as CharacterId }
+  const _formData = convertFormDataToObject(formData);
+  const formPayload = { ..._formData, id: objectId as ObjectId }
 
   // payload z schema validation
   const result = updateSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      await updateWorldCharacter(formPayload as UpdateArgs)
-      return redirect(`/world/${worldId}/character/${characterId}`)
+      await updateWorldObject(formPayload as UpdateArgs)
+      return redirect(`/world/${worldId}/object/${objectId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(updateSchema.keyof().Values)
@@ -70,20 +70,20 @@ export async function action({
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { worldId, characterId } = params;
+  const { worldId, objectId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!characterId) {
-    throw new Error("invalid characterId param!");
+  if (!objectId) {
+    throw new Error("invalid objectId param!");
   }
-  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
+  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "object")
   const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
     key: t._id, text: t.name, imageUrl: t.texture.url
   }))
-  let character = null
+  let object = null
   try {
-    character = await getWorldCharacter(characterId as CharacterId)
+    object = await getWorldObject(objectId as ObjectId)
   } catch (error) {
     let isNotFoundError = parseIsNotFoundRecordError(error)
     if (isNotFoundError) {
@@ -94,13 +94,13 @@ export async function loader({
     }
     throw error
   } finally {
-    if (character === null) {
+    if (object === null) {
       throw new Response(null, {
         status: 404,
         statusText: "Not Found",
       });
     }
-    return { character, comboxitems }
+    return { object, comboxitems }
   }
 }
 
@@ -110,7 +110,7 @@ export function ErrorBoundary() {
 
 
 export default function EditScene() {
-  const { character, comboxitems } = useLoaderData<typeof loader>();
+  const { object, comboxitems } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
 
@@ -122,18 +122,19 @@ export default function EditScene() {
 
   function onClientErrors(clientErrors: ClientErrors) {
     // { ...actionData?.serverErrors, ...clientErrors }
+    console.log('onClientErrors', clientErrors)
     setErrors(clientErrors)
   }
 
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${character?.worldId}/character/${character?._id}/edit`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${object?.worldId}/character/${object?._id}/edit`;
   return (
     <div className="h-full">
       <ConvexComboxProvider value={{ items: comboxitems }}>
-        <CharacterForm errors={errors} onClientErrors={onClientErrors} doc={character} schema={updateSchema}>
+        <ObjectForm errors={errors} onClientErrors={onClientErrors} doc={object} schema={updateSchema}>
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
-        </CharacterForm>
+        </ObjectForm>
       </ConvexComboxProvider>
     </div>
   )

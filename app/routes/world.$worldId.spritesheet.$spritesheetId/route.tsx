@@ -83,14 +83,20 @@ export default function Index() {
           )}
         </div>
         <Separator />
-        <div className="p-4">
+        <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
+          <div className="flex flex-col space-y-2">
+            <div><ImageDialog src={texture?.url} maxWidth={400} maxHeight={300} /></div>
+            <div className="whitespace-pre-wrap"><JsonPretty data={spritesheet?.data} className="w-[520px]" /></div>
+          </div>
+        </ScrollArea>
+        {/* <div className="p-4">
           <ImageDialog src={texture?.url} maxWidth={400} maxHeight={300} />
-        </div>
-        <div className="flex-1 h-full whitespace-pre-wrap p-4 text-sm flex flex-col">
-          <ScrollArea className="h-full w-full flex-1 max-h-[calc(100vh-540px)]">
-            <JsonPretty data={spritesheet?.data} />
+        </div> */}
+        {/* <div className="flex-1 h-full whitespace-pre-wrap p-4 text-sm flex flex-col">
+          <ScrollArea className="h-full w-full flex-1 max-h-[calc(100vh-300px)]">
+            <JsonPretty data={spritesheet?.data} className="w-[520px]" />
           </ScrollArea>
-        </div>
+        </div> */}
         <Separator className="mt-auto" />
         <div className="p-2">
         </div>

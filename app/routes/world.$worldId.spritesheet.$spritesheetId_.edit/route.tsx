@@ -146,7 +146,7 @@ export default function EditScene() {
   return (
     <div className="h-full">
       <TextureComboxProvider value={{ items }}>
-        <SpritesheetForm errors={errors} onClientErrors={onClientErrors} spritesheet={spritesheet!} schema={updateSchema}>
+        <SpritesheetForm errors={errors} onClientErrors={onClientErrors} doc={spritesheet!} schema={updateSchema}>
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
         </SpritesheetForm>

@@ -13,3 +13,27 @@ img.preview-resource-tileset {
   width: auto;
   height: auto;
 }
+
+pre {
+  padding: 5px;
+}
+
+.string {
+  color: green;
+}
+
+.number {
+  color: darkorange;
+}
+
+.boolean {
+  color: blue;
+}
+
+.null {
+  color: magenta;
+}
+
+.key {
+  color: red;
+}

@@ -57,7 +57,7 @@ export const appNavItems = (worldId: WorldId) => {
       ],
     },
     {
-      title: "Characters & Objects",
+      title: "Characters & Objs",
       url: "#",
       icon: SquareUserRound,
       items: [
@@ -72,6 +72,21 @@ export const appNavItems = (worldId: WorldId) => {
         {
           title: "Quantum",
           url: "#",
+        },
+      ],
+    },
+    {
+      title: "Materials",
+      url: "#",
+      icon: Boxes,
+      items: [
+        {
+          title: "Textures",
+          url: `${baseUrl}/texture`,
+        },
+        {
+          title: "Spritesheets",
+          url: `${baseUrl}/spritesheet`,
         },
       ],
     },
@@ -117,21 +132,7 @@ export const appNavItems = (worldId: WorldId) => {
         },
       ],
     },
-    {
-      title: "Materials",
-      url: "#",
-      icon: Boxes,
-      items: [
-        {
-          title: "Textures",
-          url: `${baseUrl}/texture`,
-        },
-        {
-          title: "Spritesheets",
-          url: `${baseUrl}/spritesheet`,
-        },
-      ],
-    },
+
     {
       title: "Settings",
       url: "#",

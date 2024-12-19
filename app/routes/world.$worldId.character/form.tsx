@@ -57,7 +57,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
   }, [errors?.["__err__"]])
 
   return (
-    <Form method="post" ref={formRef} onChange={handleChange} onSubmit={() => { console.log('===onSubmit===') }} className="flex flex-col h-full">
+    <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
       {children}
       <input name="spritesheetId" ref={spritesheetIdInput} type="hidden" defaultValue={spritesheetId} />
       <ScrollArea className="h-full">

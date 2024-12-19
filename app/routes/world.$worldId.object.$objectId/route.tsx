@@ -2,8 +2,8 @@ import { format } from "date-fns/format"
 import { useLoaderData } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
-import { getWorldCharacterExtend } from "~/data/convexProxy/character.server"
-import { type CharacterId, table } from "@/world/characters";
+import { getWorldObjectExtend } from "~/data/convexProxy/object.server"
+import { type ObjectId, table } from "@/world/objects";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
@@ -16,10 +16,10 @@ import { Badge } from "~/components/ui/badge"
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { characterId } = params;
-  let characterEx = null
+  const { objectId } = params;
+  let objectEx = null
   try {
-    characterEx = await getWorldCharacterExtend(characterId as CharacterId)
+    objectEx = await getWorldObjectExtend(objectId as ObjectId)
   } catch (error) {
     let isNotFoundError = parseIsNotFoundRecordError(error)
     if (isNotFoundError) {
@@ -30,14 +30,14 @@ export async function loader({
     }
     throw error
   } finally {
-    if (characterEx === null) {
+    if (objectEx === null) {
       throw new Response(null, {
         status: 404,
         statusText: "Not Found",
       });
     }
 
-    return { characterEx }
+    return { objectEx }
   }
 }
 
@@ -46,7 +46,7 @@ export function ErrorBoundary() {
 }
 
 export default function Index() {
-  const { characterEx } = useLoaderData<typeof loader>();
+  const { objectEx } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex h-full items-start flex-col">
@@ -54,18 +54,18 @@ export default function Index() {
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">
-          <div className="font-semibold text-lg">{characterEx?.name}<Badge className="ml-2">speed:{characterEx?.speed}</Badge></div>
-          {characterEx?._creationTime && (
+          <div className="font-semibold text-lg">{objectEx?.name}<Badge className="ml-2">{objectEx?.type}</Badge></div>
+          {objectEx?._creationTime && (
             <div className="ml-auto text-xs h-full text-muted-foreground flex items-center">
-              {format(new Date(characterEx._creationTime), "PPpp")}
+              {format(new Date(objectEx._creationTime), "PPpp")}
             </div>
           )}
         </div>
         <Separator />
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
           <div className="flex flex-col space-y-2">
-            <div><ImageDialog src={characterEx?.texture.url} maxWidth={400} maxHeight={300} /></div>
-            <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[520px]" /></div>
+            <div><ImageDialog src={objectEx?.texture.url} maxWidth={400} maxHeight={300} /></div>
+            <div className="whitespace-pre-wrap"><JsonPretty data={objectEx?.spritesheet?.data} className="w-[520px]" /></div>
           </div>
         </ScrollArea>
         <Separator className="mt-auto" />
