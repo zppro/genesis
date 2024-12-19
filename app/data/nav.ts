@@ -39,15 +39,15 @@ export const appNavItems = (worldId: WorldId) => {
       icon: Map,
       items: [
         {
-          title: "TileSets",
-          url: `${baseUrl}/resource/tileset`,
-        },
-        {
           title: "TileMaps",
           url: `${baseUrl}/resource/tilemap`,
         },
         {
-          title: "Tutorials",
+          title: "TileSets",
+          url: `${baseUrl}/resource/tileset`,
+        },
+        {
+          title: "TileAnimations",
           url: "#",
         },
         {
@@ -81,12 +81,12 @@ export const appNavItems = (worldId: WorldId) => {
       icon: Boxes,
       items: [
         {
-          title: "Textures",
-          url: `${baseUrl}/texture`,
-        },
-        {
           title: "Spritesheets",
           url: `${baseUrl}/spritesheet`,
+        },
+        {
+          title: "Textures",
+          url: `${baseUrl}/texture`,
         },
       ],
     },
