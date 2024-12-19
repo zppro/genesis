@@ -7,7 +7,7 @@ import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import CharacterForm from "~/routes/world.$worldId.character/form"
 import { z } from "zod";
 import { getWorldCharacter, updateWorldCharacter } from "~/data/convexProxy/character.server"
-import { listWorldSpritesheetExtends } from "~/data/convexProxy/spritesheet.server"
+import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server"
 import { type CharacterId, type UpdateArgs, table } from "@/world/characters";
 import { type SpritesheetTable } from "@/world/spritesheets";
 import { WorldId } from "@/worlds";
@@ -77,7 +77,7 @@ export async function loader({
   if (!characterId) {
     throw new Error("invalid characterId param!");
   }
-  const spritesheetExs = await listWorldSpritesheetExtends(worldId as WorldId)
+  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
   let character = null
   try {
     character = await getWorldCharacter(characterId as CharacterId)

@@ -9,7 +9,7 @@ import { z } from "zod";
 import { zodSpritesheet } from "~/lib/spritesheet";
 import { getWorldSpritesheet, updateWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
-import { type SpritesheetId, type UpdateArgs, table } from "@/world/spritesheets";
+import { type SpritesheetId, type UpdateArgs, table, SPRITESHEET_TYPES } from "@/world/spritesheets";
 import { WorldId } from "@/worlds";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
@@ -26,6 +26,7 @@ export const links: LinksFunction = () => [
 
 const updateSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
+  type: z.enum(SPRITESHEET_TYPES, { message: "Type is required" }),
   textureId: z.string().min(1, { message: "Texture is required" }),
   data: z.string().min(1, { message: "Spritesheet data is required" }),
 });

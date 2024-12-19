@@ -3,14 +3,14 @@ import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@rem
 import CharacterForm from "~/routes/world.$worldId.character/form"
 import { z } from "zod";
 import { createWorldCharacter } from "~/data/convexProxy/character.server"
-import { listWorldSpritesheetExtends } from "~/data/convexProxy/spritesheet.server";
+import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server";
 import { type InsertArgs, table } from "@/world/characters";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
 import { WorldId } from "@/worlds";
-import { type SpritesheetTable } from "@/world/spritesheets";
+import { type SpritesheetTable, SPRITESHEET_TYPES, type SpritesheetTypes } from "@/world/spritesheets";
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
@@ -63,7 +63,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  const spritesheetExs = await listWorldSpritesheetExtends(worldId as WorldId)
+  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
   return { worldId: worldId as WorldId, spritesheetExs }
 }
 

@@ -57,7 +57,7 @@ export const appNavItems = (worldId: WorldId) => {
       ],
     },
     {
-      title: "Characters",
+      title: "Characters & Objects",
       url: "#",
       icon: SquareUserRound,
       items: [
@@ -66,8 +66,8 @@ export const appNavItems = (worldId: WorldId) => {
           url: `${baseUrl}/character`,
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "object",
+          url: `${baseUrl}/object`,
         },
         {
           title: "Quantum",

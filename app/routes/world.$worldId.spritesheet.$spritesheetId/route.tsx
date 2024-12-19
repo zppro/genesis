@@ -12,6 +12,7 @@ import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { ImageDialog } from "~/components/ui/image-dialog";
 import { getWorldTexture } from "~/data/convexProxy/texture.server"
 import { type TextureId } from "@/world/textures";
+import { Badge } from "~/components/ui/badge"
 
 export async function loader({
   params,
@@ -74,7 +75,7 @@ export default function Index() {
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">
-          <div className="font-semibold text-lg">{spritesheet?.name}</div>
+          <div className="font-semibold text-lg">{spritesheet?.name}<Badge className="ml-2">{spritesheet?.type}</Badge></div>
           {spritesheet?._creationTime && (
             <div className="ml-auto text-xs h-full text-muted-foreground flex items-center">
               {format(new Date(spritesheet._creationTime), "PPpp")}

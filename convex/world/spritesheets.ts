@@ -17,13 +17,19 @@ import { asyncMap } from "convex-helpers";
 
 
 export const table = 'spritesheets';
-export const indexName_ByWorldId = 'byWorldId';
-export const indexName_ByWorldIdAndTextureId = 'byWorldIdAndTextureId';
+export const indexName_ByWorldId = 'by_worldId';
+export const indexName_ByWorldIdAndType = 'by_worldIdAndType';
+export const indexName_ByWorldIdAndTextureId = 'by_worldIdAndTextureId';
 export const idSpritesheet = v.id(table);
+
+export const SPRITESHEET_TYPES = ['character', 'object'] as const
+const VSpritesheetTypes = v.union(...SPRITESHEET_TYPES.map(t => v.literal(t)))
 
 export const spritesheetSerialized = {
   name: v.string(),
   worldId: idWorld,
+  type: VSpritesheetTypes,
+  // categories2: v.array(v.union(v.literal("character"), v.literal("background-object"))),
   textureId: idTexture,
   data: v.string(),
 };
@@ -40,6 +46,7 @@ export type SpritesheetDoc = Doc<SpritesheetTable>
 export type SpritesheetExtendDoc = SpritesheetDoc & {
   texture: TextureDoc,
 };
+export type SpritesheetTypes = typeof SPRITESHEET_TYPES[number];
 export type SerializedSpritesheet = ObjectType<typeof spritesheetSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -47,6 +54,7 @@ export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(spritesheetSerialized)
   .index(indexName_ByWorldId, ["worldId"])
+  .index(indexName_ByWorldIdAndType, ["worldId", "type"])
   .index(indexName_ByWorldIdAndTextureId, ["worldId", "textureId"])
 
 
@@ -78,9 +86,34 @@ export const list = query({
 export const listEx = query({
   args: { worldId: idWorld },
   handler: async (ctx, args) => {
-    const { worldId } = args
     const entityExs: SpritesheetExtendDoc[] = await asyncMap(
       await list(ctx, args),
+      async (entity) => {
+        const texture = await ctx.db.get(entity.textureId)
+        return { ...entity, texture: texture! }
+      }
+    );
+    return entityExs
+  },
+})
+
+export const listByType = query({
+  args: { worldId: idWorld, type: VSpritesheetTypes },
+  handler: async (ctx, args) => {
+    const { worldId, type } = args
+    return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndType, (q) =>
+      q
+        .eq("worldId", worldId)
+        .eq("type", type)
+    ).collect();
+  },
+})
+
+export const listExByType = query({
+  args: { worldId: idWorld, type: VSpritesheetTypes },
+  handler: async (ctx, args) => {
+    const entityExs: SpritesheetExtendDoc[] = await asyncMap(
+      await listByType(ctx, args),
       async (entity) => {
         const texture = await ctx.db.get(entity.textureId)
         return { ...entity, texture: texture! }

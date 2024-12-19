@@ -2,7 +2,7 @@ import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds";
 import { type TextureId } from "@/world/textures";
-import type { SpritesheetId, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/spritesheets";
+import type { SpritesheetId, SpritesheetTypes, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/spritesheets";
 
 export const getWorldSpritesheet = async (id: SpritesheetId) => {
   return await proxy().query(api.world.spritesheets.read, { id })
@@ -14,6 +14,14 @@ export const listWorldSpritesheets = async (worldId: WorldId) => {
 
 export const listWorldSpritesheetExtends = async (worldId: WorldId) => {
   return await proxy().query(api.world.spritesheets.listEx, { worldId })
+}
+
+export const listWorldSpritesheetsByType = async (worldId: WorldId, type: SpritesheetTypes) => {
+  return await proxy().query(api.world.spritesheets.listByType, { worldId, type })
+}
+
+export const listWorldSpritesheetExtendsByType = async (worldId: WorldId, type: SpritesheetTypes) => {
+  return await proxy().query(api.world.spritesheets.listExByType, { worldId, type })
 }
 
 export const listWorldSpritesheetsByTexture = async (worldId: WorldId, textureId: TextureId) => {

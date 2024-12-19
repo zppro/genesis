@@ -2,8 +2,9 @@ import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { FormErrorTip } from "~/components/convex/form"
-import { type SpritesheetDoc } from "@/world/spritesheets";
+import { type SpritesheetDoc, SPRITESHEET_TYPES } from "@/world/spritesheets";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
@@ -73,7 +74,20 @@ export default function SpritesheetForm<T extends z.AnyZodObject>({ children, er
               {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-            <Label>Texture<span className="text-red-500">*</span></Label>
+              <RadioGroup name="type" defaultValue={spritesheet?.type}>
+                {
+                  SPRITESHEET_TYPES.map(ty =>
+                    <div key={ty} className="flex items-center space-x-2">
+                      <RadioGroupItem value={ty} id={ty} />
+                      <Label htmlFor={ty}>{ty}</Label>
+                    </div>
+                  )
+                }
+              </RadioGroup>
+              {errors?.type ? <FormErrorTip tip={errors.type} /> : null}
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label>Texture<span className="text-red-500">*</span></Label>
               <ComboboxForTexture errClass={errors?.textureId ? "form-input-err" : undefined} {...textureCombox} defaultItemId={spritesheet?.textureId} onSelectChange={onTextureChange} />
               {errors?.textureId ? <FormErrorTip tip={errors.textureId} /> : null}
             </div>

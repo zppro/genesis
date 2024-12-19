@@ -54,7 +54,7 @@ export default function Index() {
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">
-          <div className="font-semibold text-lg">{characterEx?.name} <Badge>speed:{characterEx?.speed}</Badge></div>
+          <div className="font-semibold text-lg">{characterEx?.name}<Badge className="ml-2">speed:{characterEx?.speed}</Badge></div>
           {characterEx?._creationTime && (
             <div className="ml-auto text-xs h-full text-muted-foreground flex items-center">
               {format(new Date(characterEx._creationTime), "PPpp")}

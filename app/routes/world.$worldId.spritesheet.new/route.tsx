@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodSpritesheet } from "~/lib/spritesheet";
 import { createWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
-import { type InsertArgs, table } from "@/world/spritesheets";
+import { type InsertArgs, table, SPRITESHEET_TYPES } from "@/world/spritesheets";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
@@ -16,11 +16,13 @@ import { TextureComboxProvider, type TextureComboxItem } from "~/routes/world.$w
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 
+
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
+  type: z.enum(SPRITESHEET_TYPES, { message: "Type is required" }),
   textureId: z.string().min(1, { message: "Texture is required" }),
   data: z.string().min(1, { message: "Spritesheet data is required" }),
 });
