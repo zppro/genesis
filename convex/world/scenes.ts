@@ -3,14 +3,30 @@ import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
+import { idResource, read as readResource, ResourceDoc } from "./resources";
 
 export const table = 'scenes';
-export const indexName_ByWorldId = 'byWorldId';
+export const indexName_ByWorldId = 'by_worldId';
 export const idScene = v.id(table);
 export const sceneSerialized = {
   name: v.string(),
   desc: v.optional(v.string()),
   worldId: idWorld,
+
+  // a tile's dimension
+  tiledim: v.number(),
+  // x axis tiles number in map
+  screenxtiles: v.number(),
+  // y axis tiles number in map
+  screenytiles: v.number(),
+  // tileset png width
+  tilesetpxw: v.number(),
+  // tileset png height
+  tilesetpxh: v.number(),
+  // reource type = 'tileset'
+  tilesetId: idResource,
+  // reource type = 'tilemap'
+  tilemapId: idResource,
 };
 const { ...insertArgs } = sceneSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
@@ -25,7 +41,8 @@ export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
-export const tableSchema = defineTable(sceneSerialized).index(indexName_ByWorldId, ["worldId"])
+export const tableSchema = defineTable(sceneSerialized)
+  .index(indexName_ByWorldId, ["worldId"])
 
 export const create = mutation({
   args: insertArgs,

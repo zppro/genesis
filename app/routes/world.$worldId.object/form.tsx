@@ -10,11 +10,11 @@ import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import debounce from "debounce"
 import Combobox, { useConvexCombox, type ConvexComboxItem } from "~/components/ui/combox"
-import { ConvexFormProps, FormErrorTip } from "~/components/convex/form"
+import { FormProps, FormErrorTip } from "~/components/convex/form"
 import { convertFormDataToObject } from "~/lib/form";
 
 
-export default function ObjectForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: ConvexFormProps<ObjectTable, S>) {
+export default function ObjectForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: FormProps<ObjectTable, S>) {
   const { toast } = useToast()
   const spritesheetCombox = useConvexCombox<SpritesheetTable>()
   const [spritesheetId, setSpritesheetId] = useState(doc?.spritesheetId)

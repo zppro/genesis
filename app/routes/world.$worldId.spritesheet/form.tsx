@@ -13,7 +13,7 @@ import debounce from "debounce"
 import ComboboxForTexture from "./combox-for-texture"
 import { useTextureCombox, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
 import { FormErrors, ClientErrors } from "~/components/convex/type";
-import { ConvexFormProps, FormErrorTip } from "~/components/convex/form"
+import { FormProps, FormErrorTip } from "~/components/convex/form"
 
 // export type SpritesheetFormProps<T extends z.AnyZodObject> = {
 //   children?: React.ReactNode;
@@ -23,7 +23,7 @@ import { ConvexFormProps, FormErrorTip } from "~/components/convex/form"
 //   onClientErrors: (clientErrors: ClientErrors) => void;
 // }
 
-export default function SpritesheetForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: ConvexFormProps<SpritesheetTable, S>) {
+export default function SpritesheetForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: FormProps<SpritesheetTable, S>) {
 // export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onClientErrors }: SpritesheetFormProps<T>) {
   const { toast } = useToast()
   const textureCombox = useTextureCombox()

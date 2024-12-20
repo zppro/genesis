@@ -77,10 +77,7 @@ export async function loader({
   if (!characterId) {
     throw new Error("invalid characterId param!");
   }
-  const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
-  const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
-    key: t._id, text: t.name, imageUrl: t.texture.url
-  }))
+  
   let character = null
   try {
     character = await getWorldCharacter(characterId as CharacterId)
@@ -100,7 +97,8 @@ export async function loader({
         statusText: "Not Found",
       });
     }
-    return { character, comboxitems }
+    const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
+    return { character, spritesheetExs }
   }
 }
 
@@ -110,7 +108,10 @@ export function ErrorBoundary() {
 
 
 export default function EditScene() {
-  const { character, comboxitems } = useLoaderData<typeof loader>();
+  const { character, spritesheetExs } = useLoaderData<typeof loader>();
+  const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
+    key: t._id, text: t.name, icon: t.texture.url
+  }))
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
 

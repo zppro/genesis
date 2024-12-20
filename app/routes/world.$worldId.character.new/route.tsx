@@ -64,16 +64,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Error("invalid world params!");
   }
   const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
-  const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
-    key: t._id, text: t.name, imageUrl: t.texture.url
-  }))
-  return { worldId: worldId as WorldId, comboxitems }
+  return { worldId: worldId as WorldId, spritesheetExs }
 }
 
 
 
 export default function NewScene() {
-  const { worldId, comboxitems } = useLoaderData<typeof loader>();
+  const { worldId, spritesheetExs } = useLoaderData<typeof loader>();
+  const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
+    key: t._id, text: t.name, icon: t.texture.url
+  }))
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
 

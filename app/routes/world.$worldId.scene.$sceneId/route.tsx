@@ -6,8 +6,9 @@ import { getWorldScene } from "~/data/convexProxy/scene.server"
 import { type SceneId, table } from "@/world/scenes";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
-
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import { ScrollArea } from "~/components/ui/scroll-area"
+import SimpleCard from "~/components/ui/simple-card";
 
 export async function loader({
   params,
@@ -56,9 +57,20 @@ export default function Index() {
           )}
         </div>
         <Separator />
-        <div className="flex-1 whitespace-pre-wrap p-4 text-sm">
-          {scene?.desc}
-        </div>
+        <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)] ">
+          <div className="flex flex-col space-y-2">
+            <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-5">
+              <SimpleCard title="Tile Dimension" value={scene.tiledim} desc="a tile's size" />
+              <SimpleCard title="Tiles Of ScreenX" value={scene.screenxtiles} desc="number of tiles along x axis" />
+              <SimpleCard title=" Tiles Of ScreenYn" value={scene.screenytiles} desc="number of tiles along y axis" />
+              <SimpleCard title="Tileset Width" value={scene.tilesetpxw} />
+              <SimpleCard title="Tileset Height" value={scene.tilesetpxh} />
+            </div>
+            <div className="whitespace-pre-wrap text-sm">
+              {scene?.desc}
+            </div>
+          </div>
+        </ScrollArea>
         <Separator className="mt-auto" />
         <div className="p-2">
 

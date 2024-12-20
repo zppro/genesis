@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState, useContext } from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, LucideIcon } from "lucide-react"
 import { cn } from "~/lib/utils"
 import { Button } from "~/components/ui/button"
 import {
@@ -21,26 +21,18 @@ import {
 import { Id } from "@/_generated/dataModel"
 import { ConvexTables } from "../convex/type"
 
+/* start obsolete component 可能在同一个route中有多个，所以不能用context来传递数据 */
 export type ConvexCombox<T extends ConvexTables> = {
   defaultItemKey?: Id<T>;
   items: ConvexComboxItem<T>[];
 }
 
-export type ConvexComboxItem<T extends ConvexTables> = {
-  key: Id<T>;
-  text: string;
-  imageUrl?: string;
-}
-
-
 const ConvexComboxContext = React.createContext<ConvexCombox<any>>(
   undefined as unknown as ConvexCombox<any>,
 );
-
 export function useConvexCombox<T extends ConvexTables>(): ConvexCombox<T> {
   return useContext(ConvexComboxContext);
 }
-
 export const ConvexComboxProvider = <T extends ConvexTables>({ value, children }: {
   value: ConvexCombox<T>;
   children?: React.ReactNode;
@@ -51,12 +43,26 @@ export const ConvexComboxProvider = <T extends ConvexTables>({ value, children }
     children,
   );
 };
+/* end obsolete component 可能在同一个route中有多个，所以不能用context来传递数据 */
 
-export default function ComboboxForTexture<T extends ConvexTables>({ errClass, items, defaultItemKey, onSelectChange }: { errClass?: string, items?: ConvexComboxItem<T>[], defaultItemKey?: Id<T>, onSelectChange: (item: ConvexComboxItem<T>) => void; }) {
+export type ConvexComboxItem<T extends ConvexTables> = {
+  key: Id<T>;
+  text: string;
+  icon?: string | LucideIcon;
+}
+
+export type ComboxProps<T extends ConvexTables> = {
+  errClass?: string;
+  items?: ConvexComboxItem<T>[];
+  defaultItemKey?: Id<T>;
+  onSelectChange: (item: ConvexComboxItem<T>) => void;
+}
+
+export default function Combox<T extends ConvexTables>({ errClass, items, defaultItemKey, onSelectChange }: ComboxProps<T>) {
   const [open, setOpen] = useState(false)
   const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
-
+  console.log(items)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -91,7 +97,15 @@ export default function ComboboxForTexture<T extends ConvexTables>({ errClass, i
                     setOpen(false)
                   }}
                 >
-                  {item.imageUrl && <img src={item.imageUrl} className="list-image-file" />}
+                  {
+                    item.icon &&
+                    (
+                      (typeof item.icon === 'string') ?
+                        <img src={item.icon} className="list-image-file" />
+                        :
+                        <item.icon />
+                    )
+                  }
                   {item.text}
                   <Check
                     className={cn(
