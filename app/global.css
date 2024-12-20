@@ -37,3 +37,15 @@ pre {
 .key {
   color: red;
 }
+
+.tabs {
+  @apply flex text-center bg-gray-200;
+}
+
+.tab {
+  @apply text-lg;
+}
+
+.active-tab {
+  @apply border-b-2 border-gray-600;
+}

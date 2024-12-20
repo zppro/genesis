@@ -1,5 +1,5 @@
 import { format } from "date-fns/format"
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Outlet, Link, redirect, useLocation } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldSceneExtend } from "~/data/convexProxy/scene.server"
@@ -8,14 +8,18 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { ScrollArea } from "~/components/ui/scroll-area"
-import SimpleCard from "~/components/ui/simple-card";
-import { ImageDialog } from "~/components/ui/image-dialog";
-import { FileJson, FileAudio } from "lucide-react"
+import { cn } from "~/lib/utils";
 
 export async function loader({
   params,
+  request,
 }: LoaderFunctionArgs) {
-  const { sceneId } = params;
+  const { worldId, sceneId } = params;
+  let url = new URL(request.url);
+  if (url.pathname === `/world/${worldId}/scene/${sceneId}`) {
+    return redirect(`basic`);
+  }
+
   let sceneEx = null
   try {
     sceneEx = await getWorldSceneExtend(sceneId as SceneId)
@@ -35,6 +39,7 @@ export async function loader({
         statusText: "Not Found",
       });
     }
+    console.log('scene id load')
     return { sceneEx }
   }
 }
@@ -45,6 +50,8 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { sceneEx } = useLoaderData<typeof loader>();
+  const location = useLocation();
+  const tabValue = location.pathname.substring(location.pathname.lastIndexOf("/") + 1)
   return (
     <div className="flex h-full items-start flex-col">
       <Toolbar entityName={table} />
@@ -59,25 +66,18 @@ export default function Index() {
           )}
         </div>
         <Separator />
-        <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)] ">
-          <div className="flex flex-col space-y-2">
-            <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-5">
-              <SimpleCard title="Tile Dimension" value={sceneEx.tiledim} desc="a tile's size" />
-              <SimpleCard title="Tiles Of ScreenX" value={sceneEx.screenxtiles} desc="number of tiles along x axis" />
-              <SimpleCard title=" Tiles Of ScreenYn" value={sceneEx.screenytiles} desc="number of tiles along y axis" />
-              <SimpleCard title="Tileset Width" value={sceneEx.tilesetpxw} />
-              <SimpleCard title="Tileset Height" value={sceneEx.tilesetpxh} />
-            </div>
-            <ImageDialog src={sceneEx?.tileset.url} maxWidth={400} maxHeight={300} />
-            <a href={sceneEx.tilemap.url} className="underline"><FileJson className="h-12 w-12" />download tilemap.json</a> 
-            <div className="whitespace-pre-wrap text-sm">
-              {sceneEx?.desc}
-            </div>
-          </div>
+        <div className="pt-2 tabs">
+          <Link to="basic" prefetch="render" className={cn("tab basis-1/5", tabValue === 'basic' ? 'active-tab' : null)} >Basic</Link>
+          <Link to="tileset" prefetch="render" className={cn("tab basis-1/5", tabValue === 'tileset' ? 'active-tab' : null)}>Tileset</Link>
+          <Link to="tilemap" prefetch="render" className={cn("tab basis-1/5", tabValue === 'tilemap' ? 'active-tab' : null)}>Tilemap</Link>
+          <Link to="animations" prefetch="render" className={cn("tab basis-1/5", tabValue === 'animations' ? 'active-tab' : null)}>Animations</Link>
+          {/* <div className="flex-1 border-gray-500"></div> */}
+        </div>
+        <ScrollArea className="h-full w-full max-h-[calc(100vh-230px)] p-4">
+          <Outlet />
         </ScrollArea>
         <Separator className="mt-auto" />
         <div className="p-2">
-
         </div>
       </div>
     </div>
