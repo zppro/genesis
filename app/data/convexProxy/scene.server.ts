@@ -5,8 +5,11 @@ import type { SceneId, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/scenes
 // import { parseNotFoundRecordError, parseConvexError } from "@/error";
 
 export const getWorldScene = async (id: SceneId) => {
-  const scene = await proxy().query(api.world.scenes.read, { id })
-  return scene
+  return await proxy().query(api.world.scenes.read, { id })
+}
+
+export const getWorldSceneExtend = async (id: SceneId) => {
+  return await proxy().query(api.world.scenes.readEx, { id })
 }
 
 export const listWorldScenes = async (worldId: WorldId) => {

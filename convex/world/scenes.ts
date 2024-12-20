@@ -36,6 +36,10 @@ const deleteArgs = { id: idScene }
 export type SceneTable = typeof table
 export type SceneId = Id<SceneTable>
 export type SceneDoc = Doc<SceneTable>
+export type SceneExtendDoc = SceneDoc & {
+  tileset: ResourceDoc,
+  tilemap: ResourceDoc,
+};
 export type SerializedScene = ObjectType<typeof sceneSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
@@ -55,6 +59,17 @@ export const read = query({
   args: { id: idScene },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+export const readEx = query({
+  args: { id: idScene },
+  handler: async (ctx, args) => {
+    const entity = await read(ctx, args)
+    const tileset = await readResource(ctx, { id: entity?.tilesetId! })
+    const tilemap = await readResource(ctx, { id: entity?.tilemapId! })
+    const extendEntity: SceneExtendDoc = { ...entity!, tileset: tileset!, tilemap: tilemap! }
+    return extendEntity
   },
 });
 
