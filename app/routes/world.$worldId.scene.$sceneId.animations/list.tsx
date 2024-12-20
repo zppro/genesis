@@ -8,9 +8,21 @@ import { WorldId } from "@/worlds";
 import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { Search, Plus } from "lucide-react"
+import { Button } from "~/components/ui/button"
+import { Label } from "~/components/ui/label"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet"
 
 export default function SceneAnimationsScrollList({ worldId, scenes }: { worldId: WorldId, scenes: SceneDoc[] }) {
-  
+
   return (
     <div className="flex flex-col h-full">
       <div className="bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,7 +30,39 @@ export default function SceneAnimationsScrollList({ worldId, scenes }: { worldId
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search" className="pl-8" />
-            <Link to={`/world/${worldId}/object/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Edit profile</SheetTitle>
+                  <SheetDescription>
+                    Make changes to your profile here. Click save when you're done.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input id="name" value="Pedro Duarte" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                      Username
+                    </Label>
+                    <Input id="username" value="@peduarte" className="col-span-3" />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button type="submit">Save changes</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
+            {/* <Link to={`/world/${worldId}/object/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link> */}
           </div>
         </form>
       </div>
