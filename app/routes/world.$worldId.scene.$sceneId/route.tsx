@@ -73,9 +73,10 @@ export default function Index() {
           <Link to="animations" prefetch="render" className={cn("tab basis-1/5", tabValue === 'animations' ? 'active-tab' : null)}>Animations</Link>
           {/* <div className="flex-1 border-gray-500"></div> */}
         </div>
-        <ScrollArea className="h-full w-full max-h-[calc(100vh-230px)] p-4">
-          <Outlet />
-        </ScrollArea>
+        {/* <ScrollArea className="h-full w-full max-h-[calc(100vh-230px)] p-4 flex-1 flex flex-col">
+        
+        </ScrollArea> */}
+        <Outlet />
         <Separator className="mt-auto" />
         <div className="p-2">
         </div>

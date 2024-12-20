@@ -1,28 +1,19 @@
 
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
-import { Separator } from "~/components/ui/separator"
 import { cn } from "~/lib/utils"
 import { Link, useRouteLoaderData } from "@remix-run/react";
 import { type SceneDoc } from "@/world/scenes"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "~/components/ui/pagination"
+import { WorldId } from "@/worlds";
+import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { Search, Plus } from "lucide-react"
-import { WorldId } from "@/worlds";
 
-export default function SceneScrollList({ worldId, scenes }: { worldId: WorldId, scenes: SceneDoc[] }) {
-  // const { worldId } = useRouteLoaderData<typeof loader>("routes/world.$worldId.scene")!;
+export default function SceneAnimationsScrollList({ worldId, scenes }: { worldId: WorldId, scenes: SceneDoc[] }) {
+  
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <form>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -36,7 +27,7 @@ export default function SceneScrollList({ worldId, scenes }: { worldId: WorldId,
           {scenes.map((item) => (
             <Link
               key={item._id}
-              to={`/world/${worldId}/scene/${item._id}`}
+              to={`/world/${worldId}/scene/${item._id}/animations`}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
                 // mail.selected === item._id && "bg-muted"
@@ -69,25 +60,9 @@ export default function SceneScrollList({ worldId, scenes }: { worldId: WorldId,
           ))}
         </div>
       </ScrollArea>
-      <Separator />
+      {/* <Separator />
       <div className="pt-2 pb-2">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            {/* <PaginationItem>
-              <PaginationLink href="#">1</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem> */}
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      </div> */}
     </div>
   )
 }

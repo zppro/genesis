@@ -1,27 +1,43 @@
 
-import { format } from "date-fns/format"
-import { useLoaderData, Outlet } from "@remix-run/react";
+import { useLoaderData, Outlet, Link } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
-import { Separator } from "~/components/ui/separator"
-import { getWorldSceneExtend } from "~/data/convexProxy/scene.server"
-import { type SceneId, table } from "@/world/scenes";
-import { GetOneErrorBoundary } from "~/components/error-boundary"
-import { parseIsNotFoundRecordError } from "@/error";
-import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { ScrollArea } from "~/components/ui/scroll-area"
-import SimpleCard from "~/components/ui/simple-card";
-import { ImageDialog } from "~/components/ui/image-dialog";
-import { FileJson, FileAudio } from "lucide-react"
+import { Search, Plus } from "lucide-react"
+import List from "./list"
+
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "~/components/ui/resizable"
+import { Input } from "~/components/ui/input"
+import { WorldId } from "@/worlds";
 
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
+  const { worldId, sceneId } = params;
   console.log('animation load')
-  return {}
+  return { worldId: worldId as WorldId, sceneId, scenes: [] }
 }
 
-export default function Index() {
+export default function AnimationsTab() {
+  const data = useLoaderData<typeof loader>();
   return (
-    "Hello"
+    <div className="border flex-1 flex flex-col">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="h-full items-stretch"
+      >
+        <ResizablePanel defaultSize={25} minSize={25}>
+          <List {...data} />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={75}>
+          <div className="h-full">
+            <Outlet />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   )
 }

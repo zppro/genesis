@@ -7,7 +7,7 @@ import {
 } from "~/components/ui/resizable"
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
-import SceneScrollList from "./list"
+import List from "./list"
 import { ResourceTypes } from "@/world/resources";
 
 
@@ -33,7 +33,7 @@ export default function Scene() {
         className="h-full items-stretch"
       >
         <ResizablePanel defaultSize={25} minSize={25}>
-          <SceneScrollList {...data} />
+          <List {...data} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={75}>
