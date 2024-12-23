@@ -13,6 +13,12 @@ export const pixiSpritesheetSerialized = v.object({
   frames: v.record(v.string(), frameSerialized),
   animations: v.optional(v.record(v.string(), v.array(v.string()))),
   meta: v.object({
+    image: v.string(),
+    format: v.string(),
+    size: v.object({
+      w: v.number(),
+      h: v.number(),
+    }),
     scale: v.string(),
   })
 })

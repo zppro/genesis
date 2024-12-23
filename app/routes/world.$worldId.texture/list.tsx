@@ -30,7 +30,7 @@ export default function SceneScrollList({ worldId, textures }: { worldId: WorldI
           </div>
         </form>
       </div>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full max-h-[calc(100vh-150px)]">
         <div className="flex flex-col gap-2 p-4 pt-0">
           {textures.map((item) => (
             <Link

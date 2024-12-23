@@ -49,3 +49,18 @@ pre {
 .active-tab {
   @apply border-b-2 border-gray-600;
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loading-icon {
+    animation: spin infinite 2s linear;
+  }
+}

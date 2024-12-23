@@ -4,7 +4,7 @@ import { idTexture } from "./textures";
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
-import { TextureDoc } from "./textures"
+import { TextureDoc, read as readTexture } from "./textures"
 
 import {
   getAll,
@@ -69,6 +69,16 @@ export const read = query({
   args: { id: idSpritesheet },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+export const readEx = query({
+  args: { id: idSpritesheet },
+  handler: async (ctx, args) => {
+    const entity = await read(ctx, args)
+    const texture = await readTexture(ctx, { id: entity?.textureId! })
+    const extendEntity: SpritesheetExtendDoc = { ...entity!, texture: texture! }
+    return extendEntity
   },
 });
 

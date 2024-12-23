@@ -3,7 +3,8 @@ import { useLoaderData, Outlet, Link } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Search, Plus } from "lucide-react"
 import List from "./list"
-
+import PixiTilemap from "~/components/pixi/tilemap";
+import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,13 +12,17 @@ import {
 } from "~/components/ui/resizable"
 import { Input } from "~/components/ui/input"
 import { WorldId } from "@/worlds";
+import { ClientOnly } from "remix-utils/client-only"
+
 
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
   const { worldId, sceneId } = params;
   console.log('animation load')
-  return { worldId: worldId as WorldId, sceneId, scenes: [] }
+  const animationObjectExs = await listWorldObjectExtendsByType(worldId as WorldId, "animation")
+
+  return { worldId: worldId as WorldId, sceneId, scenes: [], animationObjectExs }
 }
 
 export default function AnimationsTab() {
@@ -33,8 +38,12 @@ export default function AnimationsTab() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={75}>
-          <div className="h-full">
-            <Outlet />
+          <div className="h-full p-2 grid place-content-center">
+            <ClientOnly fallback={null}>
+              {() => 
+                <PixiTilemap objectExs={data.animationObjectExs} />
+              }
+            </ClientOnly>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

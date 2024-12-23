@@ -12,7 +12,7 @@ import {
   Trash2,
 } from "lucide-react"
 
-export default function Toolbar({ entityName }: { entityName: string }) {
+export default function Toolbar({ entityName, children }: { entityName: string, children?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 p-2">
       <Tooltip>
@@ -39,6 +39,7 @@ export default function Toolbar({ entityName }: { entityName: string }) {
         </TooltipTrigger>
         <TooltipContent>Delete the {entityName}</TooltipContent>
       </Tooltip>
+      {children}
       {/* <Separator orientation="vertical" className="mx-1 h-6" /> */}
     </div>
   )

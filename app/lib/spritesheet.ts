@@ -1,4 +1,6 @@
 import { z } from "zod";
+import JSON5 from "json5"
+import { PixiSpritesheet } from "@/shared/spritesheet";
 
 export const zodframe = z.object({
   frame: z.object({
@@ -26,3 +28,14 @@ export const zodSpritesheet = z.object({
     scale: z.string(),
   })
 })
+
+export const parsePixiSpritesheet = (data: string) => {
+  const spritesheetObject = JSON5.parse(data) as PixiSpritesheet
+  return spritesheetObject
+}
+
+export const parsePixiAnmimationSourceSize = (data: string | PixiSpritesheet) => {
+  const spritesheetObject = typeof data === 'string' ? parsePixiSpritesheet(data) : data;
+  const key = Object.keys(spritesheetObject.frames)[0]
+  return spritesheetObject.frames[key].sourceSize
+}
