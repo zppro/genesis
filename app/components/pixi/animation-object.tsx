@@ -17,6 +17,7 @@ export default function PixiAnimationObject({ pixiAnimationSpritesheet, speed }:
   const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
   const url = pixiAnimationSpritesheet.meta.image
   useEffect(() => {
+    console.log('url=>', url)
     const bt = PIXI.BaseTexture.from(url);
     const spritesheet = new PIXI.Spritesheet(bt, pixiAnimationSpritesheet);
     spritesheet.parse().then(() => {
