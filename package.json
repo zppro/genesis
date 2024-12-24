@@ -42,6 +42,7 @@
     "isbot": "^4.1.0",
     "json5": "^2.2.3",
     "lucide-react": "^0.456.0",
+    "pixi-viewport": "^5.0.2",
     "pixi.js": "^7.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -51,6 +52,7 @@
     "svix": "^1.40.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "usehooks-ts": "^3.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

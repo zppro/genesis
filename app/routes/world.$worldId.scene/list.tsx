@@ -27,7 +27,7 @@ export default function SceneScrollList({ worldId, scenes }: { worldId: WorldId,
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search" className="pl-8" />
-            <Link to={`/world/${worldId}/object/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
+            <Link to={`/world/${worldId}/scene/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
           </div>
         </form>
       </div>
