@@ -2,27 +2,23 @@
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { cn } from "~/lib/utils"
-import { Link, useRouteLoaderData } from "@remix-run/react";
-import { type SceneAnimationExtendDoc } from "@/world/sceneAnimations"
-import { SceneId } from "@/world/scenes";
-import { Separator } from "~/components/ui/separator"
-import { Input } from "~/components/ui/input"
-import { Search, Plus } from "lucide-react"
-import { Button } from "~/components/ui/button"
-import { Label } from "~/components/ui/label"
+import { SceneAnimationId, type SceneAnimationExtendDoc } from "@/world/sceneAnimations"
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet"
-// import SceneAnimationForm from "~/routes/world.$worldId.scene.$sceneId.animations/form"
+  Pencil,
+  Trash2,
+} from "lucide-react"
+import { Button } from "~/components/ui/button"
+import { useFetcher, Form } from "@remix-run/react";
+import { CreateConfirm } from "~/lib/utils"
 
-export default function SceneAnimationsScrollList({ children, sceneAnimationExs }: { children?: React.ReactNode, sceneAnimationExs: SceneAnimationExtendDoc[] }) {
+export default function SceneAnimationsScrollList({ children, sceneAnimationExs, onEditSceneAnimation }: {
+  children?: React.ReactNode,
+  sceneAnimationExs: SceneAnimationExtendDoc[],
+  onEditSceneAnimation: (id: SceneAnimationId) => void
+}) {
+  // const fetcher = useFetcher();
+  // const isDeleting = fetcher.state !== "idle";
+
 
   return (
     <div className="flex flex-col h-full">
@@ -30,9 +26,9 @@ export default function SceneAnimationsScrollList({ children, sceneAnimationExs 
         {children}
       </div>
       <ScrollArea className="h-full">
-        <div className="flex flex-col gap-2 p-4 pt-0">
+        <div className="flex flex-col gap-2 p-2 pt-0">
           {sceneAnimationExs.map((item) => (
-            <Button
+            <div
               key={item._id}
               // to={`/world/${worldId}/scene/${item._id}/animations`}
               className={cn(
@@ -42,28 +38,45 @@ export default function SceneAnimationsScrollList({ children, sceneAnimationExs 
             >
               <div className="flex w-full flex-col gap-1">
                 <div className="flex items-center">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-1 items-center gap-2">
                     <div className="font-semibold">{item.name}</div>
                   </div>
-                  <div
-                    className={cn(
-                      "ml-auto text-xs",
-                      false
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {formatDistanceToNow(new Date(item._creationTime), {
-                      addSuffix: true,
-                    })}
+                  <div className="flex justify-center items-center space-x-[4px]">
+                    <Button variant="ghost" size="icon" className="w-4 h-4 flex justify-center items-center hover:bg-gray-300" onClick={() => {
+                      onEditSceneAnimation(item._id)
+                    }} >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Form method="post"
+                      action={`${item._id}/delete`}
+                      onSubmit={CreateConfirm("Please confirm you want to delete this record.")}
+                    >
+                      <Button variant="ghost" size="icon" className="w-4 h-4 flex justify-center items-center hover:bg-gray-300" type="submit"
+                        disabled={true}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </Form>
                   </div>
                 </div>
-                <div className="text-xs font-medium">{item.name}</div>
+                {/* <div className="text-xs font-medium">{item.name}</div> */}
               </div>
               <div className="line-clamp-2 text-xs text-muted-foreground">
-                --
+                {item.x}x, {item.y}y, {item.w}w, {item.h}h
               </div>
-            </Button>
+              <div
+                className={cn(
+                  "ml-auto text-xs",
+                  false
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+                )}
+              >
+                {formatDistanceToNow(new Date(item._creationTime), {
+                  addSuffix: true,
+                })}
+              </div>
+            </div>
           ))}
         </div>
       </ScrollArea>

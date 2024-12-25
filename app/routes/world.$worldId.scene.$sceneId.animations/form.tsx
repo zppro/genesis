@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form, Fetcher } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { SceneAnimationTable } from "@/world/sceneAnimations";
@@ -22,19 +22,28 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet"
 import { Button } from "~/components/ui/button"
-import { Search, Plus } from "lucide-react"
+import { Plus, Save } from "lucide-react"
+import { SpritesheetDoc } from "@/world/spritesheets";
+import { PixiSpritesheet } from "@/shared/spritesheet";
+import JSON5 from "json5"
 
 export const numberKeys = ["x", "y", "w", "h"];
 
 export type SceneAnimationFormProps<S extends z.AnyZodObject> = FormProps<SceneAnimationTable, S> & {
   objectItems: ConvexComboxItem<ObjectTable>[];
+  isSubmitting: boolean;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectItems, children, errors, doc, schema, onClientErrors }: SceneAnimationFormProps<S>) {
+export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, setOpen, isSubmitting, objectItems, children, errors, doc, schema, onClientErrors }: SceneAnimationFormProps<S>) {
   const { toast } = useToast()
-  const [sheetOpen, setSheetOpen] = useState(false);
+
   const [objectId, setObjectId] = useState(doc?.objectId)
   const objectIdInput = useRef<HTMLInputElement>(null);
+  const nameInput = useRef<HTMLInputElement>(null);
+  const wInput = useRef<HTMLInputElement>(null);
+  const hInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   function validateFormData(formData: FormData) {
@@ -56,6 +65,18 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectIte
   function onComboxItemChange(item: ConvexComboxItem<ObjectTable>) {
     console.log(`==onComboxItemChange object==`, item.key)
     objectIdInput.current!.value = item.key;
+    if (!nameInput.current!.value) {
+      nameInput.current!.value = item.text
+    }
+    const data = JSON5.parse((item.data as SpritesheetDoc).data) as PixiSpritesheet
+    const key = Object.keys(data.frames)[0]
+    const { w, h } = data.frames[key].frame
+    if (!wInput.current!.value) {
+      wInput.current!.value = w.toString()
+    }
+    if (!hInput.current!.value) {
+      hInput.current!.value = h.toString()
+    }
     const formData = new FormData(formRef.current!)
     onClientErrors(validateFormData(formData))
     setObjectId(item.key)
@@ -72,15 +93,21 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectIte
     return () => { }
   }, [errors?.["__err__"]])
 
+  // useEffect(() => {
+  //   if (doc) {
+  //     setObjectId(doc.objectId)
+  //     // console.log('set default objectid 1:', doc.objectId)
+  //   } else {
+  //     setObjectId(undefined)
+  //   }
+  // }, [doc])
+
   return (
 
-    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-      <SheetTrigger asChild>
-        <Button variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={(open) => { setOpen(open) }}>
+      {children}
       <SheetContent>
         <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
-          {children}
           <input name="objectId" ref={objectIdInput} type="hidden" defaultValue={objectId} />
           <SheetHeader>
             <SheetTitle>Scene Animation Form</SheetTitle>
@@ -94,7 +121,7 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectIte
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
-                    <Input id="name" name="name" defaultValue={doc?.name} placeholder="Name of your scene animation" className={errors?.name ? "form-input-err" : undefined} />
+                    <Input id="name" ref={nameInput} name="name" defaultValue={doc?.name} placeholder="Name of your scene animation" className={errors?.name ? "form-input-err" : undefined} />
                     {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
@@ -116,12 +143,12 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectIte
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="w">Width<span className="text-red-500">*</span></Label>
-                    <Input id="w" name="w" type="number" min={1} defaultValue={doc?.w} placeholder="width of your scene animation" className={errors?.w ? "form-input-err" : undefined} />
+                    <Input id="w" ref={wInput} name="w" type="number" min={1} defaultValue={doc?.w} placeholder="width of your scene animation" className={errors?.w ? "form-input-err" : undefined} />
                     {errors?.w ? <FormErrorTip tip={errors.w} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="h">Height<span className="text-red-500">*</span></Label>
-                    <Input id="h" name="h" type="number" min={1} defaultValue={doc?.h} placeholder="height of your scene animation" className={errors?.h ? "form-input-err" : undefined} />
+                    <Input id="h" ref={hInput} name="h" type="number" min={1} defaultValue={doc?.h} placeholder="height of your scene animation" className={errors?.h ? "form-input-err" : undefined} />
                     {errors?.h ? <FormErrorTip tip={errors.h} /> : null}
                   </div>
                 </div>
@@ -132,7 +159,10 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ objectIte
             {/* <SheetClose asChild>
             <Button type="submit">Save changes</Button>
           </SheetClose> */}
-            <Button type="submit" >Save changes</Button>
+            <Button variant="ghost" className="border" type="submit" >
+              <Save className="h-4 w-4" />
+              <span >{isSubmitting ? "Saving..." : "Save"}</span>
+            </Button>
           </SheetFooter>
         </Form>
       </SheetContent>

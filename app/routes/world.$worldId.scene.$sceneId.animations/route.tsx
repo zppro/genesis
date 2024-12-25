@@ -1,5 +1,5 @@
 
-import { useLoaderData, useActionData, Outlet, Link, } from "@remix-run/react";
+import { useNavigation, useLoaderData, useActionData, useFetcher, Outlet, Link, } from "@remix-run/react";
 import { type LoaderFunctionArgs, LinksFunction, ActionFunctionArgs } from "@remix-run/node";
 import { LoaderCircle } from "lucide-react"
 import { useRouteLoaderData } from "@remix-run/react";
@@ -16,7 +16,7 @@ import {
 import { WorldId } from "@/worlds";
 import { SceneId } from "@/world/scenes";
 import { ClientOnly } from "remix-utils/client-only"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer } from "@/shared/tilemap"
 
 import {
@@ -42,7 +42,7 @@ import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
 import { numberKeys } from "~/routes/world.$worldId.scene.$sceneId.animations/form"
 import { createSceneAnimation } from "~/data/convexProxy/sceneAnimation.server"
-import { type InsertArgs, table } from "@/world/sceneAnimations";
+import { type InsertArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
 
@@ -68,13 +68,15 @@ export async function action({
   request,
   params,
 }: ActionFunctionArgs) {
+  console.log('==action==')
   const { worldId, sceneId } = params;
-
+  console.log('request.method=>', request.method)
+  const isUpdate = request.method.toUpperCase() === "PUT"
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData, { numberKeys });
-  const formPayload = { ..._formData, sceneId }
+  const formPayload = { ..._formData, ...(isUpdate ? { id: sceneId as SceneId } : { sceneId }) }
 
   // payload z schema validation
   const result = createSceneAnimationFormSchema.safeParse(formPayload);
@@ -108,19 +110,25 @@ export async function loader({
 
 export default function AnimationsTab() {
   const { sceneEx } = useRouteLoaderData<typeof sceneLoader>("routes/world.$worldId.scene.$sceneId")!;
-  const { sceneAnimationExs, objectExs } = useLoaderData<typeof loader>();
+  const { worldId, sceneId, sceneAnimationExs, objectExs } = useLoaderData<typeof loader>();
   const objectItems = objectExs.map<ConvexComboxItem<ObjectTable>>(t => ({
-    key: t._id, text: t.name, icon: t.texture.url
+    key: t._id, text: t.name, icon: t.texture.url, data: t.spritesheet
   }))
   const [map, setMap] = useState<PixiTilemapConverted>()
   const actionData = useActionData<typeof action>();
+  console.log('actionData=>', actionData)
+  // const fetcher = useFetcher();
+  // console.log('fetcher.data=>', fetcher.data)
   const [errors, setErrors] = useState(actionData?.serverErrors)
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [currentSceneAnimation, setCurrentSceneAnimation] = useState<SceneAnimationDoc>();
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
 
   useEffect(() => {
     const tilesetUrl = sceneEx.tileset.url!;
     const tilemapUrl = sceneEx.tilemap.url!;
-
     (async () => {
 
 
@@ -170,14 +178,28 @@ export default function AnimationsTab() {
   }, [sceneEx])
 
   useEffect(() => {
-    if (actionData && "serverErrors" in actionData) {
-      setErrors(actionData.serverErrors)
+    if (actionData) {
+      if ("serverErrors" in actionData) {
+        setErrors(actionData.serverErrors)
+      }
+      setSheetOpen(false)
     }
   }, [actionData])
+
   function onClientErrors(clientErrors: ClientErrors) {
     // { ...actionData?.serverErrors, ...clientErrors }
     setErrors(clientErrors)
   }
+
+  function onEditSceneAnimation(id: SceneAnimationId) {
+    console.log('onEditSceneAnimation id=>', id)
+    const sceneAnimation = sceneAnimationExs.find(item=> item._id === id)
+    console.log('onEditSceneAnimation:', sceneAnimation)
+    setCurrentSceneAnimation(sceneAnimation)
+    buttonRef.current!.click()
+  }
+  const navigation = useNavigation();
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/scene/${sceneId}/animations`;
 
 
   return (
@@ -187,8 +209,7 @@ export default function AnimationsTab() {
         className="h-full items-stretch"
       >
         <ResizablePanel defaultSize={25} minSize={25}>
-          <List sceneAnimationExs={sceneAnimationExs}>
-
+          <List sceneAnimationExs={sceneAnimationExs} onEditSceneAnimation={onEditSceneAnimation}>
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <form>
@@ -196,32 +217,18 @@ export default function AnimationsTab() {
               </form>
               <SceneAnimationForm
                 errors={errors}
+                doc={currentSceneAnimation}
                 onClientErrors={onClientErrors}
                 schema={createSceneAnimationFormSchema}
                 objectItems={objectItems}
-              />
-              {/* <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>Scene Animation Form</SheetTitle>
-                      <SheetDescription>
-                        Make changes to your scene animation here. Click save when you're done.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="grid py-4">
-                      
-                    </div>
-                    <SheetFooter>
-                      <SheetClose asChild>
-                        <Button type="submit">Save changes</Button>
-                      </SheetClose>
-                    </SheetFooter>
-                  </SheetContent>
-                </Sheet> */}
-              {/* <Link to={`/world/${worldId}/object/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link> */}
+                isSubmitting={isSubmitting}
+                open={sheetOpen}
+                setOpen={setSheetOpen}
+              >
+                <SheetTrigger asChild>
+                  <Button ref={buttonRef} variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
+                </SheetTrigger>
+              </SceneAnimationForm>
             </div>
           </List>
         </ResizablePanel>

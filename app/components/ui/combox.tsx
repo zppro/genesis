@@ -49,6 +49,7 @@ export type ConvexComboxItem<T extends ConvexTables> = {
   key: Id<T>;
   text: string;
   icon?: string | LucideIcon;
+  data?: any;
 }
 
 export type ComboxProps<T extends ConvexTables> = {
