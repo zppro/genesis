@@ -16,8 +16,8 @@ export default function SceneAnimationsScrollList({ children, sceneAnimationExs,
   sceneAnimationExs: SceneAnimationExtendDoc[],
   onEditSceneAnimation: (id: SceneAnimationId) => void
 }) {
-  // const fetcher = useFetcher();
-  // const isDeleting = fetcher.state !== "idle";
+  const fetcher = useFetcher();
+  const isDeleting = fetcher.state !== "idle";
 
 
   return (
@@ -47,16 +47,16 @@ export default function SceneAnimationsScrollList({ children, sceneAnimationExs,
                     }} >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Form method="post"
+                    <fetcher.Form method="post"
                       action={`${item._id}/delete`}
                       onSubmit={CreateConfirm("Please confirm you want to delete this record.")}
                     >
                       <Button variant="ghost" size="icon" className="w-4 h-4 flex justify-center items-center hover:bg-gray-300" type="submit"
-                        disabled={true}
+                        disabled={isDeleting}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </Form>
+                    </fetcher.Form>
                   </div>
                 </div>
                 {/* <div className="text-xs font-medium">{item.name}</div> */}

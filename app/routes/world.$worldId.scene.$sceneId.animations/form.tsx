@@ -1,4 +1,4 @@
-import { Form, Fetcher } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { SceneAnimationTable } from "@/world/sceneAnimations";
@@ -38,7 +38,6 @@ export type SceneAnimationFormProps<S extends z.AnyZodObject> = FormProps<SceneA
 
 export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, setOpen, isSubmitting, objectItems, children, errors, doc, schema, onClientErrors }: SceneAnimationFormProps<S>) {
   const { toast } = useToast()
-
   const [objectId, setObjectId] = useState(doc?.objectId)
   const objectIdInput = useRef<HTMLInputElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
@@ -93,14 +92,14 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
     return () => { }
   }, [errors?.["__err__"]])
 
-  // useEffect(() => {
-  //   if (doc) {
-  //     setObjectId(doc.objectId)
-  //     // console.log('set default objectid 1:', doc.objectId)
-  //   } else {
-  //     setObjectId(undefined)
-  //   }
-  // }, [doc])
+  useEffect(() => {
+    if (doc) {
+      setObjectId(doc.objectId)
+      // console.log('set default objectid 1:', doc.objectId)
+    } else {
+      setObjectId(undefined)
+    }
+  }, [doc])
 
   return (
 
