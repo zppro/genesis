@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { table as characterTable, tableSchema as characterTableSchema } from "./characters"
 import { table as sceneTable, tableSchema as sceneTableSchema } from "./scenes"
+import { table as sceneAnimationTable, tableSchema as sceneAnimationTableSchema } from "./sceneAnimations"
 import { table as objectTable, tableSchema as objectTableSchema } from "./objects"
 import { table as resourceTable, tableSchema as resourceTableSchema } from "./resources"
 import { table as spritesheetTable, tableSchema as spritesheetTableSchema } from "./spritesheets"
@@ -12,6 +13,7 @@ export const worldTables = {
   [objectTable]: objectTableSchema,
   [resourceTable]: resourceTableSchema,
   [sceneTable]: sceneTableSchema,
+  [sceneAnimationTable]: sceneAnimationTableSchema,
   [spritesheetTable]: spritesheetTableSchema,
   [textureTable]: textureTableSchema,
 };

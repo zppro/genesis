@@ -97,7 +97,7 @@ export const listByType = query({
   },
 })
 
-export const listExBySlistByType = query({
+export const listExByType = query({
   args: { worldId: idWorld, type: VObjectTypes },
   handler: async (ctx, args) => {
     const entityExs: ObjectExtendDoc[] = await asyncMap(

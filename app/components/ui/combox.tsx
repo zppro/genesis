@@ -62,7 +62,6 @@ export default function Combox<T extends ConvexTables>({ errClass, items, defaul
   const [open, setOpen] = useState(false)
   const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
-  console.log(items)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -78,7 +77,7 @@ export default function Combox<T extends ConvexTables>({ errClass, items, defaul
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" style={{ pointerEvents: "auto" }}>
         <Command>
           <CommandInput placeholder="Search data..." className="h-9" />
           <CommandList>

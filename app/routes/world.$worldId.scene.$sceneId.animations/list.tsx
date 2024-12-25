@@ -3,8 +3,8 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { cn } from "~/lib/utils"
 import { Link, useRouteLoaderData } from "@remix-run/react";
-import { type SceneDoc } from "@/world/scenes"
-import { WorldId } from "@/worlds";
+import { type SceneAnimationExtendDoc } from "@/world/sceneAnimations"
+import { SceneId } from "@/world/scenes";
 import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { Search, Plus } from "lucide-react"
@@ -20,58 +20,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet"
+// import SceneAnimationForm from "~/routes/world.$worldId.scene.$sceneId.animations/form"
 
-export default function SceneAnimationsScrollList({ worldId, scenes }: { worldId: WorldId, scenes: SceneDoc[] }) {
+export default function SceneAnimationsScrollList({ children, sceneAnimationExs }: { children?: React.ReactNode, sceneAnimationExs: SceneAnimationExtendDoc[] }) {
 
   return (
     <div className="flex flex-col h-full">
       <div className="bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <form>
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search" className="pl-8" />
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Edit profile</SheetTitle>
-                  <SheetDescription>
-                    Make changes to your profile here. Click save when you're done.
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input id="name" value="Pedro Duarte" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="username" className="text-right">
-                      Username
-                    </Label>
-                    <Input id="username" value="@peduarte" className="col-span-3" />
-                  </div>
-                </div>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
-            {/* <Link to={`/world/${worldId}/object/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link> */}
-          </div>
-        </form>
+        {children}
       </div>
       <ScrollArea className="h-full">
         <div className="flex flex-col gap-2 p-4 pt-0">
-          {scenes.map((item) => (
-            <Link
+          {sceneAnimationExs.map((item) => (
+            <Button
               key={item._id}
-              to={`/world/${worldId}/scene/${item._id}/animations`}
+              // to={`/world/${worldId}/scene/${item._id}/animations`}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
                 // mail.selected === item._id && "bg-muted"
@@ -100,7 +63,7 @@ export default function SceneAnimationsScrollList({ worldId, scenes }: { worldId
               <div className="line-clamp-2 text-xs text-muted-foreground">
                 --
               </div>
-            </Link>
+            </Button>
           ))}
         </div>
       </ScrollArea>

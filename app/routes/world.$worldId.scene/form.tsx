@@ -13,7 +13,7 @@ import { ResouceTable } from "@/world/resources"
 import Combobox, { ConvexComboxItem } from "~/components/ui/combox"
 import { convertFormDataToObject } from "~/lib/form";
 
-export type SceneFormProp<S extends z.AnyZodObject> = FormProps<SceneTable, S> & {
+export type SceneFormProps<S extends z.AnyZodObject> = FormProps<SceneTable, S> & {
   tilesetItems: ConvexComboxItem<ResouceTable>[];
   tilemapItems: ConvexComboxItem<ResouceTable>[];
 }
@@ -27,7 +27,7 @@ export default function SceneForm<S extends z.AnyZodObject>({
   onClientErrors,
   tilesetItems,
   tilemapItems,
-}: SceneFormProp<S>) {
+}: SceneFormProps<S>) {
   const { toast } = useToast()
 
   const [tilesetId, setTilesetId] = useState(doc?.tilesetId)

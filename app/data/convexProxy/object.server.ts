@@ -17,8 +17,8 @@ export const listWorldObjects = async (worldId: WorldId) => {
 }
 
 export const listWorldObjectExtendsByType = async (worldId: WorldId, type: ObjectTypes) => {
-  const objects = await proxy().query(api.world.objects.listExBySlistByType, { worldId, type })
-  return objects
+  const objectExs = await proxy().query(api.world.objects.listExByType, { worldId, type })
+  return objectExs
 }
 
 export const createWorldObject = async (args: InsertArgs) => {

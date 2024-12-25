@@ -4,11 +4,12 @@ import { PixiComponent, useApp, applyDefaultProps } from '@pixi/react';
 import { ResourceDoc } from "@/world/resources"
 import JSON5 from "json5"
 import { PixiSpritesheet } from "@/shared/spritesheet";
-import { useState, useEffect, useRef, lazy, Suspense, ReactNode } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, ReactNode, MutableRefObject } from 'react';
 import PixiViewport from './PixiViewport.client';
 import { Viewport } from 'pixi-viewport';
 import { Container, Sprite } from '@pixi/react';
 import { PixiTilemapConverted } from "@/shared/tilemap"
+import { AnimatedSprite } from "@/shared/animatedSprite"
 
 type TilemapData = {
   // worldId,
@@ -33,10 +34,11 @@ type TilemapData = {
 
 type PixiStaticMapProps = {
   map: TilemapData,
+  staticMapRef?: MutableRefObject<PIXI.Container | undefined>;
   [k: string]: any;
 }
 const PixiStaticMap = PixiComponent('StaticMap', {
-  create: ({ map, ...props }: PixiStaticMapProps) => {
+  create: ({ map, staticMapRef, ...props }: PixiStaticMapProps) => {
     const numxtiles = Math.floor(map.tileSetDimX / map.tileDim);
     const numytiles = Math.floor(map.tileSetDimY / map.tileDim);
     const bt = PIXI.BaseTexture.from(map.tileSetUrl, {
@@ -60,6 +62,9 @@ const PixiStaticMap = PixiComponent('StaticMap', {
     const screenytiles = map.bgTiles[0][0].length;
 
     const container = new PIXI.Container();
+    if (staticMapRef) {
+      staticMapRef.current = container;
+    }
     const allLayers = [...map.bgTiles, ...map.objectTiles];
 
     // blit bg & object layers of map onto canvas
@@ -142,17 +147,16 @@ const PixiStaticMap = PixiComponent('StaticMap', {
 });
 
 export type TilemapProps = {
-  width: number;
-  height: number;
-  tilemap: ResourceDoc;
-  tileset: ResourceDoc;
+  width: number; // viewport可视宽度
+  height: number; // viewport可视高度
   map: PixiTilemapConverted;
 }
 
 // const PixiViewport = lazy(() => import('./PixiViewport'));
-export default function Tilemap({ width, height, tilemap, tileset, map }: TilemapProps) {
+export default function Tilemap({ width, height, map }: TilemapProps) {
   const pixiApp = useApp();
   const viewportRef = useRef<Viewport | undefined>();
+  const staticMapRef = useRef<PIXI.Container>();
   const [loaded, setLoaded] = useState(false)
   const [mapData, setMapData] = useState<TilemapData>();
 
@@ -198,7 +202,7 @@ export default function Tilemap({ width, height, tilemap, tileset, map }: Tilema
         tileSetDimY: map.tilesetpxh,
         tileDim: map.tiledim,
         bgTiles: map.bgtiles,
-        objectTiles: map.objmap,
+        objectTiles: map.objmap, // path finding使用
         animatedSprites: []
       }
       console.log('_mapData=>', _mapData)
@@ -224,6 +228,7 @@ export default function Tilemap({ width, height, tilemap, tileset, map }: Tilema
           map={mapData}
           onpointerup={onMapPointerUp}
           onpointerdown={onMapPointerDown}
+          staticMapRef={staticMapRef}
         />
       }
       {/* <Container>
