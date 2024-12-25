@@ -25,7 +25,7 @@ export default function SceneAnimationsScrollList({ children, sceneAnimationExs,
       <div className="bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {children}
       </div>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full max-h-[calc(100vh-300px)]">
         <div className="flex flex-col gap-2 p-2 pt-0">
           {sceneAnimationExs.map((item) => (
             <div

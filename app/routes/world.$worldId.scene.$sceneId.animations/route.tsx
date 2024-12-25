@@ -41,8 +41,8 @@ import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
 import { numberKeys } from "~/routes/world.$worldId.scene.$sceneId.animations/form"
-import { createSceneAnimation } from "~/data/convexProxy/sceneAnimation.server"
-import { type InsertArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
+import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/sceneAnimation.server"
+import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
 
@@ -50,9 +50,9 @@ import { ObjectTable } from "@/world/objects";
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
 ];
-const createSceneAnimationFormSchema = z.object({
+
+const saveSchema = {
   name: z.string().min(1, { message: "Name is required" }),
-  sceneId: z.string(),
   // x axis tiles number in map
   x: z.number().int().gt(0),
   // y axis tiles number in map
@@ -62,7 +62,17 @@ const createSceneAnimationFormSchema = z.object({
   // tileset png height
   h: z.number().int().gt(0),
   objectId: z.string().min(1, { message: "object is required" }),
+}
+const createSceneAnimationFormSchema = z.object({
+  sceneId: z.string(),
+  ...saveSchema,
 });
+
+const updateSceneAnimationFormSchema = z.object({
+  ...saveSchema,
+});
+
+
 
 export async function action({
   request,
@@ -76,15 +86,21 @@ export async function action({
 
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData, { numberKeys });
-  const formPayload = { ..._formData, ...(isUpdate ? { id: sceneId as SceneId } : { sceneId }) }
-
+  const formPayload = isUpdate ? { ..._formData } : { ..._formData, sceneId, id: undefined }
+  console.log('formPayload=>', formPayload)
   // payload z schema validation
-  const result = createSceneAnimationFormSchema.safeParse(formPayload);
+  const validateSchema = isUpdate ? updateSceneAnimationFormSchema : createSceneAnimationFormSchema;
+  const result = validateSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      const newSceneAnimationId = await createSceneAnimation(formPayload as InsertArgs)
-      // const newSceneId = ''
-      console.log('newSceneAnimationId=>', newSceneAnimationId)
+      if (isUpdate) {
+        await updateSceneAnimation(formPayload as unknown as UpdateArgs)
+      } else {
+        const newSceneAnimationId = await createSceneAnimation(formPayload as unknown as InsertArgs)
+        // const newSceneId = ''
+        console.log('newSceneAnimationId=>', newSceneAnimationId)
+      }
+      return {}
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(createSceneAnimationFormSchema.keyof().Values)
@@ -116,15 +132,10 @@ export default function AnimationsTab() {
   }))
   const [map, setMap] = useState<PixiTilemapConverted>()
   const actionData = useActionData<typeof action>();
-  console.log('actionData=>', actionData)
-  // const fetcher = useFetcher();
-  // console.log('fetcher.data=>', fetcher.data)
   const [errors, setErrors] = useState(actionData?.serverErrors)
   const [sheetOpen, setSheetOpen] = useState(false);
   const [currentSceneAnimation, setCurrentSceneAnimation] = useState<SceneAnimationDoc>();
-
   const buttonRef = useRef<HTMLButtonElement>(null);
-
 
   useEffect(() => {
     const tilesetUrl = sceneEx.tileset.url!;
@@ -181,8 +192,9 @@ export default function AnimationsTab() {
     if (actionData) {
       if ("serverErrors" in actionData) {
         setErrors(actionData.serverErrors)
+      } else {
+        setSheetOpen(false)
       }
-      setSheetOpen(false)
     }
   }, [actionData])
 
@@ -193,13 +205,14 @@ export default function AnimationsTab() {
 
   function onEditSceneAnimation(id: SceneAnimationId) {
     console.log('onEditSceneAnimation id=>', id)
-    const sceneAnimation = sceneAnimationExs.find(item=> item._id === id)
+    const sceneAnimation = sceneAnimationExs.find(item => item._id === id)
     console.log('onEditSceneAnimation:', sceneAnimation)
     setCurrentSceneAnimation(sceneAnimation)
     buttonRef.current!.click()
   }
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${worldId}/scene/${sceneId}/animations`;
+  const isSubmitting = (navigation.formMethod === "POST" || navigation.formMethod === "PUT")
+    && navigation.formAction === `/world/${worldId}/scene/${sceneId}/animations`;
 
 
   return (
@@ -226,7 +239,12 @@ export default function AnimationsTab() {
                 setOpen={setSheetOpen}
               >
                 <SheetTrigger asChild>
-                  <Button ref={buttonRef} variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
+                  <Button ref={buttonRef} className="hidden">edit trigger click</Button>
+                </SheetTrigger>
+                <SheetTrigger asChild>
+                  <Button onClick={() => {
+                    setCurrentSceneAnimation(undefined)
+                  }} variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
                 </SheetTrigger>
               </SceneAnimationForm>
             </div>

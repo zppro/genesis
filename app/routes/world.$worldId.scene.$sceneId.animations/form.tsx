@@ -106,8 +106,9 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
     <Sheet open={open} onOpenChange={(open) => { setOpen(open) }}>
       {children}
       <SheetContent>
-        <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
+        <Form method={doc ? "put" : "POST"} ref={formRef} onChange={handleChange} className="flex flex-col h-full">
           <input name="objectId" ref={objectIdInput} type="hidden" defaultValue={objectId} />
+          <input name="id" type="hidden" defaultValue={doc?._id} />
           <SheetHeader>
             <SheetTitle>Scene Animation Form</SheetTitle>
             <SheetDescription>
