@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react"
 import { useRouteLoaderData } from "@remix-run/react";
 import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$sceneId/route";
 import List from "./list"
-import Tilemap from "~/components/pixi/tilemap.client";
+import Tilemap, { TilemapAnimation } from "~/components/pixi/tilemap.client";
 import { Stage } from '@pixi/react';
 import { listSceneAnimationExtends } from "~/data/convexProxy/sceneAnimation.server"
 import {
@@ -45,7 +45,7 @@ import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/s
 import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
-
+import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -214,6 +214,17 @@ export default function AnimationsTab() {
   const isSubmitting = (navigation.formMethod === "POST" || navigation.formMethod === "PUT")
     && navigation.formAction === `/world/${worldId}/scene/${sceneId}/animations`;
 
+  const tilemapAnimations = sceneAnimationExs.map<TilemapAnimation>(sa =>
+  ({
+    x: sa.x,
+    y: sa.y,
+    w: sa.w,
+    h: sa.h,
+    speed: 0.1,
+    spritesheet: parsePixiSpritesheet(sa.objectEx?.spritesheet?.data)
+  })
+  )
+
 
   return (
     <div className="border flex-1 flex flex-col">
@@ -259,7 +270,7 @@ export default function AnimationsTab() {
                   console.log('stage on mounted')
                 }}>
                   {
-                    map && <Tilemap width={400} height={400} map={map} />
+                    map && <Tilemap width={400} height={400} map={map} tilemapAnimations={tilemapAnimations} />
                   }
 
                 </Stage>

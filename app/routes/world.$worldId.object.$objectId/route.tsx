@@ -113,10 +113,16 @@ export default function Index() {
               <ClientOnly fallback={null}>
                 {
                   () =>
-                    <Stage key={objectEx._id} width={sourceSize.w} height={sourceSize.h} options={{ background: 0xffffff }} onMount={()=> {
+                    <Stage key={objectEx._id} width={sourceSize.w} height={sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
                       console.log('stage on mounted')
                     }}>
-                      <PixiAnimationObject pixiAnimationSpritesheet={pixiSpriteSheet} speed={0.1} />
+                      <PixiAnimationObject
+                        pixiAnimationSpritesheet={pixiSpriteSheet} speed={0.1}
+                        x={0}
+                        y={0}
+                        w={sourceSize.w}
+                        h={sourceSize.h}
+                      />
                     </Stage>
                 }
               </ClientOnly>

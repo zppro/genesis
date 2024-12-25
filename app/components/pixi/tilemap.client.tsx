@@ -10,6 +10,19 @@ import { Viewport } from 'pixi-viewport';
 import { Container, Sprite } from '@pixi/react';
 import { PixiTilemapConverted } from "@/shared/tilemap"
 import { AnimatedSprite } from "@/shared/animatedSprite"
+import PixiAnimationObject from "~/components/pixi/animation-object";
+
+type Frame = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export type TilemapAnimation = Frame & {
+  speed: number;
+  spritesheet: PixiSpritesheet;
+}
 
 type TilemapData = {
   // worldId,
@@ -150,10 +163,11 @@ export type TilemapProps = {
   width: number; // viewport可视宽度
   height: number; // viewport可视高度
   map: PixiTilemapConverted;
+  tilemapAnimations: TilemapAnimation[]
 }
 
 // const PixiViewport = lazy(() => import('./PixiViewport'));
-export default function Tilemap({ width, height, map }: TilemapProps) {
+export default function Tilemap({ width, height, map, tilemapAnimations }: TilemapProps) {
   const pixiApp = useApp();
   const viewportRef = useRef<Viewport | undefined>();
   const staticMapRef = useRef<PIXI.Container>();
@@ -230,6 +244,17 @@ export default function Tilemap({ width, height, map }: TilemapProps) {
           onpointerdown={onMapPointerDown}
           staticMapRef={staticMapRef}
         />
+      }
+      {
+        tilemapAnimations.map(animation =>
+          <PixiAnimationObject
+            pixiAnimationSpritesheet={animation.spritesheet} speed={animation.speed}
+            x={animation.x}
+            y={animation.y}
+            w={animation.w}
+            h={animation.h}
+          />
+        )
       }
       {/* <Container>
         <Sprite

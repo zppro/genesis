@@ -1,20 +1,27 @@
 "use client"
 import * as PIXI from 'pixi.js';
 import { Container, AnimatedSprite } from '@pixi/react';
-import { useMemo } from 'react';
-import JSON5 from "json5"
+// import { useMemo } from 'react';
+// import JSON5 from "json5"
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect } from 'react';
-import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+// import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
 
 export type PixiAnimationObjectProps = {
   pixiAnimationSpritesheet: PixiSpritesheet;
   speed: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
-export default function PixiAnimationObject({ pixiAnimationSpritesheet, speed }: PixiAnimationObjectProps) {
+export default function PixiAnimationObject({
+  pixiAnimationSpritesheet, speed,
+  x, y, w, h
+}: PixiAnimationObjectProps) {
   const [frames, setFrames] = useState<PIXI.Texture<PIXI.Resource>[]>([]);
-  const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
+  // const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
   const url = pixiAnimationSpritesheet.meta.image
   useEffect(() => {
     console.log('url=>', url)
@@ -44,16 +51,16 @@ export default function PixiAnimationObject({ pixiAnimationSpritesheet, speed }:
   // }
 
   return (
-    <Container width={sourceSize.w} height={sourceSize.h}>
+    <Container x={x} y={y} width={w} height={h}>
       {
         (frames && frames.length > 0 ? <AnimatedSprite
-          anchor={0.5}
+          // anchor={0.5}
           // scale={2}
           textures={frames}
           isPlaying={true}
           // initialFrame={0}
           animationSpeed={speed}
-          x={sourceSize.w / 2} y={sourceSize.h / 2}
+        // x={sourceSize.w / 2} y={sourceSize.h / 2}
         // loop={false}
         // onComplete={() => {
         //   console.log('loaded...')
