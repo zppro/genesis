@@ -24,6 +24,8 @@ export const sceneAnimationSerialized = {
   w: v.number(),
   // height of the animation
   h: v.number(),
+  // play speed of the animation
+  speed: v.number(),
 };
 
 

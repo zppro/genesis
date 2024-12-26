@@ -40,7 +40,7 @@ import { z } from "zod";
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
-import { numberKeys } from "~/routes/world.$worldId.scene.$sceneId.animations/form"
+import { numberKeys, decimalKeys } from "~/routes/world.$worldId.scene.$sceneId.animations/form"
 import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/sceneAnimation.server"
 import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
@@ -53,14 +53,16 @@ export const links: LinksFunction = () => [
 
 const saveSchema = {
   name: z.string().min(1, { message: "Name is required" }),
-  // x axis tiles number in map
+  // animation x axis in map
   x: z.number().int().gt(0),
-  // y axis tiles number in map
+  // animation y axis in map
   y: z.number().int().gt(0),
-  // tileset png width
+  // animation width
   w: z.number().int().gt(0),
-  // tileset png height
+  // animation height
   h: z.number().int().gt(0),
+  // animation play speed
+  speed: z.number().gt(0),
   objectId: z.string().min(1, { message: "object is required" }),
 }
 const createSceneAnimationFormSchema = z.object({
@@ -85,7 +87,7 @@ export async function action({
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
-  const _formData = convertFormDataToObject(formData, { numberKeys });
+  const _formData = convertFormDataToObject(formData, { numberKeys, decimalKeys });
   const formPayload = isUpdate ? { ..._formData } : { ..._formData, sceneId, id: undefined }
   console.log('formPayload=>', formPayload)
   // payload z schema validation
@@ -220,7 +222,7 @@ export default function AnimationsTab() {
     y: sa.y,
     w: sa.w,
     h: sa.h,
-    speed: 0.1,
+    speed: sa.speed,
     spritesheet: parsePixiSpritesheet(sa.objectEx?.spritesheet?.data)
   })
   )

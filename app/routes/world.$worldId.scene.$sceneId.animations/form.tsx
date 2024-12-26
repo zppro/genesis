@@ -28,6 +28,7 @@ import { PixiSpritesheet } from "@/shared/spritesheet";
 import JSON5 from "json5"
 
 export const numberKeys = ["x", "y", "w", "h"];
+export const decimalKeys = ["speed"];
 
 export type SceneAnimationFormProps<S extends z.AnyZodObject> = FormProps<SceneAnimationTable, S> & {
   objectItems: ConvexComboxItem<ObjectTable>[];
@@ -43,10 +44,11 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
   const nameInput = useRef<HTMLInputElement>(null);
   const wInput = useRef<HTMLInputElement>(null);
   const hInput = useRef<HTMLInputElement>(null);
+  const speedInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   function validateFormData(formData: FormData) {
-    const formPayload = convertFormDataToObject(formData, { numberKeys })
+    const formPayload = convertFormDataToObject(formData, { numberKeys, decimalKeys })
     // form number
     console.log('validateFormData=>', formPayload)
     const result = schema.safeParse(formPayload);
@@ -150,6 +152,11 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
                     <Label htmlFor="h">Height<span className="text-red-500">*</span></Label>
                     <Input id="h" ref={hInput} name="h" type="number" min={1} defaultValue={doc?.h} placeholder="height of your scene animation" className={errors?.h ? "form-input-err" : undefined} />
                     {errors?.h ? <FormErrorTip tip={errors.h} /> : null}
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="speed">Speed<span className="text-red-500">*</span></Label>
+                    <Input id="speed" ref={speedInput} name="speed" type="number" min={0} step={0.05} max={2} defaultValue={doc?.speed || 0.1} placeholder="height of your scene animation" className={errors?.h ? "form-input-err" : undefined} />
+                    {errors?.speed ? <FormErrorTip tip={errors.speed} /> : null}
                   </div>
                 </div>
               </div>
