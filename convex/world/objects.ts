@@ -37,6 +37,10 @@ export type ObjectDoc = Doc<ObjectTable>
 export type ObjectTypes = typeof OBJECT_TYPES[number];
 export type ObjectExtendDoc = ObjectDoc & {
   spritesheet: SpritesheetDoc,
+  textureUrl: string,
+};
+export type ObjectExtendDoc_Old = ObjectDoc & {
+  spritesheet: SpritesheetDoc,
   texture: TextureDoc,
 };
 export type SerializedObject = ObjectType<typeof objectSerialized>;
@@ -69,7 +73,7 @@ export const readEx = query({
   handler: async (ctx, args) => {
     const entity = await read(ctx, args)
     const spritesheetEx = await ctx.runQuery(api.world.spritesheets.readEx, { id: entity?.spritesheetId! })
-    const extendEntity: ObjectExtendDoc = { ...entity!, spritesheet: spritesheetEx!, texture: spritesheetEx.texture }
+    const extendEntity: ObjectExtendDoc = { ...entity!, spritesheet: spritesheetEx!, textureUrl: spritesheetEx.texture.url }
     return extendEntity
   },
 });
@@ -82,6 +86,20 @@ export const list = query({
       q
         .eq("worldId", worldId)
     ).collect();
+  },
+})
+
+export const listEx = query({
+  args: { worldId: idWorld },
+  handler: async (ctx, args) => {
+    const entityExs: ObjectExtendDoc[] = await asyncMap(
+      await list(ctx, args),
+      async (entity) => {
+        const spritesheetEx = await ctx.runQuery(api.world.spritesheets.readEx, { id: entity.spritesheetId })
+        return { ...entity, spritesheet: spritesheetEx!, textureUrl: spritesheetEx.texture.url }
+      }
+    );
+    return entityExs
   },
 })
 
@@ -104,7 +122,7 @@ export const listExByType = query({
       await listByType(ctx, args),
       async (entity) => {
         const spritesheetEx = await ctx.runQuery(api.world.spritesheets.readEx, { id: entity.spritesheetId })
-        return { ...entity, spritesheet: spritesheetEx!, texture: spritesheetEx.texture }
+        return { ...entity, spritesheet: spritesheetEx!, textureUrl: spritesheetEx.texture.url }
       }
     );
     return entityExs

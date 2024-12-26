@@ -128,7 +128,7 @@ export default function AnimationsTab() {
   const { sceneEx } = useRouteLoaderData<typeof sceneLoader>("routes/world.$worldId.scene.$sceneId")!;
   const { worldId, sceneId, sceneAnimationExs, objectExs } = useLoaderData<typeof loader>();
   const objectItems = objectExs.map<ConvexComboxItem<ObjectTable>>(t => ({
-    key: t._id, text: t.name, icon: t.texture.url, data: t.spritesheet
+    key: t._id, text: t.name, icon: t.textureUrl, data: t.spritesheet
   }))
   const [map, setMap] = useState<PixiTilemapConverted>()
   const actionData = useActionData<typeof action>();

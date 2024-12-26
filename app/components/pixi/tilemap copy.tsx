@@ -14,7 +14,8 @@ export default function PixiTilemap({ objectExs }: { objectExs: ObjectExtendDoc[
   useEffect(() => {
     const oe = objectExs[0]
     const spritesheetData = JSON5.parse(oe.spritesheet.data) as PixiSpritesheet
-    const bt = PIXI.BaseTexture.from(oe.texture.url);
+    // const bt = PIXI.BaseTexture.from(oe.texture.url);
+    const bt = PIXI.BaseTexture.from(spritesheetData.meta.image);
     const spritesheet = new PIXI.Spritesheet(bt, spritesheetData);
     spritesheet.parse().then(() => {
       const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
@@ -24,7 +25,7 @@ export default function PixiTilemap({ objectExs }: { objectExs: ObjectExtendDoc[
 
   function loadTextures(oe: ObjectExtendDoc): PIXI.Texture[] {
     const spritesheetData = JSON5.parse(oe.spritesheet.data) as PixiSpritesheet
-    const bt = PIXI.BaseTexture.from(oe.texture.url);
+    const bt = PIXI.BaseTexture.from(spritesheetData.meta.image);
     // const spritesheet = new PIXI.Spritesheet(bt, spritesheetData);
     // spritesheet.parse().then(() => {
     //   const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
