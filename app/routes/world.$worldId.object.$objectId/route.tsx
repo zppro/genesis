@@ -54,7 +54,6 @@ export async function loader({
         statusText: "Not Found",
       });
     }
-
     return { objectEx }
   }
 }
@@ -126,7 +125,7 @@ export default function Index() {
                     </Stage>
                 }
               </ClientOnly>
-              <ImageDialog src={objectEx?.texture.url} maxWidth={400} maxHeight={300} />
+              <ImageDialog src={objectEx?.textureUrl} maxWidth={400} maxHeight={300} />
             </div>
             <div className="whitespace-pre-wrap"><JsonPretty data={data} className="w-[520px]" /></div>
           </div>

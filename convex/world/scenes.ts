@@ -4,6 +4,8 @@ import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idResource, read as readResource, ResourceDoc } from "./resources";
+import { api } from "../_generated/api";
+import { asyncMap } from "convex-helpers";
 
 export const table = 'scenes';
 export const indexName_ByWorldId = 'by_worldId';
@@ -81,6 +83,21 @@ export const list = query({
       q
         .eq("worldId", worldId)
     ).collect();
+  },
+})
+
+export const listEx = query({
+  args: { worldId: idWorld },
+  handler: async (ctx, args) => {
+    const entityExs: SceneExtendDoc[] = await asyncMap(
+      await list(ctx, args),
+      async (entity) => {
+        const tileset = await ctx.runQuery(api.world.resources.read, { id: entity.tilesetId })
+        const tilemap = await ctx.runQuery(api.world.resources.read, { id: entity.tilemapId })
+        return { ...entity, tileset: tileset!, tilemap: tilemap! }
+      }
+    );
+    return entityExs
   },
 })
 
