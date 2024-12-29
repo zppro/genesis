@@ -39,3 +39,9 @@ export const parsePixiAnmimationSourceSize = (data: string | PixiSpritesheet) =>
   const key = Object.keys(spritesheetObject.frames)[0]
   return spritesheetObject.frames[key].sourceSize
 }
+
+export const parsePixiAnmimationAnimationNames = (data: string | PixiSpritesheet) => {
+  const spritesheetObject = typeof data === 'string' ? parsePixiSpritesheet(data) : data;
+  const animationNames = Object.keys(spritesheetObject.animations!)
+  return animationNames
+}

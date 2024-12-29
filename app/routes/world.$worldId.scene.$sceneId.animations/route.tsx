@@ -1,7 +1,7 @@
 
 import { useNavigation, useLoaderData, useActionData, useFetcher, Outlet, Link, } from "@remix-run/react";
 import { type LoaderFunctionArgs, LinksFunction, ActionFunctionArgs } from "@remix-run/node";
-import { LoaderCircle } from "lucide-react"
+import { LoaderCircle, Search, Plus } from "lucide-react"
 import { useRouteLoaderData } from "@remix-run/react";
 import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$sceneId/route";
 import List from "./list"
@@ -31,7 +31,6 @@ import {
 } from "~/components/ui/sheet"
 import { Label } from "~/components/ui/label"
 import { Input } from "~/components/ui/input"
-import { Search, Plus } from "lucide-react"
 import { Button } from "~/components/ui/button"
 import { type ConvexComboxItem } from "~/components/ui/combox"
 import SceneAnimationForm from "~/routes/world.$worldId.scene.$sceneId.animations/form"

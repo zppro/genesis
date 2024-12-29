@@ -7,9 +7,8 @@ import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect } from 'react';
 // import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
 
-export type PixiAnimationObjectProps = {
+export type PixiSpritesheetObjectProps = {
   animationSpritesheet: PixiSpritesheet;
-  animationName: string;
   speed: number;
   x: number;
   y: number;
@@ -17,10 +16,10 @@ export type PixiAnimationObjectProps = {
   h: number;
 }
 
-export default function PixiAnimationObject({
-  animationSpritesheet, animationName, speed,
+export default function PixiSpritesheetObject({
+  animationSpritesheet, speed,
   x, y, w, h
-}: PixiAnimationObjectProps) {
+}: PixiSpritesheetObjectProps) {
   const [frames, setFrames] = useState<PIXI.Texture<PIXI.Resource>[]>([]);
   // const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
   const url = animationSpritesheet.meta.image
@@ -29,9 +28,7 @@ export default function PixiAnimationObject({
     const bt = PIXI.BaseTexture.from(url);
     const spritesheet = new PIXI.Spritesheet(bt, animationSpritesheet);
     spritesheet.parse().then(() => {
-      // const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
-      const frames = spritesheet.animations[animationName]
-      console.log("frames:", frames)
+      const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
       setFrames(frames)
     })
   }, [])

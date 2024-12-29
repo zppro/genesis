@@ -12,20 +12,7 @@ import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 // import ToolItem from "~/components/toolbars/tool-item";
 import { ImageDialog } from "~/components/ui/image-dialog";
 import { Badge } from "~/components/ui/badge"
-// import { Button } from "~/components/ui/button"
-// import {
-//   LoaderCircle,
-// } from "lucide-react"
-// import {
-//   Sheet,
-//   SheetClose,
-//   SheetContent,
-//   SheetDescription,
-//   SheetFooter,
-//   SheetHeader,
-//   SheetTitle,
-//   SheetTrigger,
-// } from "~/components/ui/sheet"
+import { LoaderCircle } from "lucide-react"
 import { ClientOnly } from "remix-utils/client-only"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
@@ -109,14 +96,15 @@ export default function Index() {
           <div className="flex flex-col space-y-2">
             <div>
               {/* <LoaderCircle className="h-4 w-4 loading-icon" /> */}
-              <ClientOnly fallback={null}>
+              <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
                 {
                   () =>
                     <Stage key={objectEx._id} width={sourceSize.w} height={sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
                       console.log('stage on mounted')
                     }}>
                       <PixiAnimationObject
-                        pixiAnimationSpritesheet={pixiSpriteSheet} speed={0.1}
+                        animationSpritesheet={pixiSpriteSheet} speed={0.1}
+                        animationName="pixels_large"
                         x={0}
                         y={0}
                         w={sourceSize.w}

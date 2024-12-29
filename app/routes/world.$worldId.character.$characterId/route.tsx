@@ -11,7 +11,11 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { ImageDialog } from "~/components/ui/image-dialog";
 import { Badge } from "~/components/ui/badge"
-
+import { LoaderCircle } from "lucide-react"
+import { ClientOnly } from "remix-utils/client-only"
+import PixiAnimationObject from "~/components/pixi/animation-object";
+import { Stage } from '@pixi/react';
+import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
 
 export async function loader({
   params,
@@ -47,7 +51,11 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { characterEx } = useLoaderData<typeof loader>();
-
+  const data = characterEx?.spritesheet?.data
+  const pixiSpriteSheet = parsePixiSpritesheet(data)
+  const sourceSize = parsePixiAnmimationSourceSize(pixiSpriteSheet)
+  const animationNames = parsePixiAnmimationAnimationNames(pixiSpriteSheet)
+  
   return (
     <div className="flex h-full items-start flex-col">
       <Toolbar entityName={table} />
@@ -64,7 +72,34 @@ export default function Index() {
         <Separator />
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
           <div className="flex flex-col space-y-2">
-            <div><ImageDialog src={characterEx?.texture.url} maxWidth={400} maxHeight={300} /></div>
+            <div>
+              <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
+                {
+                  () =>
+                    <Stage key={characterEx._id} width={sourceSize.w * animationNames.length } height={sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
+                      console.log('stage on mounted')
+                    }}>
+
+                      {
+
+                        animationNames.map((aname, idx) =>
+
+                          <PixiAnimationObject
+                            animationSpritesheet={pixiSpriteSheet} speed={characterEx.speed}
+                            animationName={aname}
+                            x={sourceSize.w * idx}
+                            y={0}
+                            w={sourceSize.w}
+                            h={sourceSize.h}
+                          />
+                        )
+                      }
+
+                    </Stage>
+                }
+              </ClientOnly>
+              <ImageDialog src={characterEx?.texture.url} maxWidth={400} maxHeight={300} />
+            </div>
             <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[520px]" /></div>
           </div>
         </ScrollArea>

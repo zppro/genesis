@@ -248,7 +248,9 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       {
         tilemapAnimations.map(animation =>
           <PixiAnimationObject
-            pixiAnimationSpritesheet={animation.spritesheet} speed={animation.speed}
+            animationName='pixels_large'
+            animationSpritesheet={animation.spritesheet}
+            speed={animation.speed}
             x={animation.x}
             y={animation.y}
             w={animation.w}
