@@ -1,8 +1,8 @@
 import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import { SceneAnimationTable } from "@/world/sceneAnimations";
-import { ObjectTable } from "@/world/objects";
+import { SceneNPCTable } from "@/world/sceneNPCs";
+import { CharacterTable, CharacterExtendDoc } from "@/world/characters";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
@@ -27,20 +27,20 @@ import { SpritesheetDoc } from "@/world/spritesheets";
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import JSON5 from "json5"
 
-export const numberKeys = ["x", "y", "w", "h"];
+export const numberKeys = ["x", "y", "w", "h", "move"];
 export const decimalKeys = ["speed"];
 
-export type SceneAnimationFormProps<S extends z.AnyZodObject> = FormProps<SceneAnimationTable, S> & {
-  objectItems: ConvexComboxItem<ObjectTable>[];
+export type SceneNPCFormProps<S extends z.AnyZodObject> = FormProps<SceneNPCTable, S> & {
+  characterItems: ConvexComboxItem<CharacterTable>[];
   isSubmitting: boolean;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, setOpen, isSubmitting, objectItems, children, errors, doc, schema, onClientErrors }: SceneAnimationFormProps<S>) {
+export default function SceneNPCForm<S extends z.AnyZodObject>({ open, setOpen, isSubmitting, characterItems, children, errors, doc, schema, onClientErrors }: SceneNPCFormProps<S>) {
   const { toast } = useToast()
-  const [objectId, setObjectId] = useState(doc?.objectId)
-  const objectIdInput = useRef<HTMLInputElement>(null);
+  const [characterId, setCharacterId] = useState(doc?.characterId)
+  const characterIdInput = useRef<HTMLInputElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   const wInput = useRef<HTMLInputElement>(null);
   const hInput = useRef<HTMLInputElement>(null);
@@ -63,13 +63,14 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
     debouncedHandleChange(new FormData(e.currentTarget));
   }
 
-  function onComboxItemChange(item: ConvexComboxItem<ObjectTable>) {
-    console.log(`==onComboxItemChange object==`, item.key)
-    objectIdInput.current!.value = item.key;
+  function onComboxItemChange(item: ConvexComboxItem<CharacterTable>) {
+    console.log(`==onComboxItemChange character==`, item.key)
+
+    characterIdInput.current!.value = item.key;
     if (!nameInput.current!.value) {
       nameInput.current!.value = item.text
     }
-    const data = JSON5.parse((item.data as SpritesheetDoc).data) as PixiSpritesheet
+    const data = JSON5.parse(((item.data as CharacterExtendDoc).spritesheet as SpritesheetDoc).data) as PixiSpritesheet
     const key = Object.keys(data.frames)[0]
     const { w, h } = data.frames[key].frame
     if (!wInput.current!.value) {
@@ -78,9 +79,13 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
     if (!hInput.current!.value) {
       hInput.current!.value = h.toString()
     }
+    const speed = (item.data as CharacterExtendDoc).speed
+    if (!speedInput.current!.value) {
+      speedInput.current!.value = speed.toString()
+    }
     const formData = new FormData(formRef.current!)
     onClientErrors(validateFormData(formData))
-    setObjectId(item.key)
+    setCharacterId(item.key)
   }
 
   useEffect(() => {
@@ -96,10 +101,10 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
 
   useEffect(() => {
     if (doc) {
-      setObjectId(doc.objectId)
+      setCharacterId(doc.characterId)
       // console.log('set default objectid 1:', doc.objectId)
     } else {
-      setObjectId(undefined)
+      setCharacterId(undefined)
     }
   }, [doc])
 
@@ -109,12 +114,12 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
       {children}
       <SheetContent>
         <Form method={doc ? "put" : "POST"} ref={formRef} onChange={handleChange} className="flex flex-col h-full">
-          <input name="objectId" ref={objectIdInput} type="hidden" defaultValue={objectId} />
+          <input name="characterId" ref={characterIdInput} type="hidden" defaultValue={characterId} />
           <input name="id" type="hidden" defaultValue={doc?._id} />
           <SheetHeader>
-            <SheetTitle>Scene Animation Form</SheetTitle>
+            <SheetTitle>Scene NPC Form</SheetTitle>
             <SheetDescription>
-              Make changes to your scene animation here. Click save when you're done.
+              Make changes to your scene npc here. Click save when you're done.
             </SheetDescription>
           </SheetHeader>
           <div className="grid py-4">
@@ -123,40 +128,45 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
-                    <Input id="name" ref={nameInput} name="name" defaultValue={doc?.name} placeholder="Name of your scene animation" className={errors?.name ? "form-input-err" : undefined} />
+                    <Input id="name" ref={nameInput} name="name" defaultValue={doc?.name} placeholder="Name of your scene npc" className={errors?.name ? "form-input-err" : undefined} />
                     {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Combobox errClass={errors?.objectId ? "form-input-err" : undefined}
-                      items={objectItems}
-                      defaultItemKey={doc?.objectId}
+                      items={characterItems}
+                      defaultItemKey={doc?.characterId}
                       onSelectChange={onComboxItemChange} />
                     {errors?.objectId ? <FormErrorTip tip={errors.objectId} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="x">X axis in scene map<span className="text-red-500">*</span></Label>
-                    <Input id="x" name="x" type="number" min={1} defaultValue={doc?.x} placeholder="x axis in scene map of your scene animation" className={errors?.x ? "form-input-err" : undefined} />
+                    <Input id="x" name="x" type="number" min={1} defaultValue={doc?.x} placeholder="x axis in scene map of your scene npc" className={errors?.x ? "form-input-err" : undefined} />
                     {errors?.x ? <FormErrorTip tip={errors.x} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="y">Y axis in scene map<span className="text-red-500">*</span></Label>
-                    <Input id="y" name="y" type="number" min={1} defaultValue={doc?.y} placeholder="y axis in scene map of your scene animation" className={errors?.y ? "form-input-err" : undefined} />
+                    <Input id="y" name="y" type="number" min={1} defaultValue={doc?.y} placeholder="y axis in scene map of your scene npc" className={errors?.y ? "form-input-err" : undefined} />
                     {errors?.y ? <FormErrorTip tip={errors.y} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="w">Width<span className="text-red-500">*</span></Label>
-                    <Input id="w" ref={wInput} name="w" type="number" min={1} defaultValue={doc?.w} placeholder="width of your scene animation" className={errors?.w ? "form-input-err" : undefined} />
+                    <Input id="w" ref={wInput} name="w" type="number" min={1} defaultValue={doc?.w} placeholder="width of your scene npc" className={errors?.w ? "form-input-err" : undefined} />
                     {errors?.w ? <FormErrorTip tip={errors.w} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="h">Height<span className="text-red-500">*</span></Label>
-                    <Input id="h" ref={hInput} name="h" type="number" min={1} defaultValue={doc?.h} placeholder="height of your scene animation" className={errors?.h ? "form-input-err" : undefined} />
+                    <Input id="h" ref={hInput} name="h" type="number" min={1} defaultValue={doc?.h} placeholder="height of your scene npc" className={errors?.h ? "form-input-err" : undefined} />
                     {errors?.h ? <FormErrorTip tip={errors.h} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="speed">Speed<span className="text-red-500">*</span></Label>
-                    <Input id="speed" ref={speedInput} name="speed" type="number" min={0} step={0.05} max={2} defaultValue={doc?.speed || 0.1} placeholder="height of your scene animation" className={errors?.speed ? "form-input-err" : undefined} />
+                    <Input id="speed" ref={speedInput} name="speed" type="number" min={0} step={0.05} max={2} defaultValue={doc?.speed || 0.1} placeholder="height of your scene npc" className={errors?.speed ? "form-input-err" : undefined} />
                     {errors?.speed ? <FormErrorTip tip={errors.speed} /> : null}
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="move">Move(px)<span className="text-red-500">*</span></Label>
+                    <Input id="move" name="move" type="number" min={0} step={1} max={100} defaultValue={doc?.move || 1} placeholder="step of your scene npc on move in a tick" className={errors?.move ? "form-input-err" : undefined} />
+                    {errors?.move ? <FormErrorTip tip={errors.move} /> : null}
                   </div>
                 </div>
               </div>

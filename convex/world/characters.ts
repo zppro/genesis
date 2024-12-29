@@ -5,16 +5,8 @@ import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
 import { TextureDoc, read as readTexture } from "./textures"
-
-
-import {
-  getAll,
-  getOneFrom,
-  getOneFromOrThrow,
-  getManyFrom,
-  getManyVia,
-} from "convex-helpers/server/relationships";
-// import { asyncMap } from "convex-helpers";
+import { asyncMap } from "convex-helpers";
+import { api } from "../_generated/api";
 
 
 export const table = 'characters';
@@ -42,6 +34,10 @@ export type CharacterTable = typeof table
 export type CharacterId = Id<CharacterTable>
 export type CharacterDoc = Doc<CharacterTable>
 export type CharacterExtendDoc = CharacterDoc & {
+  spritesheet: SpritesheetDoc,
+  textureUrl: string,
+};
+export type CharacterExtendDo_Old = CharacterDoc & {
   spritesheet: SpritesheetDoc,
   texture: TextureDoc,
 };
@@ -73,9 +69,8 @@ export const readEx = query({
   args: { id: idCharacter },
   handler: async (ctx, args) => {
     const entity = await read(ctx, args)
-    const spritesheet = await readSpritesheet(ctx, { id: entity?.spritesheetId! })
-    const texture = await readTexture(ctx, { id: spritesheet?.textureId! })
-    const extendEntity: CharacterExtendDoc = { ...entity!, spritesheet: spritesheet!, texture: texture! }
+    const spritesheetEx = await ctx.runQuery(api.world.spritesheets.readEx, { id: entity?.spritesheetId! })
+    const extendEntity: CharacterExtendDoc = { ...entity!, spritesheet: spritesheetEx!, textureUrl: spritesheetEx.texture.url }
     return extendEntity
   },
 });
@@ -90,6 +85,21 @@ export const list = query({
     ).collect();
   },
 })
+
+export const listEx = query({
+  args: { worldId: idWorld },
+  handler: async (ctx, args) => {
+    const entityExs: CharacterExtendDoc[] = await asyncMap(
+      await list(ctx, args),
+      async (entity) => {
+        const spritesheetEx = await ctx.runQuery(api.world.spritesheets.readEx, { id: entity.spritesheetId })
+        return { ...entity, spritesheet: spritesheetEx!, textureUrl: spritesheetEx.texture.url }
+      }
+    );
+    return entityExs
+  },
+})
+
 
 export const listBySpritesheet = query({
   args: { worldId: idWorld, spritesheetId: idSpritesheet },

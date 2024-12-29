@@ -98,7 +98,7 @@ export default function Index() {
                     </Stage>
                 }
               </ClientOnly>
-              <ImageDialog src={characterEx?.texture.url} maxWidth={400} maxHeight={300} />
+              <ImageDialog src={characterEx?.textureUrl} maxWidth={400} maxHeight={300} />
             </div>
             <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[520px]" /></div>
           </div>

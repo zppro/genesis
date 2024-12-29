@@ -7,7 +7,6 @@ import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$scene
 import List from "./list"
 import Tilemap, { TilemapAnimation } from "~/components/pixi/tilemap.client";
 import { Stage } from '@pixi/react';
-import { listSceneAnimationExtends } from "~/data/convexProxy/sceneAnimation.server"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -20,31 +19,23 @@ import { useEffect, useState, useRef } from "react";
 import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer } from "@/shared/tilemap"
 
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet"
-import { Label } from "~/components/ui/label"
 import { Input } from "~/components/ui/input"
 import { Button } from "~/components/ui/button"
 import { type ConvexComboxItem } from "~/components/ui/combox"
-import SceneAnimationForm from "~/routes/world.$worldId.scene.$sceneId.animations/form"
+import SceneNPCForm from "~/routes/world.$worldId.scene.$sceneId.npcs/form"
 import formcssHref from "~/form.css?url";
 import { z } from "zod";
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
-import { numberKeys, decimalKeys } from "~/routes/world.$worldId.scene.$sceneId.animations/form"
-import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/sceneAnimation.server"
-import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
-import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
-import { ObjectTable } from "@/world/objects";
-import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { numberKeys, decimalKeys } from "~/routes/world.$worldId.scene.$sceneId.npcs/form"
+import { createSceneNPC, updateSceneNPC, listSceneNPCExtends } from "~/data/convexProxy/sceneNPC.server"
+import { type InsertArgs, type UpdateArgs, SceneNPCDoc, SceneNPCId } from "@/world/sceneNPCs";
+import { listWorldCharacterExtends } from "~/data/convexProxy/character.server";
+import { CharacterTable } from "@/world/characters";
+import { parsePixiSpritesheet } from "~/lib/spritesheet";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -60,16 +51,18 @@ const saveSchema = {
   w: z.number().int().gt(0),
   // animation height
   h: z.number().int().gt(0),
-  // animation play speed
+  // character animation play speed
   speed: z.number().gt(0),
-  objectId: z.string().min(1, { message: "object is required" }),
+  // character move step
+  move: z.number().int().gt(0),
+  characterId: z.string().min(1, { message: "character is required" }),
 }
-const createSceneAnimationFormSchema = z.object({
+const createSceneNPCFormSchema = z.object({
   sceneId: z.string(),
   ...saveSchema,
 });
 
-const updateSceneAnimationFormSchema = z.object({
+const updateSceneNPCFormSchema = z.object({
   ...saveSchema,
 });
 
@@ -90,21 +83,21 @@ export async function action({
   const formPayload = isUpdate ? { ..._formData } : { ..._formData, sceneId, id: undefined }
   console.log('formPayload=>', formPayload)
   // payload z schema validation
-  const validateSchema = isUpdate ? updateSceneAnimationFormSchema : createSceneAnimationFormSchema;
+  const validateSchema = isUpdate ? updateSceneNPCFormSchema : createSceneNPCFormSchema;
   const result = validateSchema.safeParse(formPayload);
   if (result.success) {
     try {
       if (isUpdate) {
-        await updateSceneAnimation(formPayload as unknown as UpdateArgs)
+        await updateSceneNPC(formPayload as unknown as UpdateArgs)
       } else {
-        const newSceneAnimationId = await createSceneAnimation(formPayload as unknown as InsertArgs)
+        const newSceneNPCId = await createSceneNPC(formPayload as unknown as InsertArgs)
         // const newSceneId = ''
-        console.log('newSceneAnimationId=>', newSceneAnimationId)
+        console.log('newSceneNPCId=>', newSceneNPCId)
       }
       return {}
     } catch (error) {
       // {field1: errorMessage, ...}
-      const fields = Object.keys(createSceneAnimationFormSchema.keyof().Values)
+      const fields = Object.keys(createSceneNPCFormSchema.keyof().Values)
       serverErrors = parseFormError(error, fields)
     }
   } else {
@@ -119,23 +112,23 @@ export async function loader({
   params,
 }: LoaderFunctionArgs) {
   const { worldId, sceneId } = params;
-  console.log('animation load')
-  const sceneAnimationExs = await listSceneAnimationExtends(sceneId as SceneId)
-  const objectExs = await listWorldObjectExtendsByType(worldId as WorldId, "animation");
-  return { worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneAnimationExs, objectExs }
+  console.log('npc load')
+  const sceneNPCExs = await listSceneNPCExtends(sceneId as SceneId)
+  const characterExs = await listWorldCharacterExtends(worldId as WorldId);
+  return { worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneNPCExs, characterExs }
 }
 
-export default function AnimationsTab() {
+export default function NPCsTab() {
   const { sceneEx } = useRouteLoaderData<typeof sceneLoader>("routes/world.$worldId.scene.$sceneId")!;
-  const { worldId, sceneId, sceneAnimationExs, objectExs } = useLoaderData<typeof loader>();
-  const objectItems = objectExs.map<ConvexComboxItem<ObjectTable>>(t => ({
-    key: t._id, text: t.name, icon: t.textureUrl, data: t.spritesheet
+  const { worldId, sceneId, sceneNPCExs, characterExs } = useLoaderData<typeof loader>();
+  const characterItems = characterExs.map<ConvexComboxItem<CharacterTable>>(t => ({
+    key: t._id, text: t.name, icon: t.textureUrl, data: t
   }))
   const [map, setMap] = useState<PixiTilemapConverted>()
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [currentSceneAnimation, setCurrentSceneAnimation] = useState<SceneAnimationDoc>();
+  const [currentSceneNPC, setCurrentSceneNPC] = useState<SceneNPCDoc>();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -204,26 +197,26 @@ export default function AnimationsTab() {
     setErrors(clientErrors)
   }
 
-  function onEditSceneAnimation(id: SceneAnimationId) {
+  function onEditSceneNPC(id: SceneNPCId) {
     console.log('onEditSceneAnimation id=>', id)
-    const sceneAnimation = sceneAnimationExs.find(item => item._id === id)
-    console.log('onEditSceneAnimation:', sceneAnimation)
-    setCurrentSceneAnimation(sceneAnimation)
+    const sceneNPC = sceneNPCExs.find(item => item._id === id)
+    console.log('onEditSceneNPC:', sceneNPC)
+    setCurrentSceneNPC(sceneNPC)
     buttonRef.current!.click()
   }
   const navigation = useNavigation();
   const isSubmitting = (navigation.formMethod === "POST" || navigation.formMethod === "PUT")
-    && navigation.formAction === `/world/${worldId}/scene/${sceneId}/animations`;
+    && navigation.formAction === `/world/${worldId}/scene/${sceneId}/npcs`;
 
-  const tilemapAnimations = sceneAnimationExs.map<TilemapAnimation>(sa =>
+  const tilemapAnimations = sceneNPCExs.map<TilemapAnimation>(sa =>
   ({
-    name: "pixels_large",
+    name: "left",
     x: sa.x,
     y: sa.y,
     w: sa.w,
     h: sa.h,
     speed: sa.speed,
-    spritesheet: parsePixiSpritesheet(sa.objectEx?.spritesheet?.data)
+    spritesheet: parsePixiSpritesheet(sa.characterEx?.spritesheet?.data)
   })
   )
 
@@ -235,18 +228,18 @@ export default function AnimationsTab() {
         className="h-full items-stretch"
       >
         <ResizablePanel defaultSize={25} minSize={25}>
-          <List sceneAnimationExs={sceneAnimationExs} onEditSceneAnimation={onEditSceneAnimation}>
+          <List sceneNPCExs={sceneNPCExs} onEditSceneNPC={onEditSceneNPC}>
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <form>
                 <Input placeholder="Search" className="pl-8" />
               </form>
-              <SceneAnimationForm
+              <SceneNPCForm
                 errors={errors}
-                doc={currentSceneAnimation}
+                doc={currentSceneNPC}
                 onClientErrors={onClientErrors}
-                schema={createSceneAnimationFormSchema}
-                objectItems={objectItems}
+                schema={createSceneNPCFormSchema}
+                characterItems={characterItems}
                 isSubmitting={isSubmitting}
                 open={sheetOpen}
                 setOpen={setSheetOpen}
@@ -256,10 +249,10 @@ export default function AnimationsTab() {
                 </SheetTrigger>
                 <SheetTrigger asChild>
                   <Button onClick={() => {
-                    setCurrentSceneAnimation(undefined)
+                    setCurrentSceneNPC(undefined)
                   }} variant="link" size="icon" className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Button>
                 </SheetTrigger>
-              </SceneAnimationForm>
+              </SceneNPCForm>
             </div>
           </List>
         </ResizablePanel>

@@ -68,8 +68,8 @@ export default function Index() {
         <Separator />
         <div className="pt-2 tabs">
           <Link to="basic" prefetch="render" className={cn("tab basis-1/5", tabValue === 'basic' ? 'active-tab' : null)} >Basic</Link>
-          <Link to="tileset" prefetch="render" className={cn("tab basis-1/5", tabValue === 'tileset' ? 'active-tab' : null)}>Tileset</Link>
           <Link to="tilemap" prefetch="render" className={cn("tab basis-1/5", tabValue === 'tilemap' ? 'active-tab' : null)}>Tilemap</Link>
+          <Link to="npcs" prefetch="render" className={cn("tab basis-1/5", tabValue === 'npc' ? 'active-tab' : null)}>NPCs</Link>
           <Link to="animations" prefetch="render" className={cn("tab basis-1/5", tabValue === 'animations' ? 'active-tab' : null)}>Animations</Link>
           {/* <div className="flex-1 border-gray-500"></div> */}
         </div>

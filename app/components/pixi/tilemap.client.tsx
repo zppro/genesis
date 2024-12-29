@@ -20,6 +20,7 @@ type Frame = {
 }
 
 export type TilemapAnimation = Frame & {
+  name: string;
   speed: number;
   spritesheet: PixiSpritesheet;
 }
@@ -248,7 +249,7 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       {
         tilemapAnimations.map(animation =>
           <PixiAnimationObject
-            animationName='pixels_large'
+            animationName={animation.name}
             animationSpritesheet={animation.spritesheet}
             speed={animation.speed}
             x={animation.x}

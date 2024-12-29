@@ -22,6 +22,11 @@ export const listWorldCharacters = async (worldId: WorldId) => {
   return characters
 }
 
+export const listWorldCharacterExtends = async (worldId: WorldId) => {
+  const characterExs = await proxy().query(api.world.characters.listEx, { worldId })
+  return characterExs
+}
+
 export const createWorldCharacter = async (args: InsertArgs) => {
   const newCharacterId = await proxy().mutation(api.world.characters.create, { ...args })
   return newCharacterId
