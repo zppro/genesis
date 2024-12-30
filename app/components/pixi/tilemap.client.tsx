@@ -10,7 +10,7 @@ import { Viewport } from 'pixi-viewport';
 import { Container, Sprite } from '@pixi/react';
 import { PixiTilemapConverted } from "@/shared/tilemap"
 import { AnimatedSprite } from "@/shared/animatedSprite"
-import PixiAnimationObject from "~/components/pixi/animation-object";
+import PixiAnimationObject, { AnimationType, AnimationData } from "~/components/pixi/animation-object";
 
 type Frame = {
   x: number;
@@ -23,6 +23,8 @@ export type TilemapAnimation = Frame & {
   name: string;
   speed: number;
   spritesheet: PixiSpritesheet;
+  type: AnimationType,
+  data?: AnimationData
 }
 
 type TilemapData = {
@@ -210,8 +212,8 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
     (async () => {
       console.log('loaded:')
       const _mapData = {
-        width: map.mapwidth,
-        height: map.mapheight,
+        width: map.screenxtiles,
+        height: map.screenytiles,
         tileSetUrl: map.tilesetpath,
         tileSetDimX: map.tilesetpxw,
         tileSetDimY: map.tilesetpxh,
@@ -256,6 +258,8 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
             y={animation.y}
             w={animation.w}
             h={animation.h}
+            type={animation.type}
+            data={animation.data}
           />
         )
       }

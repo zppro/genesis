@@ -22,8 +22,8 @@ export const pixiTilemapSerialized = v.object({
   bgtiles: v.array(v.array(v.array(v.number()))),
   objmap: v.array(tileLayer),
   animatedsprites: v.array(animatedSpriteSerialized),
-  mapwidth: v.number(),
-  mapheight: v.number()
+  // mapwidth: v.number(),
+  // mapheight: v.number()
 })
 
 export type PixiTilemapConverted = Infer<typeof pixiTilemapSerialized>;

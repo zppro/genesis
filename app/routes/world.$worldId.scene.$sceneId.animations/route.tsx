@@ -180,8 +180,8 @@ export default function AnimationsTab() {
         bgtiles: bgtiles,
         objmap: objmap,
         animatedsprites: [],
-        mapwidth: sceneEx.screenxtiles,
-        mapheight: sceneEx.screenytiles,
+        // mapwidth: sceneEx.screenxtiles,
+        // mapheight: sceneEx.screenytiles,
       }
       // console.log('_map=>', _map)
       setMap(_map)
@@ -223,7 +223,8 @@ export default function AnimationsTab() {
     w: sa.w,
     h: sa.h,
     speed: sa.speed,
-    spritesheet: parsePixiSpritesheet(sa.objectEx?.spritesheet?.data)
+    spritesheet: parsePixiSpritesheet(sa.objectEx?.spritesheet?.data),
+    type: "object"
   })
   )
 

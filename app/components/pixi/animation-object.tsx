@@ -1,11 +1,18 @@
 "use client"
 import * as PIXI from 'pixi.js';
-import { Container, AnimatedSprite } from '@pixi/react';
+import { Container, AnimatedSprite, useTick } from '@pixi/react';
 // import { useMemo } from 'react';
 // import JSON5 from "json5"
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect } from 'react';
 // import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+
+export type AnimationType = "character" | "object";
+export type AnimationData = {
+  move: number;
+  mapWidth: number;
+  mapHeight: number;
+}
 
 export type PixiAnimationObjectProps = {
   animationSpritesheet: PixiSpritesheet;
@@ -15,13 +22,19 @@ export type PixiAnimationObjectProps = {
   y: number;
   w: number;
   h: number;
+  type: AnimationType;
+  data?: AnimationData;
 }
 
 export default function PixiAnimationObject({
   animationSpritesheet, animationName, speed,
-  x, y, w, h
+  x, y, w, h, type, data
 }: PixiAnimationObjectProps) {
   const [frames, setFrames] = useState<PIXI.Texture<PIXI.Resource>[]>([]);
+  const [currentX, setCurrentX] = useState(x);
+  const [currentY, setCurrentY] = useState(y);
+  const [directionX, setDirectionX] = useState(1);
+  const [directionY, setDirectionY] = useState(1);
   // const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
   const url = animationSpritesheet.meta.image
   useEffect(() => {
@@ -35,6 +48,33 @@ export default function PixiAnimationObject({
       setFrames(frames)
     })
   }, [])
+  
+  if (type === "character" && data) {
+    useTick(delta => {
+      // do something here
+      let newX = currentX + delta * data.move * directionX
+      if (newX > data.mapWidth) {
+        newX = data.mapWidth
+        setDirectionX(-1)
+      }
+      if (newX < 0) {
+        newX = 0
+        setDirectionX(1)
+      }
+      let newY = currentY + delta * data.move * directionY
+      if (newY > data.mapHeight) {
+        newY = data.mapHeight
+        setDirectionY(-1)
+      }
+      if (newY < 0) {
+        newY = 0
+        setDirectionY(1)
+      }
+
+      setCurrentX(newX)
+      setCurrentY(newY)
+    })
+  }
 
   // function loadTextures(oe: ObjectExtendDoc): PIXI.Texture[] {
   //   const spritesheetData = JSON5.parse(oe.spritesheet.data) as PixiSpritesheet
@@ -54,7 +94,7 @@ export default function PixiAnimationObject({
   // }
 
   return (
-    <Container x={x} y={y} width={w} height={h}>
+    <Container x={currentX} y={currentY} width={w} height={h}>
       {
         (frames && frames.length > 0 ? <AnimatedSprite
           // anchor={0.5}

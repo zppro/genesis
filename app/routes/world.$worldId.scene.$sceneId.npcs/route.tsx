@@ -173,8 +173,6 @@ export default function NPCsTab() {
         bgtiles: bgtiles,
         objmap: objmap,
         animatedsprites: [],
-        mapwidth: sceneEx.screenxtiles,
-        mapheight: sceneEx.screenytiles,
       }
       // console.log('_map=>', _map)
       setMap(_map)
@@ -208,17 +206,22 @@ export default function NPCsTab() {
   const isSubmitting = (navigation.formMethod === "POST" || navigation.formMethod === "PUT")
     && navigation.formAction === `/world/${worldId}/scene/${sceneId}/npcs`;
 
-  const tilemapAnimations = sceneNPCExs.map<TilemapAnimation>(sa =>
-  ({
+  const tilemapAnimations = sceneNPCExs.map<TilemapAnimation>(sa => ({
     name: "left",
     x: sa.x,
     y: sa.y,
     w: sa.w,
     h: sa.h,
     speed: sa.speed,
-    spritesheet: parsePixiSpritesheet(sa.characterEx?.spritesheet?.data)
-  })
-  )
+    spritesheet: parsePixiSpritesheet(sa.characterEx?.spritesheet?.data),
+    type: "character",
+    data: {
+      move: sa.move,
+      mapWidth: map ? map.screenxtiles * map.tiledim : -1,
+      mapHeight: map ? map.screenytiles * map.tiledim : -1
+    }
+  }
+  ))
 
 
   return (
