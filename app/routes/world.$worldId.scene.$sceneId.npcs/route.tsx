@@ -207,20 +207,18 @@ export default function NPCsTab() {
     && navigation.formAction === `/world/${worldId}/scene/${sceneId}/npcs`;
 
   const tilemapAnimations = sceneNPCExs.map<TilemapAnimation>(sa => ({
-    name: "left",
     x: sa.x,
     y: sa.y,
     w: sa.w,
     h: sa.h,
     speed: sa.speed,
     spritesheet: parsePixiSpritesheet(sa.characterEx?.spritesheet?.data),
-    type: "character",
+    type: "npc",
     data: {
       move: sa.move,
-      mapWidth: map ? map.screenxtiles * map.tiledim : -1,
-      mapHeight: map ? map.screenytiles * map.tiledim : -1,
-      xTiles: map ? map?.screenxtiles : 0,
-      yTiles: map ? map?.screenytiles : 0,
+      tileDim: map ? map.tiledim : 0,
+      xTiles: map ? map.screenxtiles : 0,
+      yTiles: map ? map.screenytiles : 0,
     }
   }
   ))

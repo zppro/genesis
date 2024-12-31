@@ -217,7 +217,6 @@ export default function AnimationsTab() {
 
   const tilemapAnimations = sceneAnimationExs.map<TilemapAnimation>(sa =>
   ({
-    name: "pixels_large",
     x: sa.x,
     y: sa.y,
     w: sa.w,

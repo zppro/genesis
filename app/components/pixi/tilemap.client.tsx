@@ -10,7 +10,8 @@ import { Viewport } from 'pixi-viewport';
 import { Container, Sprite } from '@pixi/react';
 import { PixiTilemapConverted } from "@/shared/tilemap"
 import { AnimatedSprite } from "@/shared/animatedSprite"
-import PixiAnimationObject, { AnimationType, AnimationData } from "~/components/pixi/animation-object";
+import PixiAnimationObject from "~/components/pixi/animation-object";
+import PixiNPCObject, { AnimationData as NPCAnimationData } from "~/components/pixi/npc-object";
 
 type Frame = {
   x: number;
@@ -18,13 +19,13 @@ type Frame = {
   w: number;
   h: number;
 }
+export type AnimationType = "npc" | "object";
 
 export type TilemapAnimation = Frame & {
-  name: string;
   speed: number;
   spritesheet: PixiSpritesheet;
   type: AnimationType,
-  data?: AnimationData
+  data?: NPCAnimationData
 }
 
 type TilemapData = {
@@ -250,17 +251,26 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       }
       {
         tilemapAnimations.map(animation =>
-          <PixiAnimationObject
-            animationName={animation.name}
-            animationSpritesheet={animation.spritesheet}
-            speed={animation.speed}
-            x={animation.x}
-            y={animation.y}
-            w={animation.w}
-            h={animation.h}
-            type={animation.type}
-            data={animation.data}
-          />
+          animation.type === "npc" ?
+            <PixiNPCObject
+              animationNames={Object.keys(animation.spritesheet.animations!)}
+              animationSpritesheet={animation.spritesheet}
+              speed={animation.speed}
+              x={animation.x}
+              y={animation.y}
+              w={animation.w}
+              h={animation.h}
+              data={animation.data as NPCAnimationData}
+            /> :
+            <PixiAnimationObject
+              animationName={Object.keys(animation.spritesheet.animations!)[0]}
+              animationSpritesheet={animation.spritesheet}
+              speed={animation.speed}
+              x={animation.x}
+              y={animation.y}
+              w={animation.w}
+              h={animation.h}
+            />
         )
       }
       {/* <Container>

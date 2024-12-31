@@ -91,7 +91,6 @@ export default function Index() {
                             y={0}
                             w={sourceSize.w}
                             h={sourceSize.h}
-                            type="character"
                           />
                         )
                       }
