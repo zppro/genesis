@@ -218,7 +218,9 @@ export default function NPCsTab() {
     data: {
       move: sa.move,
       mapWidth: map ? map.screenxtiles * map.tiledim : -1,
-      mapHeight: map ? map.screenytiles * map.tiledim : -1
+      mapHeight: map ? map.screenytiles * map.tiledim : -1,
+      xTiles: map ? map?.screenxtiles : 0,
+      yTiles: map ? map?.screenytiles : 0,
     }
   }
   ))

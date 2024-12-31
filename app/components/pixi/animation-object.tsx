@@ -12,6 +12,9 @@ export type AnimationData = {
   move: number;
   mapWidth: number;
   mapHeight: number;
+  xTiles: number;
+  yTiles: number;
+
 }
 
 export type PixiAnimationObjectProps = {
@@ -30,26 +33,37 @@ export default function PixiAnimationObject({
   animationSpritesheet, animationName, speed,
   x, y, w, h, type, data
 }: PixiAnimationObjectProps) {
-  const [frames, setFrames] = useState<PIXI.Texture<PIXI.Resource>[]>([]);
+  const [spritesheet, setSpritesheet] = useState<PIXI.Spritesheet>();
   const [currentX, setCurrentX] = useState(x);
   const [currentY, setCurrentY] = useState(y);
   const [directionX, setDirectionX] = useState(1);
   const [directionY, setDirectionY] = useState(1);
   // const sourceSize = parsePixiAnmimationSourceSize(pixiAnimationSpritesheet)
-  const url = animationSpritesheet.meta.image
+
+  // 
+
   useEffect(() => {
-    console.log('url=>', url)
+    const url = animationSpritesheet.meta.image
     const bt = PIXI.BaseTexture.from(url);
-    const spritesheet = new PIXI.Spritesheet(bt, animationSpritesheet);
-    spritesheet.parse().then(() => {
+    const _spritesheet = new PIXI.Spritesheet(bt, animationSpritesheet);
+    _spritesheet.parse().then(() => {
       // const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
-      const frames = spritesheet.animations[animationName]
-      console.log("frames:", frames)
-      setFrames(frames)
+      setSpritesheet(_spritesheet)
     })
   }, [])
-  
+
+  const frames = spritesheet ? spritesheet.animations[animationName] : []
+
+
+
   if (type === "character" && data) {
+
+    const WIDTH = 700;
+    const HEIGHT = 700;
+    const GRIDROWS = 25;
+    const GRIDWIDTH = WIDTH / GRIDROWS;
+    const GRIDHEIGHT = HEIGHT / GRIDROWS;
+
     useTick(delta => {
       // do something here
       let newX = currentX + delta * data.move * directionX
