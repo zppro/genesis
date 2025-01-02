@@ -1,0 +1,64 @@
+// 手工添加 ticker动画时，内部用到的state变量需要全局加入到useCallback的依赖列表
+// 同时用 pixiApp.ticker.add(animate)来添加，效果和useTick()一样，但useTick可以直接用依赖变量
+  // const animate = useCallback((delta: number) => {
+  //   if (!routes) {
+  //     console.log("==no route===", routes)
+  //     return
+  //   }
+  //   // console.log("==animate route===", delta, isWalking)
+  //   if (!isWalking) {
+  //     return
+  //   }
+  //   if (!currentRoute) {
+  //     return
+  //   }
+  //   let directionX = 1, directionY = 1;
+  //   if (routes.length === 0) {
+  //     setIsWalking(false)
+  //     return
+  //   }
+  //   const [route, ...others] = routes
+  //   // facing
+  //   if (route.columns > currentRoute.columns) {
+  //     setAnimationName(animationNames[1])
+  //   } else if (route.columns < currentRoute.columns) {
+  //     setAnimationName(animationNames[0])
+  //   } else {
+  //     if (route.rows > currentRoute.rows) {
+  //       setAnimationName(animationNames[3])
+  //     } else {
+  //       setAnimationName(animationNames[2])
+  //     }
+  //   }
+
+  //   // move
+  //   if (currentX > route.x + w / 2) {
+  //     directionX = -1
+  //   }
+  //   if (currentY > route.y) {
+  //     directionY = -1
+  //   }
+  //   let newX = currentX + delta * data.move * directionX
+  //   let newY = currentY + delta * data.move * directionY
+  //   // console.log('newX 2', newX, route, others)
+  //   setCurrentX(newX)
+  //   setCurrentY(newY)
+
+  //   let routeXArrived = (directionX === 1 && newX >= route.x)
+  //     || (directionX === -1 && newX <= route.x)
+  //   let routeYArrived = (directionY === 1 && newY >= route.y)
+  //     || (directionY === -1 && newY <= route.y)
+  //   if (routeXArrived && routeYArrived) {
+  //     setRoutes(others)
+  //     setCurrentRoute(route)
+  //   }
+
+  // }, [routes, isWalking, animationName, currentX, currentY]);
+  // useEffect(() => {
+  //   console.log('pixiApp.ticker or animate changed')
+  //   pixiApp.ticker.add(animate);
+
+  //   return () => {
+  //     pixiApp.ticker.remove(animate);
+  //   };
+  // }, [pixiApp.ticker, animate]);

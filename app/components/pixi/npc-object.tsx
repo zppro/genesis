@@ -1,10 +1,10 @@
 "use client"
 import * as PIXI from 'pixi.js';
-import { Container, AnimatedSprite, useTick, PixiRef } from '@pixi/react';
+import { Container, AnimatedSprite, useTick, useApp, PixiRef } from '@pixi/react';
 // import { useMemo } from 'react';
 // import JSON5 from "json5"
 import { PixiSpritesheet } from "@/shared/spritesheet";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 // import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
 import { routePlanDijkstra, BgLayoutItemType, Position, TileMapProps, translateToPxPosition, translateToPosition } from "~/lib/algorithm";
 import { Viewport } from 'pixi-viewport';
@@ -35,9 +35,11 @@ export default function PixiAnimationObject({
   animationSpritesheet, animationNames, speed,
   x, y, w, h, data, viewportRef, targetPoint
 }: PixiAnimationObjectProps) {
+  const pixiApp = useApp();
   const npcRef = useRef<PIXI.AnimatedSprite>();
   const [spritesheet, setSpritesheet] = useState<PIXI.Spritesheet>();
   const [animationName, setAnimationName] = useState(animationNames[3]); // left=0,right,up,down 
+  const [isPlaying, setIsPlaying] = useState(false);
   // const [directionX, setDirectionX] = useState(1);
   // const [directionY, setDirectionY] = useState(1);
   const [preStartTile, setPreStartTile] = useState<Position>()
@@ -112,6 +114,12 @@ export default function PixiAnimationObject({
     }
   }, [npcRef.current, targetPoint])
 
+  useEffect(() => {
+    console.log('set IsPlaying true')
+    setIsPlaying(true)
+  }, [animationName])
+
+
 
   const frames = spritesheet ? spritesheet.animations[animationName] : []
 
@@ -121,6 +129,7 @@ export default function PixiAnimationObject({
   }
   // 二维数组每个元素代表一个tile
   const mapTiles = useRef<BgLayoutItemType[][]>(obstacleAll);
+  // set routes
   useEffect(() => {
     if (!startTile) {
       return
@@ -175,13 +184,13 @@ export default function PixiAnimationObject({
     setCurrentRoute(startTile)
 
   }, [startTile, endTile])
+
   useEffect(() => {
     if (routes.length) {
       setIsWalking(true)
     }
   }, [routes])
 
-  // console.log('isWalking=>', isWalking)
   useTick(delta => {
     if (!routes || !endTile) {
       // console.log("==no route===")
@@ -235,17 +244,29 @@ export default function PixiAnimationObject({
     }
   })
 
+  function loadFrames(animationName: string, spritesheet?: PIXI.Spritesheet<PIXI.ISpritesheetData>): PIXI.Texture[] {
+    return spritesheet ? spritesheet.animations[animationName] : []
+  }
+  // console.log('frames=>', frames.map(f => f.textureCacheIds))
+
   return (
     frames && frames.length > 0 ? <AnimatedSprite
       ref={(sprite) => {
+        // console.log('sprite ref...', sprite)
         if (npcRef.current !== sprite) {
-          npcRef.current = sprite || undefined;
+          npcRef.current = sprite || undefined; // set npcRef
+
+          if (npcRef.current && !npcRef.current.playing) {
+            // change textures make animation play again
+            npcRef.current.play()
+          }
         }
       }}
       x={currentX} y={currentY} width={w} height={h}
       anchor={0.5}
       // scale={2}
       textures={frames}
+      autoUpdate={true}
       isPlaying={true}
       // initialFrame={0}
       animationSpeed={speed}
