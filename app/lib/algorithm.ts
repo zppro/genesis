@@ -11,12 +11,37 @@ export enum BgLayoutItemType {
 // 对角线距离chebyshev， 曼哈顿距离manhattan， 斜线距离diagonal
 export type AStarPlanType = "chebyshev" | "manhattan" | "diagonal";
 
-type Position = {
+// export type Tile = {
+//   x: number;
+//   y: number;
+//   relativeX: number,
+//   relativeY: number,
+// }
+
+export type PxPosition = {
   x: number;
   y: number;
 }
 
-type NexStepReturn = Position & {
+export type TilePosition = {
+  rows: number; // row idx
+  columns: number; // column idx
+}
+
+export type Position = PxPosition & TilePosition;
+
+export type TileMapProps = {
+  width: number; // pixel width
+  height: number; // pixel height
+  itemRows: number; // rows count (y axis)
+  itemColumns: number; // columns count (x axis)
+}
+
+export type TranslateToPxPositionProps = TileMapProps & TilePosition;
+
+export type TranslateToPositionProps = TileMapProps & PxPosition;
+
+type NexStepReturn = PxPosition & {
   gValue: number;
   hValue: number;
   value: number;
@@ -24,12 +49,54 @@ type NexStepReturn = Position & {
 }
 
 type RoutePlanProps = {
-  start: Position;
-  end: Position;
+  start: PxPosition;
+  end: PxPosition;
   plan: AStarPlanType;
-  centerPosition: Position;
+  centerPosition: PxPosition;
   obstacleAll: BgLayoutItemType[][];
 }
+
+
+/**
+ * tile坐标到px坐标转换
+ * @param param0
+ * @returns
+ */
+export const translateToPxPosition = ({
+  width,
+  height,
+  itemRows,
+  itemColumns,
+  rows,
+  columns,
+}: TranslateToPxPositionProps): PxPosition => {
+  const itemWidth = width / itemColumns;
+  const itemHeight = height / itemRows;
+  return { x: itemWidth * columns, y: itemHeight * rows };
+};
+
+
+/**
+ * px坐标到tile坐标转换
+ */
+export const translateToPosition = ({
+  width,
+  height,
+  itemRows,
+  itemColumns,
+  x,
+  y,
+}: TranslateToPositionProps): Position => {
+  const itemWidth = width / itemColumns;
+  const itemHeight = height / itemRows
+  const columns = Math.floor(x / itemWidth);
+  const rows = Math.floor(y / itemHeight);
+  return {
+    ...translateToPxPosition({ width, height, itemRows, itemColumns, rows, columns }),
+    columns,
+    rows,
+  };
+};
 
 
 /**
@@ -173,6 +240,7 @@ export const routePlan = ({
   return loop({ start, end, centerPosition, obstacleAll: bgLayout });
 };
 
+/// 算法中的x,y 是relativeX和relativeY,是相对于tile来说的(index)
 /**
  * Dijkstra算法
  * 广度搜索算法
@@ -183,7 +251,9 @@ export const routePlanDijkstra = ({
   start,
   end,
   obstacleAll,
-}: Omit<RoutePlanProps, 'centerPosition'>) => {
+}: Omit<RoutePlanProps, 'centerPosition' | 'plan'>) => {
+  const itemRows = obstacleAll.length;
+  const itemColumns = obstacleAll[0].length;
   const bg = JSON.parse(JSON.stringify(obstacleAll));
   // 定义网格单元类
   class Cell {
@@ -256,7 +326,7 @@ export const routePlanDijkstra = ({
     ]) {
       const x = curr_cell.x + dx;
       const y = curr_cell.y + dy;
-      if (x < 0 || x >= 25 || y < 0 || y >= 25) {
+      if (x < 0 || x >= itemColumns || y < 0 || y >= itemRows) {
         continue;
       }
       const neighbor_cell = bg[y][x];

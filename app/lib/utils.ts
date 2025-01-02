@@ -25,3 +25,10 @@ export function calcFileSize(n: number) {
     return `${(n / 1e6).toFixed(1)} MB`;
   }
 }
+
+export const getRandomInteger = (min: number, max: number) => {
+  min = Math.ceil(min)
+  max = Math.floor(max)
+
+  return Math.floor(Math.random() * (max - min)) + min
+}

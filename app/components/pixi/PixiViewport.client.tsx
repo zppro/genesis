@@ -5,7 +5,8 @@ import { PixiComponent, useApp } from '@pixi/react';
 import { Viewport } from 'pixi-viewport';
 import { Application } from 'pixi.js';
 import { MutableRefObject, ReactNode } from 'react';
-import {EventSystem} from "@pixi/events";
+import { EventSystem } from "@pixi/events";
+import { ClickedEvent } from 'pixi-viewport/dist/types';
 
 export type ViewportProps = {
   app: Application;
@@ -15,14 +16,15 @@ export type ViewportProps = {
   worldWidth: number;
   worldHeight: number;
   children?: ReactNode;
+  onClicked?: (e: ClickedEvent) => void
 };
 
 // https://davidfig.github.io/pixi-viewport/jsdoc/Viewport.html
 export default PixiComponent('Viewport', {
   create(props: ViewportProps) {
-    const { app, children, viewportRef, ...viewportProps } = props;
+    const { app, children, viewportRef, onClicked, ...viewportProps } = props;
     const events = new EventSystem(app.renderer)
-		events.domElement = app.renderer.view as any
+    events.domElement = app.renderer.view as any
 
     const viewport = new Viewport({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -35,7 +37,6 @@ export default PixiComponent('Viewport', {
       viewportRef.current = viewport;
     }
     // Activate plugins
-    
     viewport
       .drag()
       .pinch({})
@@ -47,6 +48,10 @@ export default PixiComponent('Viewport', {
         minScale: (1.04 * props.screenWidth) / (props.worldWidth / 2),
         maxScale: 3.0,
       });
+
+
+    onClicked && viewport.on("clicked", onClicked)
+    
     return viewport;
   },
   applyProps(viewport, oldProps: any, newProps: any) {

@@ -12,6 +12,7 @@ import { PixiTilemapConverted } from "@/shared/tilemap"
 import { AnimatedSprite } from "@/shared/animatedSprite"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import PixiNPCObject, { AnimationData as NPCAnimationData } from "~/components/pixi/npc-object";
+import { ClickedEvent } from 'pixi-viewport/dist/types';
 
 type Frame = {
   x: number;
@@ -154,6 +155,12 @@ const PixiStaticMap = PixiComponent('StaticMap', {
       screenxtiles * map.tileDim,
       screenytiles * map.tileDim,
     );
+    // container.onclick! = (event: PIXI.FederatedMouseEvent) => {
+    //   console.log("event onpointerdown:", container.hitArea)
+    //   console.log("event client:", event.global.x)
+    //   console.log("event client2:", event.client.x, event.clientX)
+    //   console.log("event client2:", event.offset.x, event.offsetX)
+    // }
 
     return container;
   },
@@ -177,6 +184,7 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
   const staticMapRef = useRef<PIXI.Container>();
   const [loaded, setLoaded] = useState(false)
   const [mapData, setMapData] = useState<TilemapData>();
+  const [pointOfNPC, setPointOfNPC] = useState<PIXI.Point>()
 
   const tileDim = map.tiledim;
   const tilesX = map.screenxtiles;
@@ -230,6 +238,11 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
 
   }, [])
 
+  const onClicked = (e: ClickedEvent) => {
+    // console.log('viewport clicked:', e)
+    setPointOfNPC(e.world)
+  }
+
 
   return (
     loaded &&
@@ -240,6 +253,7 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       worldWidth={tilesX * tileDim}
       worldHeight={tilesY * tileDim}
       viewportRef={viewportRef}
+      onClicked={onClicked}
     >
       {
         mapData && <PixiStaticMap
@@ -261,6 +275,8 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
               w={animation.w}
               h={animation.h}
               data={animation.data as NPCAnimationData}
+              viewportRef={viewportRef}
+              targetPoint={pointOfNPC}
             /> :
             <PixiAnimationObject
               animationName={Object.keys(animation.spritesheet.animations!)[0]}
