@@ -57,6 +57,10 @@ type RoutePlanProps = {
 }
 
 
+export const isAdjacent = (start: TilePosition, end: TilePosition) => {
+  return Math.abs(start.columns - end.columns) + Math.abs(start.rows - end.rows) === 1
+}
+
 /**
  * tile坐标到px坐标转换
  * @param param0
@@ -313,16 +317,16 @@ export const routePlanDijkstra = ({
       return path;
     }
 
-    // 计算相邻单元的距离
+    // 计算相邻单元的距离， 去除[-1, -1] [-1, 1][1, -1]  [1, 1]防止走斜线
     for (const [dx, dy] of [
       [-1, 0],
       [1, 0],
       [0, -1],
       [0, 1],
-      [-1, -1],
-      [-1, 1],
-      [1, -1],
-      [1, 1],
+      // [-1, -1],
+      // [-1, 1],
+      // [1, -1],
+      // [1, 1],
     ]) {
       const x = curr_cell.x + dx;
       const y = curr_cell.y + dy;

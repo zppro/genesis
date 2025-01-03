@@ -1,12 +1,9 @@
 "use client"
 import * as PIXI from 'pixi.js';
-import { Container, AnimatedSprite, useTick, useApp, PixiRef } from '@pixi/react';
-// import { useMemo } from 'react';
-// import JSON5 from "json5"
+import { AnimatedSprite, useTick } from '@pixi/react';
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect, useRef, useCallback } from 'react';
-// import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
-import { routePlanDijkstra, BgLayoutItemType, Position, TileMapProps, translateToPxPosition, translateToPosition } from "~/lib/algorithm";
+import { routePlanDijkstra, isAdjacent, BgLayoutItemType, Position, TileMapProps, translateToPxPosition, translateToPosition } from "~/lib/algorithm";
 import { Viewport } from 'pixi-viewport';
 import { MutableRefObject } from 'react';
 
@@ -15,7 +12,6 @@ export type AnimationData = {
   tileDim: number;
   xTiles: number;
   yTiles: number;
-
 }
 
 export type PixiAnimationObjectProps = {
@@ -35,13 +31,9 @@ export default function PixiAnimationObject({
   animationSpritesheet, animationNames, speed,
   x, y, w, h, data, viewportRef, targetPoint
 }: PixiAnimationObjectProps) {
-  const pixiApp = useApp();
   const npcRef = useRef<PIXI.AnimatedSprite>();
   const [spritesheet, setSpritesheet] = useState<PIXI.Spritesheet>();
   const [animationName, setAnimationName] = useState(animationNames[3]); // left=0,right,up,down 
-  const [isPlaying, setIsPlaying] = useState(false);
-  // const [directionX, setDirectionX] = useState(1);
-  // const [directionY, setDirectionY] = useState(1);
   const [preStartTile, setPreStartTile] = useState<Position>()
   const [startTile, setStartTile] = useState<Position>()
   const [preEndTile, setPreEndTile] = useState<Position>()
@@ -52,6 +44,21 @@ export default function PixiAnimationObject({
   const [currentRoute, setCurrentRoute] = useState<Position>();
   const [isWalking, setIsWalking] = useState(false);
 
+  const tileMapProps: TileMapProps = {
+    width: data.tileDim * data.xTiles,
+    height: data.tileDim * data.yTiles,
+    itemRows: data.yTiles,
+    itemColumns: data.xTiles,
+  }
+  const frames = spritesheet ? spritesheet.animations[animationName] : []
+  let obstacleAll: BgLayoutItemType[][] = [];
+  for (let i = 0; i < data.yTiles; i++) {
+    obstacleAll.push(new Array(data.xTiles).fill(0));
+  }
+  // 二维数组每个元素代表一个tile
+  const mapTiles = useRef<BgLayoutItemType[][]>(obstacleAll);
+
+  // parse spritesheet
   useEffect(() => {
     const url = animationSpritesheet.meta.image
     const bt = PIXI.BaseTexture.from(url);
@@ -60,23 +67,17 @@ export default function PixiAnimationObject({
       // const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
       setSpritesheet(_spritesheet)
     })
-  }, [])
+  }, [animationSpritesheet])
 
-
-  const tileMapProps: TileMapProps = {
-    width: data.tileDim * data.xTiles,
-    height: data.tileDim * data.yTiles,
-    itemRows: data.yTiles,
-    itemColumns: data.xTiles,
-  }
-
-
+  // set viewport follow npc
   useEffect(() => {
     if (!npcRef.current) {
       return
     }
     viewportRef?.current && viewportRef.current.follow(npcRef.current, { speed: 20 })
   }, [npcRef.current])
+
+  // adjust startTile & endTile
   useEffect(() => {
     if (!tileMapProps) {
       return
@@ -85,15 +86,20 @@ export default function PixiAnimationObject({
       return
     }
     console.log("npcRef.current=>", npcRef.current.position)
+
+    let startTileChanged = false, endTileChanged = false;
     const _startTile = translateToPosition({
       ...tileMapProps,
       x: npcRef.current.position.x,
       y: npcRef.current.position.y,
     })
+    console.log('currentRoute=>', currentRoute)
+    console.log('_startTile=>', _startTile)
     if (startTile?.columns !== _startTile.columns || startTile.rows !== _startTile.rows) {
       setPreStartTile(startTile)
       console.log('_startTile=>', _startTile)
       setStartTile(_startTile)
+      startTileChanged = true
     } else {
       console.log("same start...")
     }
@@ -108,28 +114,21 @@ export default function PixiAnimationObject({
         setPreEndTile(endTile)
         console.log('_endTile=>', _endTile)
         setEndTile(_endTile)
+        endTileChanged = true
       } else {
         console.log("same end...")
+      }
+
+      if (endTileChanged) {
+        // refresh walking state
+        setIsWalking(false)
+        setRoutes([])
+        setCurrentRoute(undefined)
       }
     }
   }, [npcRef.current, targetPoint])
 
-  useEffect(() => {
-    console.log('set IsPlaying true')
-    setIsPlaying(true)
-  }, [animationName])
-
-
-
-  const frames = spritesheet ? spritesheet.animations[animationName] : []
-
-  let obstacleAll: BgLayoutItemType[][] = [];
-  for (let i = 0; i < data.yTiles; i++) {
-    obstacleAll.push(new Array(data.xTiles).fill(0));
-  }
-  // 二维数组每个元素代表一个tile
-  const mapTiles = useRef<BgLayoutItemType[][]>(obstacleAll);
-  // set routes
+  // calc routes
   useEffect(() => {
     if (!startTile) {
       return
@@ -137,7 +136,7 @@ export default function PixiAnimationObject({
     if (!endTile) {
       return
     }
-    setIsWalking(false)
+
     if (startTile.rows === endTile.rows && startTile.columns === endTile.columns) {
       console.log("click in same tile")
       return
@@ -151,22 +150,33 @@ export default function PixiAnimationObject({
     mapTiles.current[startTile.rows][startTile.columns] = BgLayoutItemType.start;
     mapTiles.current[endTile.rows][endTile.columns] = BgLayoutItemType.end;
 
-    const dijkstraList: number[][] = routePlanDijkstra({
-      start: { x: startTile.columns, y: startTile.rows },
-      end: { x: endTile.columns, y: endTile.rows },
-      obstacleAll: mapTiles.current,
-    });
-    if (!dijkstraList.length) {
-      console.log('不好意思，走不通呀！！！');
-      return;
+    console.log(`dijkstra start from:(${startTile.columns},${startTile.rows})`);
+    console.log(`dijkstra end to:(${endTile.columns},${endTile.rows})`);
+    const _routes: Position[] = []
+    if (!isAdjacent(startTile, endTile)) {
+      // not adjacent,calc route
+      const dijkstraList: number[][] = routePlanDijkstra({
+        start: { x: startTile.columns, y: startTile.rows },
+        end: { x: endTile.columns, y: endTile.rows },
+        obstacleAll: mapTiles.current,
+      });
+      if (!dijkstraList.length) {
+        console.warn('dijkstra相邻或者走不通');
+        // setRoutes(_routes)
+        // setCurrentRoute(startTile)
+        return
+      }
+      console.log('dijkstraList=>', dijkstraList)
+      _routes.push(...dijkstraList.map(v => {
+        const columns = v[0], rows = v[1];
+        const { x, y } = translateToPxPosition({ ...tileMapProps, columns, rows })
+        return { x, y, columns, rows }
+      }))
+      _routes.push(endTile)
+    } else {
+      _routes.push(endTile)
     }
-    console.log('dijkstraList=>', dijkstraList)
-    const _routes: Position[] = dijkstraList.map(v => {
-      const columns = v[0], rows = v[1];
-      const { x, y } = translateToPxPosition({ ...tileMapProps, columns, rows })
-      return { x, y, columns, rows }
-    })
-    _routes.push(endTile)
+
     console.log('_routes=>', _routes)
     const route = _routes[0]
     if (route.columns > startTile.columns) {
@@ -185,69 +195,106 @@ export default function PixiAnimationObject({
 
   }, [startTile, endTile])
 
+  // set walking
   useEffect(() => {
     if (routes.length) {
       setIsWalking(true)
+    } else {
+      setIsWalking(false)
     }
   }, [routes])
 
+  // move
   useTick(delta => {
     if (!routes || !endTile) {
       // console.log("==no route===")
       return
     }
     if (!isWalking) {
+      console.log("==isWalking stopped===")
       return
     }
     if (!currentRoute) {
+      console.log("==no currentRoute===")
       return
     }
+
     let directionX = 1, directionY = 1;
+    let newX = currentX, newY = currentY;
     if (routes.length === 0) {
+      console.log('routes is over')
       setIsWalking(false)
       return
     }
     const [route, ...others] = routes
-    // facing
-    if (route.columns > currentRoute.columns) {
-      setAnimationName(animationNames[1])
-    } else if (route.columns < currentRoute.columns) {
-      setAnimationName(animationNames[0])
+    if (currentX > route.x) {
+      directionX = -1
+    }
+    // check if move with x axis
+    const moveX = currentRoute.rows === route.rows &&
+      (
+        (currentRoute.columns !== route.columns) 
+        ||
+        (
+          (directionX === 1 && currentX < route.x) 
+          || 
+          (directionX === -1 && currentX > route.x)
+        )
+      );
+    // console.log('route=>', route)
+    // console.log("currentRoute=>", currentRoute)
+    // console.log("moveX", 
+    //   moveX,
+    //   currentRoute.rows === route.rows,
+    //   currentRoute.columns !== route.columns, 
+    //   directionX === 1 && currentX < route.x,
+    //   directionX === -1 && currentX > route.x
+    // )
+    if (moveX) {
+      // facing
+      if (route.columns > currentRoute.columns) {
+        setAnimationName(animationNames[1])
+      } else {
+        setAnimationName(animationNames[0])
+      }
+
+      // console.log("newX=>", currentX + delta * data.move * directionX, currentX, delta, data.move, directionX)
+      newX = currentX + delta * data.move * directionX
+      setCurrentX(newX)
     } else {
       if (route.rows > currentRoute.rows) {
         setAnimationName(animationNames[3])
       } else {
         setAnimationName(animationNames[2])
       }
+      if (currentY > route.y) {
+        directionY = -1
+      }
+      newY = currentY + delta * data.move * directionY
+      setCurrentY(newY)
     }
 
-    // move
-    if (currentX > route.x + w / 2) {
-      directionX = -1
-    }
-    if (currentY > route.y) {
-      directionY = -1
-    }
-    let newX = currentX + delta * data.move * directionX
-    let newY = currentY + delta * data.move * directionY
-    // console.log('newX 2', newX, route, others)
-    setCurrentX(newX)
-    setCurrentY(newY)
-
-    let routeXArrived = (directionX === 1 && newX >= route.x)
+    let routeXArrived = !moveX || (directionX === 1 && newX >= route.x)
       || (directionX === -1 && newX <= route.x)
-    let routeYArrived = (directionY === 1 && newY >= route.y)
+    let routeYArrived = moveX || (directionY === 1 && newY >= route.y)
       || (directionY === -1 && newY <= route.y)
+
+    // if (!routeXArrived) {
+      // console.log("directionX===1", directionX === 1)
+      // console.log('startTile=>', startTile)
+      // console.log('endTile=>', endTile)
+      // console.log('routes=>', routes)
+      // console.log("currentRoute=>", currentRoute)
+      // console.log("route=>", route)
+      // console.log("newX >= route.x", route, newX >= route.x, newX, route.x)
+    // }
+    // console.log('routeXArrived=>', routeXArrived, '   routeYArrived:', routeYArrived)
     if (routeXArrived && routeYArrived) {
       setRoutes(others)
       setCurrentRoute(route)
     }
   })
 
-  function loadFrames(animationName: string, spritesheet?: PIXI.Spritesheet<PIXI.ISpritesheetData>): PIXI.Texture[] {
-    return spritesheet ? spritesheet.animations[animationName] : []
-  }
-  // console.log('frames=>', frames.map(f => f.textureCacheIds))
 
   return (
     frames && frames.length > 0 ? <AnimatedSprite
