@@ -30,7 +30,7 @@ export default function SceneScrollList({ worldId, spritesheets }: { worldId: Wo
           </div>
         </form>
       </div>
-      <ScrollArea className="h-full max-h-[calc(100vh-150px)]">
+      <ScrollArea className="h-full max-h-[calc(100vh-180px)]">
         <div className="flex flex-col gap-2 p-4 pt-0">
           {spritesheets.map((item) => (
             <Link

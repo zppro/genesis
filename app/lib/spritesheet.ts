@@ -26,6 +26,10 @@ export const zodSpritesheet = z.object({
   animations: z.optional(z.record(z.string(), z.array(z.string()))),
   meta: z.object({
     scale: z.string(),
+    image: z.string({
+      required_error: "meta.image is required",
+      invalid_type_error: "meta.image must be a string",
+    }).min(1, { message: "meta.image cant be empty" }),
   })
 })
 

@@ -38,6 +38,7 @@
     "cmdk": "^1.0.0",
     "convex": "^1.17.0",
     "convex-helpers": "^0.1.65",
+    "copy-to-clipboard": "^3.3.3",
     "date-fns": "^4.1.0",
     "debounce": "^2.2.0",
     "isbot": "^4.1.0",

@@ -50,7 +50,7 @@ export async function action({
   const result0 = zodSpritesheet.safeParse(data);
   if (!result0.success) {
     serverErrors = { ...result0.error.formErrors.fieldErrors }
-    serverErrors["data"] = "parse json as spritesheet err"
+    serverErrors["data"] = "parse json as spritesheet err: "+ Object.keys(serverErrors).map(se=>serverErrors[se].join()).join()
     console.error(serverErrors)
     return { serverErrors }
   }

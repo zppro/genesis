@@ -5,7 +5,7 @@ import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import SpritesheetForm from "~/routes/world.$worldId.spritesheet/form"
-import { z } from "zod";
+import { object, z } from "zod";
 import { zodSpritesheet } from "~/lib/spritesheet";
 import { getWorldSpritesheet, updateWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
@@ -57,7 +57,7 @@ export async function action({
   const result0 = zodSpritesheet.safeParse(data);
   if (!result0.success) {
     serverErrors = { ...result0.error.formErrors.fieldErrors }
-    serverErrors["data"] = "parse json as spritesheet err"
+    serverErrors["data"] = "parse json as spritesheet err: "+ Object.keys(serverErrors).map(se=>serverErrors[se].join()).join()
     console.error(serverErrors)
     return { serverErrors }
   }

@@ -14,7 +14,7 @@ import ComboboxForTexture from "./combox-for-texture"
 import { useTextureCombox, type TextureComboxItem } from "~/routes/world.$worldId.spritesheet/combox-for-texture"
 import { FormErrors, ClientErrors } from "~/components/convex/type";
 import { FormProps, FormErrorTip } from "~/components/convex/form"
-
+import JsonPretty from "~/components/ui/json-pretty";
 // export type SpritesheetFormProps<T extends z.AnyZodObject> = {
 //   children?: React.ReactNode;
 //   errors?: FormErrors;
@@ -24,7 +24,7 @@ import { FormProps, FormErrorTip } from "~/components/convex/form"
 // }
 
 export default function SpritesheetForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: FormProps<SpritesheetTable, S>) {
-// export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onClientErrors }: SpritesheetFormProps<T>) {
+  // export default function SpritesheetForm<T extends z.AnyZodObject>({ children, errors, spritesheet, schema, onClientErrors }: SpritesheetFormProps<T>) {
   const { toast } = useToast()
   const textureCombox = useTextureCombox()
   const [textureId, setTextureId] = useState(doc?.textureId)
@@ -92,6 +92,15 @@ export default function SpritesheetForm<S extends z.AnyZodObject>({ children, er
               <Label>Texture<span className="text-red-500">*</span></Label>
               <ComboboxForTexture errClass={errors?.textureId ? "form-input-err" : undefined} {...textureCombox} defaultItemId={doc?.textureId} onSelectChange={onTextureChange} />
               {errors?.textureId ? <FormErrorTip tip={errors.textureId} /> : null}
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label>Legal format:</Label>
+              <JsonPretty data={{
+                otherfields: {},
+                meta: {
+                  image: textureCombox.items[0].textureUrl
+                }
+              }} buttons={["copy"]} className="w-[520px]" />
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="data">Spritesheet data<span className="text-red-500">*</span></Label>
