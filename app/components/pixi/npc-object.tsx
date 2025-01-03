@@ -211,11 +211,11 @@ export default function PixiAnimationObject({
       return
     }
     if (!isWalking) {
-      console.log("==isWalking stopped===")
+      // console.log("==isWalking stopped===")
       return
     }
     if (!currentRoute) {
-      console.log("==no currentRoute===")
+      // console.log("==no currentRoute===")
       return
     }
 
