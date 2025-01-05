@@ -12,7 +12,9 @@ import { PixiTilemapConverted } from "@/shared/tilemap"
 import { AnimatedSprite } from "@/shared/animatedSprite"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import PixiNPCObject, { AnimationData as NPCAnimationData } from "~/components/pixi/npc-object";
+import Character from "~/components/pixi/character"
 import { ClickedEvent } from 'pixi-viewport/dist/types';
+import { array2Map } from "~/lib/utils";
 
 type Frame = {
   x: number;
@@ -23,6 +25,7 @@ type Frame = {
 export type AnimationType = "npc" | "object";
 
 export type TilemapAnimation = Frame & {
+  name: string;
   speed: number;
   spritesheet: PixiSpritesheet;
   type: AnimationType,
@@ -185,6 +188,7 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
   const [loaded, setLoaded] = useState(false)
   const [mapData, setMapData] = useState<TilemapData>();
   const [pointOfNPC, setPointOfNPC] = useState<PIXI.Point>()
+  // const [baseTextures, setBaseTextures] = useState<Record<string, PIXI.BaseTexture>>({})
 
   const tileDim = map.tiledim;
   const tilesX = map.screenxtiles;
@@ -235,8 +239,23 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       setMapData(_mapData)
 
     })();
-
   }, [])
+
+  // baseTexture.from自带缓存，不需要自己来处理
+  // useEffect(() => {
+  //   let textures = Array.from(new Set(tilemapAnimations.map(v => v.spritesheet.meta.image))).map(textureUrl => PIXI.BaseTexture.from(textureUrl))
+  //   console.log('textures=>', textures)
+  //   const textureMap = array2Map(textures, "cacheId")
+
+  //   const _baseTextures = tilemapAnimations.reduce<Record<string, PIXI.BaseTexture>>((prev, current) => {
+  //     const key = current.name;
+  //     const textureUrl = current.spritesheet.meta.image;
+  //     prev[key] = textureMap.get(textureUrl)!;
+  //     return prev
+  //   }, {})
+  //   console.log('_baseTextures=>', _baseTextures)
+  //   setBaseTextures(_baseTextures)
+  // }, [tilemapAnimations])
 
   const onClicked = (e: ClickedEvent) => {
     // console.log('viewport clicked:', e)
@@ -266,18 +285,56 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       {
         tilemapAnimations.map(animation =>
           animation.type === "npc" ?
-            <PixiNPCObject
-              animationNames={Object.keys(animation.spritesheet.animations!)}
-              animationSpritesheet={animation.spritesheet}
-              speed={animation.speed}
+            (<Character
+              // bt={baseTextures[animation.name]}
+              key={animation.name}
+              spritesheetData={animation.spritesheet}
               x={animation.x}
               y={animation.y}
-              w={animation.w}
-              h={animation.h}
-              data={animation.data as NPCAnimationData}
+              speed={animation.speed}
+              tickMove={animation.data?.move}
+              orientation="down"
+              isMoving={false}
+              mapData={animation.data! && {
+                width: animation.data.tileDim * animation.data.xTiles,
+                height: animation.data.tileDim * animation.data.yTiles,
+                itemRows: animation.data.yTiles,
+                itemColumns: animation.data.xTiles,
+              }}
               viewportRef={viewportRef}
               targetPoint={pointOfNPC}
-            /> :
+            />)
+            // (idx === 0 ?
+            //   <Character
+            //     spritesheetData={animation.spritesheet}
+            //     x={animation.x}
+            //     y={animation.y}
+            //     speed={animation.speed}
+            //     tickMove={animation.data?.move}
+            //     orientation="down"
+            //     isMoving={false}
+            //     mapData={animation.data! && {
+            //       width: animation.data.tileDim * animation.data.xTiles,
+            //       height: animation.data.tileDim * animation.data.yTiles,
+            //       itemRows: animation.data.yTiles,
+            //       itemColumns: animation.data.xTiles,
+            //     }}
+            //     viewportRef={viewportRef}
+            //     targetPoint={pointOfNPC}
+            //   /> :
+            //   <PixiNPCObject
+            //     animationNames={Object.keys(animation.spritesheet.animations!)}
+            //     animationSpritesheet={animation.spritesheet}
+            //     speed={animation.speed}
+            //     x={animation.x}
+            //     y={animation.y}
+            //     w={animation.w}
+            //     h={animation.h}
+            //     data={animation.data as NPCAnimationData}
+            //     viewportRef={viewportRef}
+            //     targetPoint={pointOfNPC}
+            //   />) 
+            :
             <PixiAnimationObject
               animationName={Object.keys(animation.spritesheet.animations!)[0]}
               animationSpritesheet={animation.spritesheet}

@@ -32,3 +32,7 @@ export const getRandomInteger = (min: number, max: number) => {
 
   return Math.floor(Math.random() * (max - min)) + min
 }
+
+export function array2Map<T>(array: Array<T>, key: keyof T) {
+  return new Map(array.map(obj => [obj[key] as string, obj]));
+}

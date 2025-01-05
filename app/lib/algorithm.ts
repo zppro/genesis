@@ -30,16 +30,16 @@ export type TilePosition = {
 
 export type Position = PxPosition & TilePosition;
 
-export type TileMapProps = {
+export type TileMapData = {
   width: number; // pixel width
   height: number; // pixel height
   itemRows: number; // rows count (y axis)
   itemColumns: number; // columns count (x axis)
 }
 
-export type TranslateToPxPositionProps = TileMapProps & TilePosition;
+export type TranslateToPxPositionProps = TileMapData & TilePosition;
 
-export type TranslateToPositionProps = TileMapProps & PxPosition;
+export type TranslateToPositionProps = TileMapData & PxPosition;
 
 type NexStepReturn = PxPosition & {
   gValue: number;

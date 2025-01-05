@@ -1,39 +1,58 @@
 "use client"
 import * as PIXI from 'pixi.js';
-import { AnimatedSprite, useTick } from '@pixi/react';
+import { Container, AnimatedSprite, useTick } from '@pixi/react';
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { routePlanDijkstra, isAdjacent, BgLayoutItemType, Position, TileMapData, translateToPxPosition, translateToPosition } from "~/lib/algorithm";
 import { Viewport } from 'pixi-viewport';
 import { MutableRefObject } from 'react';
 
+export type Orientation = "right" | "down" | "left" | "up"
+
+export type CharacterProps =
+  {
+    bt?: PIXI.BaseTexture;
+    // The data for the spritesheet.
+    spritesheetData: PixiSpritesheet;
+    // The pose of the NPC.
+    x: number;
+    y: number;
+    orientation: Orientation; // 
+    isMoving?: boolean;
+    // Shows a thought bubble if true.
+    isThinking?: boolean;
+    // Shows a speech bubble if true.
+    isSpeaking?: boolean;
+    emoji?: string;
+    // Highlights the player.
+    isViewer?: boolean;
+    // The speed of the animation. Can be tuned depending on the side and speed of the NPC.
+    speed: number;
+    // onClick: () => void;
+    tickMove?: number; // every tick move px
+    // viewport to be followed
+    viewportRef?: MutableRefObject<Viewport | undefined>;
+    // character move target
+    targetPoint?: PIXI.Point;
+    // map data
+    mapData: TileMapData;
+  }
+
 export type AnimationData = {
-  move: number;
   tileDim: number;
   xTiles: number;
   yTiles: number;
 }
 
-export type PixiAnimationObjectProps = {
-  animationSpritesheet: PixiSpritesheet;
-  animationNames: string[];
-  speed: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  data: AnimationData;
-  viewportRef?: MutableRefObject<Viewport | undefined>;
-  targetPoint?: PIXI.Point;
-}
 
-export default function PixiAnimationObject({
-  animationSpritesheet, animationNames, speed,
-  x, y, w, h, data, viewportRef, targetPoint
-}: PixiAnimationObjectProps) {
-  const npcRef = useRef<PIXI.AnimatedSprite>();
+export default function Character({
+  bt, spritesheetData, speed,
+  x, y, orientation, mapData, tickMove, viewportRef, targetPoint
+}: CharacterProps) {
+  const containerRef = useRef<PIXI.Container | null>(null);
+  const spriteRef = useRef<PIXI.AnimatedSprite | null>(null);
   const [spritesheet, setSpritesheet] = useState<PIXI.Spritesheet>();
-  const [animationName, setAnimationName] = useState(animationNames[3]); // left=0,right,up,down 
+  const [direction, setDirection] = useState<Orientation>(orientation); // left=0,right,up,down 
   const [preStartTile, setPreStartTile] = useState<Position>()
   const [startTile, setStartTile] = useState<Position>()
   const [preEndTile, setPreEndTile] = useState<Position>()
@@ -42,56 +61,62 @@ export default function PixiAnimationObject({
   const [currentX, setCurrentX] = useState(x);
   const [currentY, setCurrentY] = useState(y);
   const [currentRoute, setCurrentRoute] = useState<Position>();
-  const [isWalking, setIsWalking] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
+  const tickMoveDefault = 0.1
 
-  const tileMapProps: TileMapData = {
-    width: data.tileDim * data.xTiles,
-    height: data.tileDim * data.yTiles,
-    itemRows: data.yTiles,
-    itemColumns: data.xTiles,
-  }
-  const frames = spritesheet ? spritesheet.animations[animationName] : []
   let obstacleAll: BgLayoutItemType[][] = [];
-  for (let i = 0; i < data.yTiles; i++) {
-    obstacleAll.push(new Array(data.xTiles).fill(0));
+  for (let i = 0; i < mapData.itemRows; i++) {
+    obstacleAll.push(new Array(mapData.itemColumns).fill(0));
   }
   // 二维数组每个元素代表一个tile
   const mapTiles = useRef<BgLayoutItemType[][]>(obstacleAll);
 
   // parse spritesheet
   useEffect(() => {
-    const url = animationSpritesheet.meta.image
-    const bt = PIXI.BaseTexture.from(url);
-    const _spritesheet = new PIXI.Spritesheet(bt, animationSpritesheet);
+    console.log('_bt=>', bt)
+    let _bt = bt
+    if (!_bt) {
+      const url = spritesheetData.meta.image
+      _bt = PIXI.BaseTexture.from(url);
+    }
+    
+    console.log('_bt=>', _bt)
+    const _spritesheet = new PIXI.Spritesheet(_bt, spritesheetData);
     _spritesheet.parse().then(() => {
       // const frames = Object.keys(spritesheet.textures).map(t => spritesheet.textures[t])
       setSpritesheet(_spritesheet)
     })
-  }, [animationSpritesheet])
+  }, [spritesheetData])
+
+  // const orientation = Math.floor(orientation / 90);
+  // const direction = ['right', 'down', 'left', 'up'][orientation];
+
+  useEffect(() => {
+    if (isMoving) {
+      spriteRef.current?.play();
+    }
+  }, [direction, isMoving]);
 
   // set viewport follow npc
   useEffect(() => {
-    if (!npcRef.current) {
+    if (!containerRef.current) {
       return
     }
-    viewportRef?.current && viewportRef.current.follow(npcRef.current, { speed: 20 })
-  }, [npcRef.current])
+    viewportRef?.current && viewportRef.current.follow(containerRef.current, { speed: 20 })
+  }, [containerRef.current])
 
   // adjust startTile & endTile
   useEffect(() => {
-    if (!tileMapProps) {
+    if (!containerRef.current) {
       return
     }
-    if (!npcRef.current) {
-      return
-    }
-    console.log("npcRef.current=>", npcRef.current.position)
+    // console.log("ref.current=>", ref.current.position)
 
     let startTileChanged = false, endTileChanged = false;
     const _startTile = translateToPosition({
-      ...tileMapProps,
-      x: npcRef.current.position.x,
-      y: npcRef.current.position.y,
+      ...mapData,
+      x: containerRef.current.position.x,
+      y: containerRef.current.position.y,
     })
     console.log('currentRoute=>', currentRoute)
     console.log('_startTile=>', _startTile)
@@ -106,7 +131,7 @@ export default function PixiAnimationObject({
 
     if (targetPoint) {
       const _endTile = translateToPosition({
-        ...tileMapProps,
+        ...mapData,
         x: targetPoint.x,
         y: targetPoint.y,
       })
@@ -121,12 +146,12 @@ export default function PixiAnimationObject({
 
       if (endTileChanged) {
         // refresh walking state
-        setIsWalking(false)
+        setIsMoving(false)
         setRoutes([])
         setCurrentRoute(undefined)
       }
     }
-  }, [npcRef.current, targetPoint])
+  }, [containerRef.current, targetPoint])
 
   // calc routes
   useEffect(() => {
@@ -169,7 +194,7 @@ export default function PixiAnimationObject({
       console.log('dijkstraList=>', dijkstraList)
       _routes.push(...dijkstraList.map(v => {
         const columns = v[0], rows = v[1];
-        const { x, y } = translateToPxPosition({ ...tileMapProps, columns, rows })
+        const { x, y } = translateToPxPosition({ ...mapData, columns, rows })
         return { x, y, columns, rows }
       }))
       _routes.push(endTile)
@@ -180,14 +205,14 @@ export default function PixiAnimationObject({
     console.log('_routes=>', _routes)
     const route = _routes[0]
     if (route.columns > startTile.columns) {
-      setAnimationName(animationNames[1])
+      setDirection("right")
     } else if (route.columns < startTile.columns) {
-      setAnimationName(animationNames[0])
+      setDirection("left")
     } else {
       if (route.rows > startTile.rows) {
-        setAnimationName(animationNames[3])
+        setDirection("down")
       } else {
-        setAnimationName(animationNames[2])
+        setDirection("up")
       }
     }
     setRoutes(_routes)
@@ -198,9 +223,9 @@ export default function PixiAnimationObject({
   // set walking
   useEffect(() => {
     if (routes.length) {
-      setIsWalking(true)
+      setIsMoving(true)
     } else {
-      setIsWalking(false)
+      setIsMoving(false)
     }
   }, [routes])
 
@@ -210,7 +235,7 @@ export default function PixiAnimationObject({
       // console.log("==no route===")
       return
     }
-    if (!isWalking) {
+    if (!isMoving) {
       // console.log("==isWalking stopped===")
       return
     }
@@ -223,7 +248,7 @@ export default function PixiAnimationObject({
     let newX = currentX, newY = currentY;
     if (routes.length === 0) {
       console.log('routes is over')
-      setIsWalking(false)
+      setIsMoving(false)
       return
     }
     const [route, ...others] = routes
@@ -233,11 +258,11 @@ export default function PixiAnimationObject({
     // check if move with x axis
     const moveX = currentRoute.rows === route.rows &&
       (
-        (currentRoute.columns !== route.columns) 
+        (currentRoute.columns !== route.columns)
         ||
         (
-          (directionX === 1 && currentX < route.x) 
-          || 
+          (directionX === 1 && currentX < route.x)
+          ||
           (directionX === -1 && currentX > route.x)
         )
       );
@@ -253,24 +278,24 @@ export default function PixiAnimationObject({
     if (moveX) {
       // facing
       if (route.columns > currentRoute.columns) {
-        setAnimationName(animationNames[1])
+        setDirection("right")
       } else {
-        setAnimationName(animationNames[0])
+        setDirection("left")
       }
 
-      // console.log("newX=>", currentX + delta * data.move * directionX, currentX, delta, data.move, directionX)
-      newX = currentX + delta * data.move * directionX
+      // console.log("newX=>", currentX + delta * tickMove * directionX, currentX, delta, tickMove, directionX)
+      newX = currentX + delta * (tickMove ?? tickMoveDefault) * directionX
       setCurrentX(newX)
     } else {
       if (route.rows > currentRoute.rows) {
-        setAnimationName(animationNames[3])
+        setDirection("down")
       } else {
-        setAnimationName(animationNames[2])
+        setDirection("up")
       }
       if (currentY > route.y) {
         directionY = -1
       }
-      newY = currentY + delta * data.move * directionY
+      newY = currentY + delta * (tickMove ?? tickMoveDefault) * directionY
       setCurrentY(newY)
     }
 
@@ -280,13 +305,13 @@ export default function PixiAnimationObject({
       || (directionY === -1 && newY <= route.y)
 
     // if (!routeXArrived) {
-      // console.log("directionX===1", directionX === 1)
-      // console.log('startTile=>', startTile)
-      // console.log('endTile=>', endTile)
-      // console.log('routes=>', routes)
-      // console.log("currentRoute=>", currentRoute)
-      // console.log("route=>", route)
-      // console.log("newX >= route.x", route, newX >= route.x, newX, route.x)
+    // console.log("directionX===1", directionX === 1)
+    // console.log('startTile=>', startTile)
+    // console.log('endTile=>', endTile)
+    // console.log('routes=>', routes)
+    // console.log("currentRoute=>", currentRoute)
+    // console.log("route=>", route)
+    // console.log("newX >= route.x", route, newX >= route.x, newX, route.x)
     // }
     // console.log('routeXArrived=>', routeXArrived, '   routeYArrived:', routeYArrived)
     if (routeXArrived && routeYArrived) {
@@ -295,28 +320,19 @@ export default function PixiAnimationObject({
     }
   })
 
+  if (!spritesheet) return null;
 
   return (
-    frames && frames.length > 0 ? <AnimatedSprite
-      ref={(sprite) => {
-        // console.log('sprite ref...', sprite)
-        if (npcRef.current !== sprite) {
-          npcRef.current = sprite || undefined; // set npcRef
-
-          if (npcRef.current && !npcRef.current.playing) {
-            // change textures make animation play again
-            npcRef.current.play()
-          }
-        }
-      }}
-      x={currentX} y={currentY} width={w} height={h}
-      anchor={0.5}
-      // scale={2}
-      textures={frames}
-      autoUpdate={true}
-      isPlaying={true}
-      // initialFrame={0}
-      animationSpeed={speed}
-    /> : null
+    <Container ref={containerRef} x={currentX} y={currentY}>
+      <AnimatedSprite
+        ref={spriteRef}
+        anchor={0.5}
+        // scale={2}
+        textures={spritesheet.animations[direction]}
+        isPlaying={isMoving}
+        // initialFrame={0}
+        animationSpeed={speed}
+      />
+    </Container>
   )
 }

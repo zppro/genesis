@@ -207,6 +207,7 @@ export default function NPCsTab() {
     && navigation.formAction === `/world/${worldId}/scene/${sceneId}/npcs`;
 
   const tilemapAnimations = sceneNPCExs.map<TilemapAnimation>(sa => ({
+    name: sa.name,
     x: sa.x,
     y: sa.y,
     w: sa.w,
