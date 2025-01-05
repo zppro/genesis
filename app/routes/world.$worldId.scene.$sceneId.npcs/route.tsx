@@ -1,7 +1,7 @@
 
 import { useNavigation, useLoaderData, useActionData, useFetcher, Outlet, Link, } from "@remix-run/react";
 import { type LoaderFunctionArgs, LinksFunction, ActionFunctionArgs } from "@remix-run/node";
-import { LoaderCircle, Search, Plus } from "lucide-react"
+import { LoaderCircle, Search, Plus, Layers } from "lucide-react"
 import { useRouteLoaderData } from "@remix-run/react";
 import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$sceneId/route";
 import List from "./list"
@@ -144,6 +144,9 @@ export default function NPCsTab() {
       const bgtiles: TileLayer[] = []
       const objmap: TileLayer[] = []
       const tilelayers = parsed.layers.filter((layer: any) => layer.type === 'tilelayer');
+      tilelayers.forEach((layer:any) => {
+        console.log(layer)
+      })
       const [head, ...[_, ...tail]] = tilelayers
       const objmapLayer = tail[tail.length - 1];
 
