@@ -1,7 +1,8 @@
 import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds"
-import type { SceneId, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/scenes";
+import type { SceneId, InsertArgs, UpdateArgs, DeleteArgs, SetBlockerLayersArgs } from "@/world/scenes";
+
 // import { parseNotFoundRecordError, parseConvexError } from "@/error";
 
 export const getWorldScene = async (id: SceneId) => {
@@ -28,4 +29,8 @@ export const updateWorldScene = async (args: UpdateArgs) => {
 
 export const deleteWorldScene = async (args: DeleteArgs) => {
   await proxy().mutation(api.world.scenes.delete_, args)
+}
+
+export const setSceneBlockerLayers = async (args: SetBlockerLayersArgs) => {
+  await proxy().mutation(api.world.scenes.setBlockerLayers, args)
 }

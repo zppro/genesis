@@ -3,8 +3,8 @@ import { useState, ComponentProps } from "react";
 import { cn } from "~/lib/utils"
 
 type ImageDialogProps = ComponentProps<"img"> & {
-  maxWidth: number;
-  maxHeight: number;
+  maxWidth?: number;
+  maxHeight?: number;
 };
 
 function ImageDialog({ src, maxWidth, maxHeight, className, ...props }: ImageDialogProps) {

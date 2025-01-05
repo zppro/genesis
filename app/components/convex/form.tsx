@@ -17,3 +17,9 @@ export type FormProps<T extends ConvexDocTables, S extends z.AnyZodObject> = {
   schema: S;
   onClientErrors: (clientErrors: ClientErrors) => void;
 }
+
+export type SlimFormProps<T extends ConvexDocTables> = {
+  children?: React.ReactNode;
+  errors?: FormErrors;
+  doc?: Doc<T>;
+}

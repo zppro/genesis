@@ -29,11 +29,14 @@ export const sceneSerialized = {
   tilesetId: idResource,
   // reource type = 'tilemap'
   tilemapId: idResource,
+  // 作为前景，会对character产生block
+  blockLayers: v.optional(v.array(v.string())),
 };
 const { ...insertArgs } = sceneSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idScene, ..._updateArgs }
 const deleteArgs = { id: idScene }
+const setBlockLayersArgs = { id: idScene, blockLayers: v.array(v.string()) }
 
 export type SceneTable = typeof table
 export type SceneId = Id<SceneTable>
@@ -46,6 +49,7 @@ export type SerializedScene = ObjectType<typeof sceneSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+export type SetBlockerLayersArgs = ObjectType<typeof setBlockLayersArgs>;
 
 export const tableSchema = defineTable(sceneSerialized)
   .index(indexName_ByWorldId, ["worldId"])
@@ -117,5 +121,13 @@ export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
     return await ctx.db.delete(args.id);
+  },
+});
+
+export const setBlockerLayers = mutation({
+  args: setBlockLayersArgs,
+  handler: async (ctx, args) => {
+    const { id, ...patchData } = args
+    return await ctx.db.patch(args.id, patchData);
   },
 });
