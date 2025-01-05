@@ -292,6 +292,8 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
               x={animation.x}
               y={animation.y}
               speed={animation.speed}
+              isThinking={true}
+              isSpeaking={true}
               tickMove={animation.data?.move}
               orientation="down"
               isMoving={false}

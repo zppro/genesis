@@ -1,6 +1,6 @@
 "use client"
 import * as PIXI from 'pixi.js';
-import { Container, AnimatedSprite, useTick } from '@pixi/react';
+import { Container, Text, AnimatedSprite, useTick } from '@pixi/react';
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { routePlanDijkstra, isAdjacent, BgLayoutItemType, Position, TileMapData, translateToPxPosition, translateToPosition } from "~/lib/algorithm";
@@ -47,7 +47,9 @@ export type AnimationData = {
 
 export default function Character({
   bt, spritesheetData, speed,
-  x, y, orientation, mapData, tickMove, viewportRef, targetPoint
+  x, y, orientation, 
+  isThinking, isSpeaking,
+  mapData, tickMove, viewportRef, targetPoint
 }: CharacterProps) {
   const containerRef = useRef<PIXI.Container | null>(null);
   const spriteRef = useRef<PIXI.AnimatedSprite | null>(null);
@@ -324,6 +326,14 @@ export default function Character({
 
   return (
     <Container ref={containerRef} x={currentX} y={currentY}>
+      {isThinking && (
+        // TODO: We'll eventually have separate assets for thinking and speech animations.
+        <Text x={-20} y={-10} scale={{ x: -0.8, y: 0.8 }} text={'😁'} anchor={0.5} />
+      )}
+      {isSpeaking && (
+        // TODO: We'll eventually have separate assets for thinking and speech animations.
+        <Text x={18} y={-10} scale={0.8} text={'💬'} anchor={0.5} />
+      )}
       <AnimatedSprite
         ref={spriteRef}
         anchor={0.5}
