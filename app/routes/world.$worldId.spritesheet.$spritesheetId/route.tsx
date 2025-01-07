@@ -1,5 +1,5 @@
 import { format } from "date-fns/format"
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
@@ -9,10 +9,17 @@ import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
 import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import ToolItem from "~/components/toolbars/tool-item"
 import { ImageDialog } from "~/components/ui/image-dialog";
 import { getWorldTexture } from "~/data/convexProxy/texture.server"
 import { type TextureId } from "@/world/textures";
 import { Badge } from "~/components/ui/badge"
+import { Form } from "@remix-run/react";
+import { Button } from "~/components/ui//button";
+import { CloudUpload } from "lucide-react"
+import { useEffect } from "react";
+import { useToast } from "~/hooks/use-toast";
+import { useRedirectToast } from "~/hooks/use-redirectToast";
 
 export async function loader({
   params,
@@ -68,10 +75,36 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { spritesheet, texture } = useLoaderData<typeof loader>();
+  // const { toast } = useToast()
+  const state = useRedirectToast("sync")
+  const navigation = useNavigation()
+  const isSubmitting = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${spritesheet?.worldId}/spritesheet/${spritesheet?._id}/sync`;
+  // const navigation = useNavigation();
+  // useEffect(() => {
+  //   if (
+  //     navigation.state === "loading" &&
+  //     navigation.formAction?.includes("sync")
+  //   ) {
+  //     toast({
+  //       title: "op success",
+  //       description: "sync ok",
+  //     })
+
+  //   }
+  // }, [navigation]);
 
   return (
     <div className="flex h-full items-start flex-col">
-      <Toolbar entityName={table} />
+      <Toolbar entityName={table}>
+        <ToolItem itemTip="sync to the world">
+          <Form method="post" action="sync">
+            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSubmitting} >
+              <CloudUpload className="h-4 w-4" />
+              <span>{isSubmitting ? "Syncing..." : "Sync"}</span>
+            </Button>
+          </Form>
+        </ToolItem>
+      </Toolbar>
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">

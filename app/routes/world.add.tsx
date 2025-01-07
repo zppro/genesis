@@ -76,7 +76,7 @@ export default function AddWorld() {
     const result = createWorldFormSchema.safeParse(formPayload);
     if (result.success) {
       try {
-        const newWorldId = await createFunc(formPayload as InsertArgs)
+        const newWorldId = await createFunc(formPayload as unknown as InsertArgs)
         typeof setLocalWorldId === 'function' && setLocalWorldId(newWorldId)
         navigate(`/world/${newWorldId}/dashboard`)
       } catch (error) {
@@ -145,7 +145,7 @@ export default function AddWorld() {
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button type="button" variant="outline" onClick={closeAndBack} >Cancel</Button>
-            <Button type="submit">{isSubmitting ? "saving..." : "create"}</Button>
+            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "saving..." : "create"}</Button>
           </CardFooter>
         </Card>
       </Form>

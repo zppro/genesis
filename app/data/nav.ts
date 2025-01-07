@@ -143,8 +143,8 @@ export const appNavItems = (worldId: WorldId) => {
           url: `${baseUrl}/settings`,
         },
         {
-          title: "Team",
-          url: "#",
+          title: "Deploy",
+          url: `${baseUrl}/settings/deploy`,
         },
         {
           title: "Billing",

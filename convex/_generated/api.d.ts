@@ -19,6 +19,7 @@ import type * as shared_animatedSprite from "../shared/animatedSprite.js";
 import type * as shared_frame from "../shared/frame.js";
 import type * as shared_spritesheet from "../shared/spritesheet.js";
 import type * as shared_storage from "../shared/storage.js";
+import type * as shared_sync from "../shared/sync.js";
 import type * as shared_tilemap from "../shared/tilemap.js";
 import type * as users from "../users.js";
 import type * as world_characters from "../world/characters.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   "shared/frame": typeof shared_frame;
   "shared/spritesheet": typeof shared_spritesheet;
   "shared/storage": typeof shared_storage;
+  "shared/sync": typeof shared_sync;
   "shared/tilemap": typeof shared_tilemap;
   users: typeof users;
   "world/characters": typeof world_characters;

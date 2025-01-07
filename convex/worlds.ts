@@ -9,17 +9,23 @@ export const idWorld = v.id(table)
 
 export const WORLD_TYPES = ['normal', 'super'] as const
 
+export const worldDeploy = v.object({
+  site: v.string(),
+});
+
 export const worldSerialized = {
   name: v.string(),
   type: v.union(...WORLD_TYPES.map(w => v.literal(w))),
   timeSpeedRatio: v.string(),
   startTime: v.optional(v.number()),
-  desc: v.optional(v.string())
+  desc: v.optional(v.string()),
+  deploy: v.optional(worldDeploy),
 };
 const { startTime, ...insertArgs } = worldSerialized
 const { type, timeSpeedRatio, ..._updateArgs } = insertArgs
 const updateArgs = { id: idWorld, ..._updateArgs }
 const deleteArgs = { id: idWorld }
+const setDeployArgs = { id: idWorld, deploy: worldDeploy }
 
 export type WorldTable = typeof table
 export type WorldId = Id<WorldTable>;
@@ -29,6 +35,7 @@ export type SerializedWorld = ObjectType<typeof worldSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+export type SetDeployArgs = ObjectType<typeof setDeployArgs>;
 // export type UpdateArgs = Omit<ObjectType<typeof updateArgs>, "startTime" | "type">;
 
 export const tableSchema = defineTable(worldSerialized)
@@ -111,3 +118,16 @@ export const deleteWorld = action({
     await ctx.runMutation(internal.worlds.delete_, args);
   },
 });
+
+
+export const setDeploy = mutation({
+  args: setDeployArgs,
+  handler: async (ctx, args) => {
+    const { id, ...patchData } = args
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    }
+    return await ctx.db.patch(id, patchData);
+  },
+})

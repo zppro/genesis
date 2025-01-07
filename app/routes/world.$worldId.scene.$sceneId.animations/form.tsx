@@ -166,7 +166,7 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
             {/* <SheetClose asChild>
             <Button type="submit">Save changes</Button>
           </SheetClose> */}
-            <Button variant="ghost" className="border" type="submit" >
+            <Button variant="ghost" className="border" type="submit" disabled={isSubmitting} >
               <Save className="h-4 w-4" />
               <span >{isSubmitting ? "Saving..." : "Save"}</span>
             </Button>

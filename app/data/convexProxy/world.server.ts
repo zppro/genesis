@@ -1,6 +1,6 @@
 import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
-import type { WorldId, InsertArgs, UpdateArgs, DeleteArgs } from "@/worlds";
+import type { WorldId, InsertArgs, UpdateArgs, DeleteArgs, SetDeployArgs } from "@/worlds";
 
 export const hasNoWorld = async () => {
   const worlds = await listWorlds()
@@ -19,4 +19,8 @@ export const getWorld = async (id: WorldId) => {
 
 export const updateWorld = async (args: UpdateArgs) => {
   await proxy().mutation(api.worlds.update, args)
+}
+
+export const setWorldDeploy = async (args: SetDeployArgs) => {
+  await proxy().mutation(api.worlds.setDeploy, args)
 }

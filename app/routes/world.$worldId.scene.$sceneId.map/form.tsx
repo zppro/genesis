@@ -102,7 +102,7 @@ export default function SetBlockLayersForm({ open, setOpen, isSubmitting, checkI
             {/* <SheetClose asChild>
             <Button type="submit">Save changes</Button>
           </SheetClose> */}
-            <Button variant="ghost" className="border" type="submit" >
+            <Button variant="ghost" className="border" type="submit" disabled={isSubmitting} >
               <Save className="h-4 w-4" />
               <span >{isSubmitting ? "Saving..." : "Save"}</span>
             </Button>

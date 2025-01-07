@@ -14,7 +14,7 @@ export default function Toolbar({ isSubmitting, entityName }: { isSubmitting: bo
     <div className="flex items-center gap-2 p-2">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" className="border" type="submit" >
+          <Button variant="ghost" className="border" type="submit" disabled={isSubmitting} >
             <Save className="h-4 w-4" />
             <span >{isSubmitting ? "Saving..." : "Save"}</span>
           </Button>
