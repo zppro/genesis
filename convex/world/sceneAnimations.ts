@@ -5,7 +5,7 @@ import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idScene, SceneId } from "./scenes"
 import { idObject, ObjectId, ObjectExtendDoc } from "./objects"
-import { api } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
 
 export const table = 'sceneAnimations';
@@ -13,7 +13,9 @@ export const indexName_BySceneId = 'by_sceneId';
 export const idSceneAnimation = v.id(table);
 
 export const sceneAnimationSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
+  animation: v.string(),
   sceneId: idScene,
   objectId: idObject,
   // x axis value in the scene tilemap
@@ -29,7 +31,7 @@ export const sceneAnimationSerialized = {
 };
 
 
-const { ...insertArgs } = sceneAnimationSerialized
+const { modifyTime, ...insertArgs } = sceneAnimationSerialized
 const { sceneId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idSceneAnimation, ..._updateArgs }
 const deleteArgs = { id: idSceneAnimation }
@@ -52,7 +54,10 @@ export const tableSchema = defineTable(sceneAnimationSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    const createRes = await ctx.db.insert(table, { ...args, modifyTime });
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: args.sceneId })
+    return createRes
   },
 });
 
@@ -96,15 +101,23 @@ export const update = mutation({
     const { id, ...patchData } = args
     const entity = await ctx.db.get(id);
     if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+      throw new Error(`Invalid \`${table}\` ID: ${id}`);
     }
-    return await ctx.db.patch(id, patchData);
+    const modifyTime = +new Date()
+    await ctx.db.patch(id, { ...patchData, modifyTime });
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: entity.sceneId })
   },
 });
 
 export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.delete(args.id);
+    const { id } = args
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new Error(`Invalid \`${table}\` ID: ${id}`);
+    }
+    await ctx.db.delete(id);
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: entity.sceneId })
   },
 });

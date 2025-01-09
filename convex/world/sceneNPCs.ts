@@ -4,7 +4,7 @@ import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idScene } from "./scenes"
 import { idCharacter, CharacterExtendDoc } from "./characters"
-import { api } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
 
 export const table = 'sceneNPCs';
@@ -12,6 +12,7 @@ export const indexName_BySceneId = 'by_sceneId';
 export const idSceneNPC = v.id(table);
 
 export const sceneNPCSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   sceneId: idScene,
   characterId: idCharacter,
@@ -30,7 +31,7 @@ export const sceneNPCSerialized = {
 };
 
 
-const { ...insertArgs } = sceneNPCSerialized
+const { modifyTime, ...insertArgs } = sceneNPCSerialized
 const { sceneId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idSceneNPC, ..._updateArgs }
 const deleteArgs = { id: idSceneNPC }
@@ -53,7 +54,10 @@ export const tableSchema = defineTable(sceneNPCSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    const createRes = await ctx.db.insert(table, { ...args, modifyTime });
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: args.sceneId })
+    return createRes
   },
 });
 
@@ -99,13 +103,21 @@ export const update = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
-    return await ctx.db.patch(id, patchData);
+    const modifyTime = +new Date()
+    await ctx.db.patch(id, { ...patchData, modifyTime });
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: entity.sceneId })
   },
 });
 
 export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.delete(args.id);
+    const { id } = args
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new Error(`Invalid \`${table}\` ID: ${id}`);
+    }
+    await ctx.db.delete(id);
+    await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: entity.sceneId })
   },
 });

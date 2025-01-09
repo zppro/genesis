@@ -52,6 +52,7 @@ export const links: LinksFunction = () => [
 
 const saveSchema = {
   name: z.string().min(1, { message: "Name is required" }),
+  animation: z.string().min(1, { message: "Animation name is required" }),
   // animation x axis in map
   x: z.number().int().gt(0),
   // animation y axis in map

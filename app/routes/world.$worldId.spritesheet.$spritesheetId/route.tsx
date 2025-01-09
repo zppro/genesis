@@ -17,8 +17,6 @@ import { Badge } from "~/components/ui/badge"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload } from "lucide-react"
-import { useEffect } from "react";
-import { useToast } from "~/hooks/use-toast";
 import { useRedirectToast } from "~/hooks/use-redirectToast";
 
 export async function loader({
@@ -75,23 +73,9 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { spritesheet, texture } = useLoaderData<typeof loader>();
-  // const { toast } = useToast()
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
   const isSubmitting = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${spritesheet?.worldId}/spritesheet/${spritesheet?._id}/sync`;
-  // const navigation = useNavigation();
-  // useEffect(() => {
-  //   if (
-  //     navigation.state === "loading" &&
-  //     navigation.formAction?.includes("sync")
-  //   ) {
-  //     toast({
-  //       title: "op success",
-  //       description: "sync ok",
-  //     })
-
-  //   }
-  // }, [navigation]);
 
   return (
     <div className="flex h-full items-start flex-col">

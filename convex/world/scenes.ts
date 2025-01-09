@@ -1,7 +1,7 @@
 import { ObjectType, v } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
-import { mutation, query } from '../_generated/server';
+import { internalMutation, mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idResource, read as readResource, ResourceDoc } from "./resources";
 import { api } from "../_generated/api";
@@ -11,10 +11,11 @@ export const table = 'scenes';
 export const indexName_ByWorldId = 'by_worldId';
 export const idScene = v.id(table);
 export const sceneSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   desc: v.optional(v.string()),
   worldId: idWorld,
-
+  syncTime: v.optional(v.number()),
   // a tile's dimension
   tiledim: v.number(),
   // x axis tiles number in map
@@ -32,11 +33,12 @@ export const sceneSerialized = {
   // 作为前景，会对character产生block
   blockLayers: v.optional(v.array(v.string())),
 };
-const { ...insertArgs } = sceneSerialized
+const { modifyTime, ...insertArgs } = sceneSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idScene, ..._updateArgs }
 const deleteArgs = { id: idScene }
 const setBlockLayersArgs = { id: idScene, blockLayers: v.array(v.string()) }
+const updateTimeArgs = { id: idScene }
 
 export type SceneTable = typeof table
 export type SceneId = Id<SceneTable>
@@ -50,6 +52,7 @@ export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 export type SetBlockerLayersArgs = ObjectType<typeof setBlockLayersArgs>;
+export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
 
 export const tableSchema = defineTable(sceneSerialized)
   .index(indexName_ByWorldId, ["worldId"])
@@ -57,7 +60,8 @@ export const tableSchema = defineTable(sceneSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    return await ctx.db.insert(table, { ...args, modifyTime });
   },
 });
 
@@ -109,11 +113,13 @@ export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-    }
-    return await ctx.db.patch(id, patchData);
+    // because updateArgs validator,不用再读取验证
+    // const entity = await ctx.db.get(id);
+    // if (!entity) {
+    //   throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    // }
+    const modifyTime = +new Date()
+    return await ctx.db.patch(id, { ...patchData, modifyTime });
   },
 });
 
@@ -129,5 +135,23 @@ export const setBlockerLayers = mutation({
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
     return await ctx.db.patch(args.id, patchData);
+  },
+});
+
+export const updateModifyTime = internalMutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const modifyTime = +new Date()
+    return await ctx.db.patch(id, { modifyTime });
+  },
+});
+
+export const updateSyncTime = mutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const syncTime = +new Date()
+    return await ctx.db.patch(id, { syncTime });
   },
 });

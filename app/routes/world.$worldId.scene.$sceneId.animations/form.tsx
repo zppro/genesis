@@ -42,6 +42,7 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
   const [objectId, setObjectId] = useState(doc?.objectId)
   const objectIdInput = useRef<HTMLInputElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
+  const animationInput = useRef<HTMLInputElement>(null);
   const wInput = useRef<HTMLInputElement>(null);
   const hInput = useRef<HTMLInputElement>(null);
   const speedInput = useRef<HTMLInputElement>(null);
@@ -52,6 +53,7 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
     // form number
     console.log('validateFormData=>', formPayload)
     const result = schema.safeParse(formPayload);
+    console.error("result=>", result.error?.formErrors.fieldErrors)
     return { ...result.error?.formErrors.fieldErrors }
   }
 
@@ -70,6 +72,11 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
       nameInput.current!.value = item.text
     }
     const data = JSON5.parse((item.data as SpritesheetDoc).data) as PixiSpritesheet
+
+    if (!animationInput.current!.value) {
+      animationInput.current!.value = Object.keys(data.animations!)[0]
+    }
+
     const key = Object.keys(data.frames)[0]
     const { w, h } = data.frames[key].frame
     if (!wInput.current!.value) {
@@ -125,6 +132,11 @@ export default function SceneAnimationForm<S extends z.AnyZodObject>({ open, set
                     <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
                     <Input id="name" ref={nameInput} name="name" defaultValue={doc?.name} placeholder="Name of your scene animation" className={errors?.name ? "form-input-err" : undefined} />
                     {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="animation">Animation Name<span className="text-red-500">*</span></Label>
+                    <Input id="animation" ref={animationInput} name="animation" defaultValue={doc?.animation} placeholder="Animation name in your scene animation spritesheet" className={errors?.animation ? "form-input-err" : undefined} />
+                    {errors?.animation ? <FormErrorTip tip={errors.animation} /> : null}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Combobox errClass={errors?.objectId ? "form-input-err" : undefined}

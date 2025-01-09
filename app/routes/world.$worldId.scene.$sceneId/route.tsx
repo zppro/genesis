@@ -1,14 +1,19 @@
 import { format } from "date-fns/format"
-import { useLoaderData, Outlet, Link, redirect, useLocation } from "@remix-run/react";
+import { useLoaderData, Outlet, Link, redirect, useLocation, useNavigation } from "@remix-run/react";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldSceneExtend } from "~/data/convexProxy/scene.server"
 import { type SceneId, table } from "@/world/scenes";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
-import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { ScrollArea } from "~/components/ui/scroll-area"
 import { cn } from "~/lib/utils";
+import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import ToolItem from "~/components/toolbars/tool-item"
+import { Form } from "@remix-run/react";
+import { Button } from "~/components/ui//button";
+import { CloudUpload, Check, TriangleAlert } from "lucide-react"
+import { useRedirectToast } from "~/hooks/use-redirectToast";
+
 
 export async function loader({
   params,
@@ -52,9 +57,23 @@ export default function Index() {
   const { sceneEx } = useLoaderData<typeof loader>();
   const location = useLocation();
   const tabValue = location.pathname.substring(location.pathname.lastIndexOf("/") + 1)
+  const state = useRedirectToast("sync")
+  const navigation = useNavigation()
+  const isSubmitting = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${sceneEx?.worldId}/scene/${sceneEx?._id}/sync`;
+  const isSynced = sceneEx.syncTime && sceneEx.modifyTime < sceneEx.syncTime
   return (
     <div className="flex h-full items-start flex-col">
-      <Toolbar entityName={table} />
+      <Toolbar entityName={table}>
+        <ToolItem itemTip="sync to the world">
+          <Form method="post" action="sync">
+            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSubmitting} >
+              <CloudUpload className="h-4 w-4" />
+              <span>{isSubmitting ? "Syncing..." : "Sync"}</span>
+              {isSynced ? <Check size="large" className="text-green-500" /> : <TriangleAlert size="large" className="text-yellow-500" />}
+            </Button>
+          </Form>
+        </ToolItem>
+      </Toolbar>
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">
