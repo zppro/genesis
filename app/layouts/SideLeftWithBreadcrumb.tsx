@@ -8,15 +8,22 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb"
+import { Handle } from "~/lib/routeHandle";
 import { Separator } from "~/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import { useMatches, useLocation } from "@remix-run/react"
 import type { WorldDoc, WorldId } from "@/worlds";
 
+
+
 export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: WorldDoc[] }) {
+  const matches = useMatches();
+  const location = useLocation();
+  
   return (
     <SidebarProvider>
       <AppSidebar navMain={navMain} worlds={worlds} />
@@ -27,15 +34,30 @@ export default function Layout({ children, navMain, worlds }: { children: React.
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
+                {
+                  matches
+                    .filter(
+                      (match) =>
+                        match.handle && (match.handle as Handle).breadcrumb
+                    )
+                    .map((match, index) => (
+                      <>
+                        {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
+                        {(match.handle as Handle).breadcrumb(match, location.pathname === match.pathname)}
+                      </>
+                    ))
+                }
+                {/* <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
                     Building Your Application
                   </BreadcrumbLink>
                 </BreadcrumbItem>
+
                 <BreadcrumbSeparator className="hidden md:block" />
+
                 <BreadcrumbItem>
                   <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                </BreadcrumbItem> */}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -44,7 +66,7 @@ export default function Layout({ children, navMain, worlds }: { children: React.
         <div className="flex flex-1 flex-col gap-4 p-0">
           {children}
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </SidebarInset >
+    </SidebarProvider >
   )
 }

@@ -13,15 +13,22 @@ import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
 import { useRedirectToast } from "~/hooks/use-redirectToast";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
 
+export const handle: Handle = {
+  breadcrumb
+};
 
 export async function loader({
   params,
   request,
 }: LoaderFunctionArgs) {
   const { worldId, sceneId } = params;
+  const routeUrl = `/world/${worldId}/scene/${sceneId}`
+
   let url = new URL(request.url);
-  if (url.pathname === `/world/${worldId}/scene/${sceneId}`) {
+  if (url.pathname === routeUrl) {
     return redirect(`basic`);
   }
 
@@ -45,7 +52,8 @@ export async function loader({
       });
     }
     console.log('scene id load')
-    return { sceneEx }
+    const breadcrumbData = { routeName: sceneEx.name, routeUrl }
+    return { ...breadcrumbData, sceneEx }
   }
 }
 

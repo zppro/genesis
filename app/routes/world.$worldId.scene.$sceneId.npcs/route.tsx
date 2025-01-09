@@ -7,20 +7,13 @@ import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$scene
 import List from "./list"
 import Tilemap, { TilemapAnimation } from "~/components/pixi/tilemap.client";
 import { Stage } from '@pixi/react';
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "~/components/ui/resizable"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "~/components/ui/resizable"
 import { WorldId } from "@/worlds";
 import { SceneId } from "@/world/scenes";
 import { ClientOnly } from "remix-utils/client-only"
 import { useEffect, useState, useRef } from "react";
 import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer } from "@/shared/tilemap"
-
-import {
-  SheetTrigger,
-} from "~/components/ui/sheet"
+import { SheetTrigger } from "~/components/ui/sheet"
 import { Input } from "~/components/ui/input"
 import { Button } from "~/components/ui/button"
 import { type ConvexComboxItem } from "~/components/ui/combox"
@@ -36,6 +29,12 @@ import { type InsertArgs, type UpdateArgs, SceneNPCDoc, SceneNPCId } from "@/wor
 import { listWorldCharacterExtends } from "~/data/convexProxy/character.server";
 import { CharacterTable } from "@/world/characters";
 import { parsePixiSpritesheet } from "~/lib/spritesheet";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -65,8 +64,6 @@ const createSceneNPCFormSchema = z.object({
 const updateSceneNPCFormSchema = z.object({
   ...saveSchema,
 });
-
-
 
 export async function action({
   request,
@@ -115,7 +112,8 @@ export async function loader({
   console.log('npc load')
   const sceneNPCExs = await listSceneNPCExtends(sceneId as SceneId)
   const characterExs = await listWorldCharacterExtends(worldId as WorldId);
-  return { worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneNPCExs, characterExs }
+  const breadcrumbData = { routeName: "npcs", routeUrl: "#" }
+  return { ...breadcrumbData, worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneNPCExs, characterExs }
 }
 
 export default function NPCsTab() {
@@ -144,7 +142,7 @@ export default function NPCsTab() {
       const bgtiles: TileLayer[] = []
       const objmap: TileLayer[] = []
       const tilelayers = parsed.layers.filter((layer: any) => layer.type === 'tilelayer');
-      tilelayers.forEach((layer:any) => {
+      tilelayers.forEach((layer: any) => {
         console.log(layer)
       })
       const [head, ...[_, ...tail]] = tilelayers

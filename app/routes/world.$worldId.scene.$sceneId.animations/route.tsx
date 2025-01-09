@@ -18,18 +18,7 @@ import { SceneId } from "@/world/scenes";
 import { ClientOnly } from "remix-utils/client-only"
 import { useEffect, useState, useRef } from "react";
 import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer } from "@/shared/tilemap"
-
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet"
-import { Label } from "~/components/ui/label"
+import { SheetTrigger } from "~/components/ui/sheet"
 import { Input } from "~/components/ui/input"
 import { Button } from "~/components/ui/button"
 import { type ConvexComboxItem } from "~/components/ui/combox"
@@ -45,6 +34,12 @@ import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, 
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
 import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -123,7 +118,8 @@ export async function loader({
   console.log('animation load')
   const sceneAnimationExs = await listSceneAnimationExtends(sceneId as SceneId)
   const objectExs = await listWorldObjectExtendsByType(worldId as WorldId, "animation");
-  return { worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneAnimationExs, objectExs }
+  const breadcrumbData = { routeName: "animations", routeUrl: "#" }
+  return { ...breadcrumbData, worldId: worldId as WorldId, sceneId: sceneId as SceneId, sceneAnimationExs, objectExs }
 }
 
 export default function AnimationsTab() {

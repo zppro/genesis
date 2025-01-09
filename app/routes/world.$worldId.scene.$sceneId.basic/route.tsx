@@ -1,4 +1,5 @@
 import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import SimpleCard from "~/components/ui/simple-card";
 import FileCard from "~/components/ui/file-card";
@@ -6,10 +7,23 @@ import ImageCard from "~/components/ui/image-card";
 import { ImageDialog } from "~/components/ui/image-dialog";
 import { FileJson } from "lucide-react"
 import type { loader as sceneLoader } from "~/routes/world.$worldId.scene.$sceneId/route";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
 
+export const handle: Handle = {
+  breadcrumb
+};
 
 export function ErrorBoundary() {
   return <GetOneErrorBoundary />
+}
+
+export async function loader({
+  params,
+  request,
+}: LoaderFunctionArgs) {
+  const breadcrumbData = { routeName: "basic", routeUrl: "#" }
+  return { ...breadcrumbData }
 }
 
 export default function BaiscTab() {

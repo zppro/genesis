@@ -18,7 +18,12 @@ import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
 import { SceneId, SetBlockerLayersArgs } from "@/world/scenes";
 import { setSceneBlockerLayers } from "~/data/convexProxy/scene.server";
-import { z } from "zod";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
 
 export async function action({
   request,
@@ -41,6 +46,14 @@ export async function action({
   }
 
   return { serverErrors }
+}
+
+export async function loader({
+  params,
+  request,
+}: LoaderFunctionArgs) {
+  const breadcrumbData = { routeName: "map", routeUrl: "#" }
+  return { ...breadcrumbData }
 }
 
 export default function TilemapTab() {
