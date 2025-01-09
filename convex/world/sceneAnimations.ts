@@ -10,6 +10,7 @@ import { asyncMap } from "convex-helpers";
 
 export const table = 'sceneAnimations';
 export const indexName_BySceneId = 'by_sceneId';
+export const indexName_ByObjectId = 'by_objectId';
 export const idSceneAnimation = v.id(table);
 
 export const sceneAnimationSerialized = {
@@ -49,6 +50,7 @@ export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(sceneAnimationSerialized)
   .index(indexName_BySceneId, ["sceneId"])
+  .index(indexName_ByObjectId, ["objectId"])
 
 
 export const create = mutation({
@@ -93,7 +95,16 @@ export const listEx = query({
   },
 })
 
-
+export const listByObject = query({
+  args: { objectId: idObject },
+  handler: async (ctx, args) => {
+    const { objectId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByObjectId, (q) =>
+      q
+        .eq("objectId", objectId)
+    ).collect();
+  },
+})
 
 export const update = mutation({
   args: updateArgs,

@@ -4,20 +4,22 @@ import { ConvexError } from "convex/values";
 export function GetOneErrorBoundary() {
   const error = useRouteError();
   if (isRouteErrorResponse(error)) {
+    console.log("in error boundary for route", error)
     switch (error.status) {
       case 404:
-        return <div>Ops,world scene not found!</div>;
+        return <div>Ops,url not found!</div>;
     }
     return (
       <div>
-        Something went wrong: {error.status}{" "}
+        Something went wrong: {error.status}
         {error.statusText}
+        {error.data}
       </div>
     );
   } else if (error instanceof Error) {
-    return <ParseConvexErrorBoundary error={error} />
+    console.log("in error boundary for throw", error.message, error.name)
+    return <div>Uncatched Error: {error.message}</div>
   } else {
-
     return <h1>Unknown Error</h1>;
   }
 }

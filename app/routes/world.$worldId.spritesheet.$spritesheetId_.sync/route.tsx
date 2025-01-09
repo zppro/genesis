@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { getWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
+import { getWorldSpritesheet, updateWorldSpritesheetSyncTime } from "~/data/convexProxy/spritesheet.server"
 import { toJSON } from "@/shared/sync";
 import { table, SpritesheetId } from "@/world/spritesheets"
 import { getWorld } from "~/data/convexProxy/world.server";
@@ -35,5 +35,7 @@ export const action = async ({
     throw new Error("sync failed!", result.err);
   }
   console.log(`sync spritesheet("${spritesheetId}") ok!`)
+
+  await updateWorldSpritesheetSyncTime({ id: spritesheet._id })
   return redirect(`/world/${worldId}/spritesheet/${spritesheetId}`);
 };

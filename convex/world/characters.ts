@@ -1,4 +1,4 @@
-import { ObjectType, v } from 'convex/values';
+import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
@@ -15,6 +15,7 @@ export const indexName_ByWorldIdAndSpritesheetId = 'byWorldIdAndSpritesheetId';
 export const idCharacter = v.id(table);
 
 export const characterSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   worldId: idWorld,
   // The speed of the animation. Can be tuned depending on the side and speed of the NPC.
@@ -25,7 +26,7 @@ export const characterSerialized = {
 
 
 
-const { ...insertArgs } = characterSerialized
+const { modifyTime, ...insertArgs } = characterSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idCharacter, ..._updateArgs }
 const deleteArgs = { id: idCharacter }
@@ -54,7 +55,8 @@ export const tableSchema = defineTable(characterSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    return await ctx.db.insert(table, { ...args, modifyTime });
   },
 });
 
@@ -117,11 +119,8 @@ export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-    }
-    await ctx.db.patch(id, patchData);
+    const modifyTime = +new Date()
+    await ctx.db.patch(id, { ...patchData, modifyTime });
   },
 });
 
@@ -129,9 +128,9 @@ export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
     const { id } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    const sceneNPCs = await ctx.runQuery(api.world.sceneNPCs.listByCharacter, { characterId: id })
+    if (sceneNPCs.length > 0) {
+      throw new ConvexError(`current character reference by sceneNPCs:[${sceneNPCs.map(v => v.name).join()}]`);
     }
     await ctx.db.delete(id);
   },

@@ -1,8 +1,9 @@
-import { ObjectType, v } from 'convex/values';
+import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { idTexture } from "./textures";
 import { defineTable } from "convex/server";
-import { mutation, query } from '../_generated/server';
+import { internalMutation, mutation, query } from '../_generated/server';
+import { api, internal } from "../_generated/api";
 import { Doc, Id } from "../_generated/dataModel";
 import { TextureDoc, read as readTexture } from "./textures"
 
@@ -26,8 +27,10 @@ export const SPRITESHEET_TYPES = ['character', 'object'] as const
 const VSpritesheetTypes = v.union(...SPRITESHEET_TYPES.map(t => v.literal(t)))
 
 export const spritesheetSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   worldId: idWorld,
+  syncTime: v.optional(v.number()),
   type: VSpritesheetTypes,
   // categories2: v.array(v.union(v.literal("character"), v.literal("background-object"))),
   textureId: idTexture,
@@ -35,10 +38,11 @@ export const spritesheetSerialized = {
 };
 
 
-const { ...insertArgs } = spritesheetSerialized
+const { modifyTime, ...insertArgs } = spritesheetSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idSpritesheet, ..._updateArgs }
 const deleteArgs = { id: idSpritesheet }
+const updateTimeArgs = { id: idSpritesheet }
 
 export type SpritesheetTable = typeof table
 export type SpritesheetId = Id<SpritesheetTable>
@@ -51,6 +55,7 @@ export type SerializedSpritesheet = ObjectType<typeof spritesheetSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
 
 export const tableSchema = defineTable(spritesheetSerialized)
   .index(indexName_ByWorldId, ["worldId"])
@@ -61,7 +66,8 @@ export const tableSchema = defineTable(spritesheetSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    return await ctx.db.insert(table, { ...args, modifyTime });
   },
 });
 
@@ -149,11 +155,8 @@ export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-    }
-    await ctx.db.patch(id, patchData);
+    const modifyTime = +new Date()
+    return await ctx.db.patch(id, { ...patchData, modifyTime });
   },
 });
 
@@ -165,6 +168,33 @@ export const delete_ = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
-    await ctx.db.delete(id);
+    const objects = await ctx.runQuery(api.world.objects.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
+    if (objects.length > 0) {
+      throw new ConvexError(`current spritesheet reference by objects:[${objects.map(v=>v.name).join()}]`);
+    }
+    const characters = await ctx.runQuery(api.world.characters.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
+    if (characters.length > 0) {
+      throw new ConvexError(`current spritesheet reference by characters:[${characters.map(v=>v.name).join()}]`);
+    }
+    
+    return await ctx.db.delete(id);
+  },
+});
+
+export const updateModifyTime = internalMutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const modifyTime = +new Date()
+    return await ctx.db.patch(id, { modifyTime });
+  },
+});
+
+export const updateSyncTime = mutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const syncTime = +new Date()
+    return await ctx.db.patch(id, { syncTime });
   },
 });

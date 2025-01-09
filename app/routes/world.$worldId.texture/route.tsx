@@ -8,7 +8,12 @@ import {
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import SceneScrollList from "./list"
+import { useRedirectToastEx } from "~/hooks/use-redirectToast";
+import { GetOneErrorBoundary } from "~/components/error-boundary"
 
+export function ErrorBoundary() {
+  return <GetOneErrorBoundary />
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { worldId } = params;
@@ -17,10 +22,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
   const textures = await listWorldTextures(worldId as WorldId)
 
-  return { worldId: worldId as WorldId,  textures }
+  return { worldId: worldId as WorldId, textures }
 }
 
-export default function Scene() {
+export default function Texture() {
+  useRedirectToastEx("DELETE", `/delete`, "delete texture ok")
   const data = useLoaderData<typeof loader>();
   return (
     <>

@@ -9,7 +9,12 @@ import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import List from "./list"
 import { ResourceTypes } from "@/world/resources";
+import { useRedirectToastEx } from "~/hooks/use-redirectToast";
+import { GetOneErrorBoundary } from "~/components/error-boundary"
 
+export function ErrorBoundary() {
+  return <GetOneErrorBoundary />
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { worldId, type } = params;
@@ -26,6 +31,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function Scene() {
   const data = useLoaderData<typeof loader>();
+  useRedirectToastEx("DELETE", `/delete`, `delete ${data.type} ok`)
+  
   return (
     <>
       <ResizablePanelGroup

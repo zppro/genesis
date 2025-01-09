@@ -1,9 +1,10 @@
-import { ObjectType, v } from 'convex/values';
+import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idStorage, StorageId } from "../shared/storage"
+import { api } from "../_generated/api";
 
 export const table = 'resources';
 export const indexName_ByWorldId = 'byWorldId';
@@ -16,6 +17,7 @@ export const RESOURCE_TYPES = ['tileset', 'tilemap', 'item', 'music'] as const
 const VResourceTypes = v.union(...RESOURCE_TYPES.map(t => v.literal(t)))
 
 export const resourceSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   desc: v.optional(v.string()),
   worldId: idWorld,
@@ -23,7 +25,7 @@ export const resourceSerialized = {
   storageId: idStorage,
   url: v.optional(v.string()),
 };
-const { url: _url, ...insertArgs } = resourceSerialized
+const { modifyTime, url: _url, ...insertArgs } = resourceSerialized
 const { worldId: _, type: _type, ..._updateArgs } = insertArgs
 const updateArgs = { id: idResource, ..._updateArgs }
 const deleteArgs = { id: idResource }
@@ -41,22 +43,23 @@ export const tableSchema = defineTable(resourceSerialized)
   .index(indexName_ByWorldId, ["worldId"])
   .index(indexName_ByWorldIdAndType, ["worldId", "type"])
 
-export const generateUploadUrl = mutation(async (ctx) => {
-  return await ctx.storage.generateUploadUrl();
-});
+// export const generateUploadUrl = mutation(async (ctx) => {
+//   return await ctx.storage.generateUploadUrl();
+// });
 
-export const generateDownloadUrl = query({
-  args: { id: idStorage },
-  handler: async (ctx, args) => {
-    return await ctx.storage.getUrl(args.id);
-  },
-});
+// export const generateDownloadUrl = query({
+//   args: { id: idStorage },
+//   handler: async (ctx, args) => {
+//     return await ctx.storage.getUrl(args.id);
+//   },
+// });
 
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
+    const modifyTime = +new Date()
     const url = await ctx.storage.getUrl(args.storageId) ?? undefined
-    return await ctx.db.insert(table, { ...args, url });
+    return await ctx.db.insert(table, { ...args, url, modifyTime });
   },
 });
 
@@ -87,13 +90,14 @@ export const update = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
+    const modifyTime = +new Date()
     if (args.storageId !== entity.storageId) {
       const url = await ctx.storage.getUrl(args.storageId) ?? undefined
-      await ctx.db.patch(id, { ...patchData, url });
+      await ctx.db.patch(id, { ...patchData, url, modifyTime });
       await ctx.storage.delete(entity.storageId)
       // 删除旧的stoargeId
     } else {
-      await ctx.db.patch(id, patchData);
+      await ctx.db.patch(id, { ...patchData, modifyTime });
     }
   },
 });
@@ -106,6 +110,16 @@ export const delete_ = mutation({
     if (!entity) {
       throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
     }
+
+    const tilesets = await ctx.runQuery(api.world.scenes.listByTilesetId, { tilesetId: id })
+    if (tilesets.length > 0) {
+      throw new ConvexError(`current tileset reference by scenes:[${tilesets.map(v => v.name).join()}]`);
+    }
+    const tilemaps = await ctx.runQuery(api.world.scenes.listByTilemapId, { tilemapId: id })
+    if (tilemaps.length > 0) {
+      throw new ConvexError(`current tilemap reference by scenes:[${tilemaps.map(v => v.name).join()}]`);
+    }
+
     await ctx.db.delete(id);
     await ctx.storage.delete(entity.storageId)
   },

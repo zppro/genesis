@@ -3,13 +3,16 @@ import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { internalMutation, mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
-import { idResource, read as readResource, ResourceDoc } from "./resources";
+import { idResource, ResourceDoc } from "./resources";
 import { api } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
 
 export const table = 'scenes';
 export const indexName_ByWorldId = 'by_worldId';
+export const indexName_ByTilesetId = 'by_tilesetId';
+export const indexName_ByTilemapId = 'by_tilemapId';
 export const idScene = v.id(table);
+
 export const sceneSerialized = {
   modifyTime: v.number(),
   name: v.string(),
@@ -56,6 +59,8 @@ export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
 
 export const tableSchema = defineTable(sceneSerialized)
   .index(indexName_ByWorldId, ["worldId"])
+  .index(indexName_ByTilesetId, ["tilesetId"])
+  .index(indexName_ByTilemapId, ["tilemapId"])
 
 export const create = mutation({
   args: insertArgs,
@@ -76,8 +81,9 @@ export const readEx = query({
   args: { id: idScene },
   handler: async (ctx, args) => {
     const entity = await read(ctx, args)
-    const tileset = await readResource(ctx, { id: entity?.tilesetId! })
-    const tilemap = await readResource(ctx, { id: entity?.tilemapId! })
+    const tileset = await ctx.runQuery(api.world.resources.read, { id: entity?.tilesetId! })
+    const tilemap = await ctx.runQuery(api.world.resources.read, { id: entity?.tilemapId! })
+    // const tilemap = await readResource(ctx, { id: entity?.tilemapId! })
     const extendEntity: SceneExtendDoc = { ...entity!, tileset: tileset!, tilemap: tilemap! }
     return extendEntity
   },
@@ -109,11 +115,33 @@ export const listEx = query({
   },
 })
 
+export const listByTilesetId = query({
+  args: { tilesetId: idResource },
+  handler: async (ctx, args) => {
+    const { tilesetId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByTilesetId, (q) =>
+      q
+        .eq("tilesetId", tilesetId)
+    ).collect();
+  },
+})
+
+export const listByTilemapId = query({
+  args: { tilemapId: idResource },
+  handler: async (ctx, args) => {
+    const { tilemapId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByTilemapId, (q) =>
+      q
+        .eq("tilemapId", tilemapId)
+    ).collect();
+  },
+})
+
 export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    // because updateArgs validator,不用再读取验证
+    // because updateArgs validator,no more validate
     // const entity = await ctx.db.get(id);
     // if (!entity) {
     //   throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
@@ -134,7 +162,8 @@ export const setBlockerLayers = mutation({
   args: setBlockLayersArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    return await ctx.db.patch(args.id, patchData);
+    const modifyTime = +new Date()
+    return await ctx.db.patch(args.id, { ...patchData, modifyTime });
   },
 });
 

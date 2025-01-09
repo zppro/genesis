@@ -9,6 +9,7 @@ import { asyncMap } from "convex-helpers";
 
 export const table = 'sceneNPCs';
 export const indexName_BySceneId = 'by_sceneId';
+export const indexName_ByCharacterId = 'by_characterId';
 export const idSceneNPC = v.id(table);
 
 export const sceneNPCSerialized = {
@@ -49,6 +50,7 @@ export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(sceneNPCSerialized)
   .index(indexName_BySceneId, ["sceneId"])
+  .index(indexName_ByCharacterId, ["characterId"])
 
 
 export const create = mutation({
@@ -93,7 +95,16 @@ export const listEx = query({
   },
 })
 
-
+export const listByCharacter = query({
+  args: { characterId: idCharacter },
+  handler: async (ctx, args) => {
+    const { characterId } = args
+    return await ctx.db.query(table).withIndex(indexName_ByCharacterId, (q) =>
+      q
+        .eq("characterId", characterId)
+    ).collect();
+  },
+})
 
 export const update = mutation({
   args: updateArgs,

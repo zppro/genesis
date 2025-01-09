@@ -9,7 +9,7 @@ import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { FileJson, FileAudio } from "lucide-react"
 import { ImageDialog }  from "~/components/ui/image-dialog";
-import { useState } from "react";
+import { useRedirectToastEx } from "~/hooks/use-redirectToast";
 
 export async function loader({
   params,
@@ -44,6 +44,7 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { texture } = useLoaderData<typeof loader>();
+  
   return (
     <div className="flex h-full items-start flex-col">
       <Toolbar entityName={table} />

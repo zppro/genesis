@@ -1,4 +1,4 @@
-import { ObjectType, v } from 'convex/values';
+import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
@@ -19,6 +19,7 @@ export const OBJECT_TYPES = ['animation'] as const
 const VObjectTypes = v.union(...OBJECT_TYPES.map(t => v.literal(t)))
 
 export const objectSerialized = {
+  modifyTime: v.number(),
   name: v.string(),
   worldId: idWorld,
   type: VObjectTypes,
@@ -26,7 +27,7 @@ export const objectSerialized = {
   spritesheetId: idSpritesheet, // 映射为 ai-town/data/animations下的json
 };
 
-const { ...insertArgs } = objectSerialized
+const { modifyTime, ...insertArgs } = objectSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idObject, ..._updateArgs }
 const deleteArgs = { id: idObject }
@@ -57,7 +58,8 @@ export const tableSchema = defineTable(objectSerialized)
 export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
-    return await ctx.db.insert(table, args);
+    const modifyTime = +new Date()
+    return await ctx.db.insert(table, { ...args, modifyTime });
   },
 });
 
@@ -146,11 +148,13 @@ export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-    }
-    await ctx.db.patch(id, patchData);
+    // because updateArgs validator,no more validate
+    // const entity = await ctx.db.get(id);
+    // if (!entity) {
+    //   throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    // }
+    const modifyTime = +new Date()
+    await ctx.db.patch(id, { ...patchData, modifyTime });
   },
 });
 
@@ -158,9 +162,9 @@ export const delete_ = mutation({
   args: deleteArgs,
   handler: async (ctx, args) => {
     const { id } = args
-    const entity = await ctx.db.get(id);
-    if (!entity) {
-      throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+    const sceneAnimations = await ctx.runQuery(api.world.sceneAnimations.listByObject, { objectId: id })
+    if (sceneAnimations.length > 0) {
+      throw new ConvexError(`current object reference by sceneAnimations:[${sceneAnimations.map(v => v.name).join()}]`);
     }
     await ctx.db.delete(id);
   },

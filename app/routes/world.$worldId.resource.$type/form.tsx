@@ -57,7 +57,7 @@ export default function ResourceForm<T extends z.AnyZodObject>({ children, error
   const nameInput = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewText, setPreviewText] = useState("No files currently selected for upload")
-  const generateUploadUrl = useMutation(api.world.resources.generateUploadUrl);
+  const generateUploadUrl = useMutation(api.shared.storage.generateUploadUrl);
 
   // console.log('innerErrors=>', innerErrors)
 

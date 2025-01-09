@@ -32,7 +32,7 @@ export default function SceneScrollList({ worldId, type, resources }: { worldId:
           </div>
         </form>
       </div>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full max-h-[calc(100vh-180px)]">
         <div className="flex flex-col gap-2 p-4 pt-0">
           {resources.map((item) => (
             <Link

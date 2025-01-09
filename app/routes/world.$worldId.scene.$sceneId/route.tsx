@@ -59,17 +59,17 @@ export default function Index() {
   const tabValue = location.pathname.substring(location.pathname.lastIndexOf("/") + 1)
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
-  const isSubmitting = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${sceneEx?.worldId}/scene/${sceneEx?._id}/sync`;
+  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${sceneEx?.worldId}/scene/${sceneEx?._id}/sync`;
   const isSynced = sceneEx.syncTime && sceneEx.modifyTime < sceneEx.syncTime
   return (
     <div className="flex h-full items-start flex-col">
       <Toolbar entityName={table}>
         <ToolItem itemTip="sync to the world">
           <Form method="post" action="sync">
-            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSubmitting} >
+            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSyncing} >
               <CloudUpload className="h-4 w-4" />
-              <span>{isSubmitting ? "Syncing..." : "Sync"}</span>
-              {isSynced ? <Check size="large" className="text-green-500" /> : <TriangleAlert size="large" className="text-yellow-500" />}
+              <span>{isSyncing ? "Syncing..." : "Sync"}</span>
+              {isSynced ? <Check className="text-green-500" /> : <TriangleAlert className="text-yellow-500" />}
             </Button>
           </Form>
         </ToolItem>

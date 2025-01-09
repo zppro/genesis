@@ -28,7 +28,7 @@ export default function Toolbar({ entityName, children }: { entityName: string, 
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Form action="delete" method="POST"
+          <Form action="delete" method="DELETE"
             onSubmit={CreateConfirm("Please confirm you want to delete this record.")}
           >
             <Button variant="ghost" className="border" type="submit">

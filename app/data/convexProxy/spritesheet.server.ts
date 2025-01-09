@@ -2,7 +2,7 @@ import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds";
 import { type TextureId } from "@/world/textures";
-import type { SpritesheetId, SpritesheetTypes, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/spritesheets";
+import type { SpritesheetId, SpritesheetTypes, InsertArgs, UpdateArgs, DeleteArgs, UpdateTimeArgs } from "@/world/spritesheets";
 
 export const getWorldSpritesheet = async (id: SpritesheetId) => {
   return await proxy().query(api.world.spritesheets.read, { id })
@@ -38,4 +38,8 @@ export const updateWorldSpritesheet = async (args: UpdateArgs) => {
 
 export const deleteWorldSpritesheet = async (args: DeleteArgs) => {
   await proxy().mutation(api.world.spritesheets.delete_, args)
+}
+
+export const updateWorldSpritesheetSyncTime = async (args: UpdateTimeArgs) => {
+  await proxy().mutation(api.world.spritesheets.updateSyncTime, args)
 }

@@ -8,14 +8,20 @@ export function useRedirectToast(actionCheck: string, desc?: string) {
   useEffect(() => {
     if (
       navigation.state === "loading" &&
-      navigation.formAction?.includes(actionCheck)
+      navigation.formAction?.endsWith(actionCheck)
     ) {
       toast({
-        title: "op success",
-        description: desc ? desc : `${actionCheck} ok`,
+        title: "operation success",
+        description: desc ? desc : `ok`,
       })
 
     }
   }, [navigation]);
   return navigation.state
+}
+
+export function useRedirectToastEx(method: string, actionCheck: string, desc?: string) {
+  const navigation = useNavigation();
+  const state = useRedirectToast(actionCheck, desc)
+  return state === "submitting" && navigation.formMethod === method && navigation.formAction?.endsWith(actionCheck)
 }
