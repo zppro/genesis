@@ -30,7 +30,11 @@ import {
 } from "~/components/ui/sidebar"
 import type { SerializedWorld, WorldId } from "@/worlds"
 import { type WorldDoc } from "@/worlds"
+
+
+
 // This is sample data.
+/*
 const data = {
   worlds: [
     {
@@ -70,19 +74,21 @@ const DotIcon = () => {
     </svg>
   )
 }
+*/
 
 
+export function AppSidebar({ navMain, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[] }) {
 
-export function AppSidebar({ navMain, worlds, ...props }: React.ComponentProps<typeof Sidebar> & { navMain: NavItem[], worlds: WorldDoc[] }) {
   const { isSignedIn, user } = useUser()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <WorldSwitcher worlds={worlds} />
+        <WorldSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         {isSignedIn && <NavUser user={user} />}

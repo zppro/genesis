@@ -83,10 +83,9 @@ function App() {
   const { ENV, initWorlds } = useRootLoaderData()
   const [convex] = useState(() => new ConvexReactClient(ENV.CONVEX_URL));
   const [worlds, setWorlds] = useState<WorldDoc[]>(initWorlds)
-  const [localWorldId, setLocalWorldId] = useLocalStorage("localWorldId", "")
-  if (worlds.length > 0 && !localWorldId) {
-    typeof setLocalWorldId === 'function' && setLocalWorldId(worlds[0]._id)
-  }
+  useEffect(()=>{
+    setWorlds(initWorlds)
+  }, [initWorlds])
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       <Outlet context={{ worlds, setWorlds }} />

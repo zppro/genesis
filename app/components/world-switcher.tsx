@@ -16,25 +16,35 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar"
-import { useLocalStorage } from "~/hooks/use-localStorage"
-import type { WorldDoc } from "@/worlds"
+import type { WorldDoc, WorldId } from "@/worlds"
+import { useRootContext } from "~/hooks/use-context"
+import { useRouteLoaderData, useNavigate, useFetcher, Form } from "@remix-run/react"
+import type { loader as worldLoader } from "~/routes/world";
+import { useRef } from "react"
 
-export function WorldSwitcher({
-  worlds,
-}: {
-  worlds: WorldDoc[]
-}) {
+export function WorldSwitcher() {
+  const rootContext = useRootContext()
+  const { currentWorldId } = useRouteLoaderData<typeof worldLoader>("routes/world")!;
+  const navigate = useNavigate();
+  // console.log("rootContext in world Switch", rootContext.worlds)
+  // console.log("currentWorldId=>", currentWorldId)
   const { isMobile } = useSidebar()
-  const [localWorldId, setLocalWorldId] = useLocalStorage("localWorldId", "")
-  let defaultWorld = worlds.length > 0 ? worlds[0] : null;
-  if (localWorldId) {
-    defaultWorld = worlds.find(w => w._id === localWorldId) ?? defaultWorld
-  }
-  const [activeWorld, setActiveWorld] = useState(defaultWorld)
+  const [activeWorld, setActiveWorld] = useState<WorldDoc | null>(null)
 
   useEffect(() => {
-    setActiveWorld(defaultWorld)
-  }, [defaultWorld])
+    const currentWorld = rootContext.worlds.find(w => w._id === currentWorldId) ?? (rootContext.worlds.length > 0 ? rootContext.worlds[0] : null)
+    setActiveWorld(currentWorld)
+  }, [rootContext.worlds])
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (activeWorld && activeWorld._id !== currentWorldId) {
+      console.warn("==submiting change currentWorldId==")
+      formRef.current!.submit()
+    }
+  }, [activeWorld])
 
   return (
     <SidebarMenu>
@@ -63,16 +73,28 @@ export function WorldSwitcher({
             align="start"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
+
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Worlds
             </DropdownMenuLabel>
-            {worlds.map((world, index) => (
+            {
+              activeWorld
+              &&
+              <Form ref={formRef} method="post" action={`/world`} >
+                <input ref={inputRef} type="hidden" name="worldId" value={activeWorld!._id}></input>
+              </Form>
+            }
+            {rootContext.worlds.map((world, index) => (
               <DropdownMenuItem
                 key={world.name}
-                onClick={() => setActiveWorld(world)}
+                onSelect={() => {
+                  console.log("onclick")
+                  setActiveWorld(world)
+                }}
                 className="gap-2 p-2"
               >
+
                 <div className="flex size-6 items-center justify-center rounded-sm border">
                   {/* <world.logo className="size-4 shrink-0" /> */}
                   {<Globe className="size-4 shrink-0" />}
@@ -80,9 +102,10 @@ export function WorldSwitcher({
                 {world.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
+
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2" onClick={() => navigate(`/world/add`)}>
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />
               </div>

@@ -16,11 +16,10 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar"
 import { useMatches, useLocation } from "@remix-run/react"
-import type { WorldDoc, WorldId } from "@/worlds";
+import { Fragment } from "react";
 
 
-
-export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: WorldDoc[] }) {
+export default function Layout({ children, navMain }: { children: React.ReactNode, navMain: NavItem[] }) {
   const matches = useMatches();
   const location = useLocation();
 
@@ -44,7 +43,7 @@ export default function Layout({ children, navMain, worlds }: { children: React.
 
   return (
     <SidebarProvider>
-      <AppSidebar navMain={navMain} worlds={worlds} />
+      <AppSidebar navMain={navMain} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -59,10 +58,10 @@ export default function Layout({ children, navMain, worlds }: { children: React.
                         match.handle && (match.handle as Handle).breadcrumb
                     )
                     .map((match, index) => (
-                      <>
+                      <Fragment key={match.id}>
                         {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
                         {(match.handle as Handle).breadcrumb(match, location.pathname === match.pathname)}
-                      </>
+                      </Fragment>
                     ))
                 }
                 {/* <BreadcrumbItem className="hidden md:block">

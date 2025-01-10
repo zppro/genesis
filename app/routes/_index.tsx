@@ -1,23 +1,34 @@
-import { Link, useOutletContext } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { getAuth } from '@clerk/remix/ssr.server'
 import { LoaderFunction, redirect } from '@remix-run/node'
-import { useQuery } from "convex/react";
-import { api } from "@/_generated/api";
-import { useRootContext } from "~/hooks/use-context"
-import { useNavigate } from "@remix-run/react";
-import { useEffect } from 'react';
-import { hasNoWorld } from "~/data/convexProxy/world.server"
+import { listWorlds } from "~/data/convexProxy/world.server"
+import { userPrefs } from "~/lib/cookies.server"
 
 export const loader: LoaderFunction = async (args) => {
   const { userId } = await getAuth(args)
   if (!userId) {
     return redirect('/sign-in')
   }
-  if (await hasNoWorld()) {
+  const { request } = args
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await userPrefs.parse(cookieHeader)) ?? {};
+
+  if (cookie.localWorldId) {
+    console.log("cookie.localWorldId=>", cookie.localWorldId)
+    return redirect(`/world/${cookie.localWorldId}/scene`)
+  }
+  // 不存在cookie
+  const worlds = await listWorlds()
+  if (worlds.length === 0) {
     return redirect('/world/add')
   }
-  return {}
+  cookie.localWorldId = worlds[0]._id;
+
+  return redirect("/", {
+    headers: {
+      "Set-Cookie": await userPrefs.serialize(cookie),
+    },
+  });
 }
 
 export const meta: MetaFunction = () => {
@@ -29,9 +40,6 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <div className="h-screen container mx-auto grid grid-cols-4 place-content-center gap-4">
-      <Link className="w-32 h-32 border place-content-center text-center" to="/concise">concise</Link>
-      <Link className="w-32 h-32 border place-content-center text-center" to="/sidebar-07">sidebar-07</Link>
-    </div>
+    <></>
   )
 }

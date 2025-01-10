@@ -14,8 +14,6 @@ import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { table } from "@/worlds";
 import { Separator } from "~/components/ui/separator"
-import { useRootContext } from "~/hooks/use-context"
-import { useEffect } from 'react'
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -91,12 +89,6 @@ export default function SettingsIndex() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
 
-  const rootContext = useRootContext()
-  useEffect(()=> {
-    if (actionData?.worlds) {
-      rootContext.setWorlds(actionData.worlds)
-    }
-  }, [actionData])
   console.log('---navigation.formAction---', navigation.formAction)
   const isSubmitting = navigation.formMethod === "POST" && (navigation.formAction?.startsWith(`/world/${world._id}/settings`) ?? false);
   return (

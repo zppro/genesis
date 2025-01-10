@@ -5,7 +5,6 @@ import { cn } from "~/lib/utils";
 
 export const breadcrumb: BreadcrumbFunc = (match, islast) => {
   const { routeName, routeUrl } = (match.data as any)
-  console.log("isLast=>", islast)
   return (
     <BreadcrumbItem className={cn("hidden md:block", islast ? "" : "hover:border-b hover:border-gray-400")} >
       {
