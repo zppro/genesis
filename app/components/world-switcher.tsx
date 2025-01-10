@@ -40,9 +40,9 @@ export function WorldSwitcher() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (activeWorld && activeWorld._id !== currentWorldId) {
+    if (formRef.current && activeWorld && activeWorld._id !== currentWorldId) {
       console.warn("==submiting change currentWorldId==")
-      formRef.current!.submit()
+      formRef.current.submit()
     }
   }, [activeWorld])
 
