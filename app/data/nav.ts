@@ -17,7 +17,6 @@ export const appNavItems = (worldId: WorldId) => {
       title: "Scenes",
       url: "#",
       icon: Globe,
-      isActive: true,
       items: [
         {
           title: "scene",

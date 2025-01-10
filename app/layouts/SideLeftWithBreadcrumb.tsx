@@ -23,7 +23,25 @@ import type { WorldDoc, WorldId } from "@/worlds";
 export default function Layout({ children, navMain, worlds }: { children: React.ReactNode, navMain: NavItem[], worlds: WorldDoc[] }) {
   const matches = useMatches();
   const location = useLocation();
-  
+
+  function setActiveItems() {
+    let matchNavItem = navMain.find(item => {
+      return item.url === location.pathname || item.items?.some(subItem => subItem.url === location.pathname)
+    })
+    if (!matchNavItem) {
+      matchNavItem = navMain[0];
+    }
+    matchNavItem.isActive = true
+    let matchNavSubItem = matchNavItem.items?.find(subItem => subItem.url === location.pathname)
+    if (!matchNavSubItem) {
+      matchNavSubItem = matchNavItem.items?.[0]
+    }
+    if (matchNavSubItem) {
+      matchNavSubItem.isActive = true;
+    }
+  }
+  setActiveItems()
+
   return (
     <SidebarProvider>
       <AppSidebar navMain={navMain} worlds={worlds} />
