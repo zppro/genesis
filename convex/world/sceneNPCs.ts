@@ -6,6 +6,7 @@ import { idScene } from "./scenes"
 import { idCharacter, CharacterExtendDoc } from "./characters"
 import { api, internal } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
+import { idWorld } from '../worlds';
 
 export const table = 'sceneNPCs';
 export const indexName_BySceneId = 'by_sceneId';
@@ -15,6 +16,7 @@ export const idSceneNPC = v.id(table);
 export const sceneNPCSerialized = {
   modifyTime: v.number(),
   name: v.string(),
+  worldId: idWorld,
   sceneId: idScene,
   characterId: idCharacter,
   // x axis value in the scene tilemap
@@ -32,8 +34,8 @@ export const sceneNPCSerialized = {
 };
 
 
-const { modifyTime, ...insertArgs } = sceneNPCSerialized
-const { sceneId: _, ..._updateArgs } = insertArgs
+const { modifyTime, worldId: _1, ...insertArgs } = sceneNPCSerialized
+const { sceneId: _2, ..._updateArgs } = insertArgs
 const updateArgs = { id: idSceneNPC, ..._updateArgs }
 const deleteArgs = { id: idSceneNPC }
 
@@ -57,7 +59,9 @@ export const create = mutation({
   args: insertArgs,
   handler: async (ctx, args) => {
     const modifyTime = +new Date()
-    const createRes = await ctx.db.insert(table, { ...args, modifyTime });
+    const scene = await ctx.db.get(args.sceneId);
+    const worldId = scene!.worldId
+    const createRes = await ctx.db.insert(table, { ...args, modifyTime, worldId });
     await ctx.runMutation(internal.world.scenes.updateModifyTime, { id: args.sceneId })
     return createRes
   },
