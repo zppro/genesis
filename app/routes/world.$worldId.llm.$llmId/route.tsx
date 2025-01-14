@@ -7,7 +7,7 @@ import { type LLMId, table } from "@/world/llms";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { ImageDialog } from "~/components/ui/image-dialog";
+import Field from "~/components/ui/field";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -66,10 +66,10 @@ export default function Index() {
         </div>
         <Separator />
         <div className="p-4">
-          {llm?.baseUrl}
+          <Field title="Base Url:" value={llm?.baseUrl} />
         </div>
         <div className="p-4">
-          {llm?.apiKeyName}
+          <Field title="API Key Name:" value={llm?.apiKeyName} />
         </div>
         <div className="flex-1 whitespace-pre-wrap p-4 text-sm">
           {llm?.desc}
