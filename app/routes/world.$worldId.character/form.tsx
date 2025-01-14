@@ -65,7 +65,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name<span className="text-red-500">*</span></Label>
-              <Input id="name" name="name" defaultValue={doc?.name} placeholder="Name of your spritesheet" className={errors?.name ? "form-input-err" : undefined} />
+              <Input id="name" name="name" defaultValue={doc?.name} placeholder="Name of your character" className={errors?.name ? "form-input-err" : undefined} />
               {errors?.name ? <FormErrorTip tip={errors.name} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">

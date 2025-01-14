@@ -3,11 +3,12 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { Separator } from "~/components/ui/separator"
 import { cn } from "~/lib/utils"
-import { Link } from "@remix-run/react";
+import { Link, useRouteLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { Search, Plus } from "lucide-react"
 import { Input } from "~/components/ui/input"
 import { WorldId } from "@/worlds";
-import { TextureDoc } from "@/world/textures";
+import { LLMDoc } from "@/world/llms";
 import {
   Pagination,
   PaginationContent,
@@ -18,7 +19,7 @@ import {
   PaginationPrevious,
 } from "~/components/ui/pagination"
 
-export default function SceneScrollList({ worldId, textures }: { worldId: WorldId, textures: TextureDoc[] }) {
+export default function SceneScrollList({ worldId, llms }: { worldId: WorldId, llms: LLMDoc[] }) {
   return (
     <div className="flex flex-col h-full">
       <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -26,16 +27,16 @@ export default function SceneScrollList({ worldId, textures }: { worldId: WorldI
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search" className="pl-8" />
-            <Link to={`/world/${worldId}/texture/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
+            <Link to={`/world/${worldId}/llm/new`} className="absolute  right-2 top-2.5 h-4 w-4"><Plus className="size-4" /></Link>
           </div>
         </form>
       </div>
-      <ScrollArea className="h-full max-h-[calc(100vh-200px)]">
+      <ScrollArea className="h-full max-h-[calc(100vh-180px)]">
         <div className="flex flex-col gap-2 p-4 pt-0">
-          {textures.map((item) => (
+          {llms.map((item) => (
             <Link
               key={item._id}
-              to={`/world/${worldId}/texture/${item._id}`}
+              to={`/world/${worldId}/llm/${item._id}`}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
                 // mail.selected === item._id && "bg-muted"

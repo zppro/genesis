@@ -6,6 +6,7 @@ import {
   Music,
   SquareUserRound,
   Sword,
+  Bot,
   Boxes
 } from "lucide-react"
 import type { NavItem } from "~/components/nav-main"
@@ -14,7 +15,7 @@ export const appNavItems = (worldId: WorldId) => {
   const baseUrl = `/world/${worldId}`
   return [
     {
-      title: "Scenes",
+      title: "Scenes & Maps",
       url: "#",
       icon: Globe,
       items: [
@@ -23,35 +24,12 @@ export const appNavItems = (worldId: WorldId) => {
           url: `${baseUrl}/scene`,
         },
         {
-          title: "map",
-          url: "#",
-        },
-        {
-          title: "music",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Maps",
-      url: "#",
-      icon: Map,
-      items: [
-        {
           title: "TileMaps",
           url: `${baseUrl}/resource/tilemap`,
         },
         {
           title: "TileSets",
           url: `${baseUrl}/resource/tileset`,
-        },
-        {
-          title: "TileAnimations",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
         },
       ],
     },
@@ -67,6 +45,25 @@ export const appNavItems = (worldId: WorldId) => {
         {
           title: "object",
           url: `${baseUrl}/object`,
+        },
+        {
+          title: "Quantum",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Agents",
+      url: "#",
+      icon: Bot,
+      items: [
+        {
+          title: "llm",
+          url: `${baseUrl}/llm`,
+        },
+        {
+          title: "Explorer",
+          url: "#",
         },
         {
           title: "Quantum",

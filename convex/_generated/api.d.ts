@@ -23,6 +23,7 @@ import type * as shared_sync from "../shared/sync.js";
 import type * as shared_tilemap from "../shared/tilemap.js";
 import type * as users from "../users.js";
 import type * as world_characters from "../world/characters.js";
+import type * as world_llms from "../world/llms.js";
 import type * as world_objects from "../world/objects.js";
 import type * as world_resources from "../world/resources.js";
 import type * as world_sceneAnimations from "../world/sceneAnimations.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "shared/tilemap": typeof shared_tilemap;
   users: typeof users;
   "world/characters": typeof world_characters;
+  "world/llms": typeof world_llms;
   "world/objects": typeof world_objects;
   "world/resources": typeof world_resources;
   "world/sceneAnimations": typeof world_sceneAnimations;
