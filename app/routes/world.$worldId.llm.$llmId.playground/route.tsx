@@ -52,13 +52,20 @@ export async function action({
 
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData);
-  const formPayload = { ..._formData, worldId }
+  const formPayload = {..._formData, worldId}
 
   // payload z schema validation
   const result = invokeLLMSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      const res = await runLLM(formPayload as RunLLMArgs)
+      const formPayload2 = {
+        llmId: _formData["llmId"], worldId,
+        messages: [
+          { role: "system", content: _formData["system"] },
+          { role: "user", content: _formData["user"] }
+        ]
+      }
+      const res = await runLLM(formPayload2 as RunLLMArgs)
       return { res }
     } catch (error) {
       // {field1: errorMessage, ...}
@@ -135,8 +142,8 @@ export default function PlaygroundTab() {
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-500px)]">
           <div className="flex flex-col space-y-2">
             <div className="whitespace-pre-wrap">
-              <MarkdownPretty data={actionData?.res} className="w-[520px] min-h-[200px]"  />
-              </div>
+              { actionData?.res && <MarkdownPretty data={actionData.res} className="w-[520px] min-h-[200px]" />}
+            </div>
           </div>
         </ScrollArea>
       </div>

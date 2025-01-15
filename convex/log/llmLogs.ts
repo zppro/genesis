@@ -1,5 +1,6 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idLLM } from '../world/llms';
+import { llmMessages } from '../shared/type';
 import { defineTable, paginationOptsValidator } from "convex/server";
 import { mutation, query, internalMutation, MutationCtx, QueryCtx } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
@@ -12,10 +13,7 @@ export const idLLMLog = v.id(table);
 
 export const reqRaw = {
   model: v.string(),
-  messages: v.array(v.object({
-    role: v.string(),
-    content: v.string(),
-  }))
+  messages: llmMessages
 }
 export type ReqRaw = ObjectType<typeof reqRaw>;
 
@@ -28,7 +26,6 @@ export const llmLogSerialized = {
   resContent: v.optional(v.string()),
   resRaw: v.optional(v.any()),
 };
-
 
 
 const { modifyTime, ...insertArgs } = llmLogSerialized

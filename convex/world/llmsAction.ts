@@ -3,14 +3,14 @@ import { internal } from "../_generated/api"
 import { ObjectType, v, ConvexError } from "convex/values";
 import { idLLM, _readOrThrow } from "./llms";
 import { _create, _update, idLLMLog } from "../log/llmLogs";
+import { llmMessages, LLMMessages } from "../shared/type";
 import OpenAI from "openai";
 import { idWorld } from "../worlds";
 
 export const runLLMArgs = {
   worldId: idWorld,
   llmId: idLLM,
-  system: v.string(),
-  user: v.string(),
+  messages: llmMessages,
 };
 
 export type RunLLMArgs = ObjectType<typeof runLLMArgs>
@@ -18,13 +18,9 @@ export type RunLLMArgs = ObjectType<typeof runLLMArgs>
 export const _beforeRunLLM = internalMutation({
   args: runLLMArgs,
   handler: async (ctx, args) => {
-    const { llmId, system, user } = args;
+    const { llmId, messages } = args;
     const { apiKeyName, baseUrl, name } = await _readOrThrow(ctx, llmId)
     const apiKey = process.env[apiKeyName]
-    const messages = [
-      { role: "system", content: system },
-      { role: "user", content: user }
-    ]
     const reqRaw = {
       model: name,
       messages,
