@@ -1,7 +1,7 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
-import { mutation, query } from '../_generated/server';
+import { mutation, query, internalQuery } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
 import { TextureDoc, read as readTexture } from "./textures"
@@ -51,6 +51,13 @@ export const create = mutation({
 });
 
 export const read = query({
+  args: { id: idLLM },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
+export const _read = internalQuery({
   args: { id: idLLM },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
