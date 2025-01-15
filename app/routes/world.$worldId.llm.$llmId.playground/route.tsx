@@ -19,7 +19,9 @@ import { Button } from "~/components/ui/button"
 import { Separator } from "~/components/ui/separator"
 import { Play } from "lucide-react"
 import { ScrollArea } from "~/components/ui/scroll-area"
-import JsonPretty from "~/components/ui/json-pretty";
+import MarkdownPretty from "~/components/ui/markdown-pretty.client";
+import { runLLM } from "~/data/convexProxy/llm.server";
+import { RunLLMArgs } from "@/world/llmsAction";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -56,8 +58,8 @@ export async function action({
   const result = invokeLLMSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      // const newLLMId = await createWorldLLM(formPayload as InsertArgs)
-
+      const res = await runLLM(formPayload as RunLLMArgs)
+      return { res }
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(invokeLLMSchema.keyof().Values)
@@ -106,14 +108,15 @@ export default function PlaygroundTab() {
 
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${llm.worldId}/llm/${llm._id}/playground`;
-  let res = {}
+
   return (
     <Form method="post" onChange={handleChange} className="flex flex-col h-full">
-      <div className="w-[350px] p-2 pl-4">
+      <input name="llmId" type="hidden" value={llm._id} />
+      <div className="w-[480px] p-2 pl-4">
         <div className="grid w-full items-center gap-4">
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="system">System</Label>
-            <Textarea id="system" name="system" placeholder="You are a assistent in XXX" className={errors?.system ? "form-input-err" : undefined} />
+            <Textarea id="system" name="system" defaultValue={"You are a helpful assistant."} placeholder="You are a helpful assistent." className={errors?.system ? "form-input-err" : undefined} />
             {errors?.system ? <FormErrorTip tip={errors?.system} /> : null}
           </div>
           <div className="flex flex-col space-y-1.5">
@@ -131,7 +134,9 @@ export default function PlaygroundTab() {
         <Separator className="mt-4" />
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-500px)]">
           <div className="flex flex-col space-y-2">
-            <div className="whitespace-pre-wrap"><JsonPretty data={res} className="w-[520px] min-h-[200px]" /></div>
+            <div className="whitespace-pre-wrap">
+              <MarkdownPretty data={actionData?.res} className="w-[520px] min-h-[200px]"  />
+              </div>
           </div>
         </ScrollArea>
       </div>

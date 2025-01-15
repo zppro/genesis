@@ -1,7 +1,8 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
-import { mutation, query, internalQuery } from '../_generated/server';
+import { mutation, query, internalQuery, internalMutation  } from '../_generated/server';
+import { QueryMutationCtx } from '../shared/type';
 import { Doc, Id } from "../_generated/dataModel";
 import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
 import { TextureDoc, read as readTexture } from "./textures"
@@ -53,16 +54,19 @@ export const create = mutation({
 export const read = query({
   args: { id: idLLM },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    return await _read(ctx, args.id)
   },
 });
 
-export const _read = internalQuery({
-  args: { id: idLLM },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
-  },
-});
+export async function _readOrThrow(ctx: QueryMutationCtx, id: LLMId) {
+  const entity = await _read(ctx, id);
+  if (!entity) throw new ConvexError(`Invalid \`${table}\` ID: ${id}`);
+  return entity;
+}
+
+export async function _read(ctx: QueryMutationCtx, id: LLMId) {
+  return await ctx.db.get(id);
+}
 
 export const list = query({
   args: { worldId: idWorld },
