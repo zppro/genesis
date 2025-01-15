@@ -8,10 +8,11 @@ import { table as objectTable, tableSchema as objectTableSchema } from "./object
 import { table as resourceTable, tableSchema as resourceTableSchema } from "./resources"
 import { table as spritesheetTable, tableSchema as spritesheetTableSchema } from "./spritesheets"
 import { table as textureTable, tableSchema as textureTableSchema } from "./textures"
-
+import { table as eventTable, tableSchema as eventTableSchema } from "./events";
 
 export const worldTables = {
   [characterTable]: characterTableSchema,
+  [eventTable]: eventTableSchema, // 修改为 events 表
   [llmTable]: llmTableSchema,
   [objectTable]: objectTableSchema,
   [resourceTable]: resourceTableSchema,

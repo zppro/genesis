@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as SliderPrimitive from "@radix-ui/react-slider"
 import { cn } from "~/lib/utils"
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
@@ -12,7 +12,8 @@ const Slider = React.forwardRef<
   const [offset, setOffset] = useState(14.8812);
   const thrumbRef = useRef<HTMLHeadingElement>(null);
 
-  useLayoutEffect(() => {
+  // useEffect replace useLayoutEffect
+  useEffect(() => {
     const { left, right } = thrumbRef.current!.getBoundingClientRect();
     if (left + right > 0) {
       const containerRect = thrumbRef.current!.closest('form')!.getBoundingClientRect();

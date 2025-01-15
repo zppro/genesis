@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as error from "../error.js";
 import type * as http from "../http.js";
+import type * as log_llmLogs from "../log/llmLogs.js";
 import type * as shared_animatedSprite from "../shared/animatedSprite.js";
 import type * as shared_frame from "../shared/frame.js";
 import type * as shared_spritesheet from "../shared/spritesheet.js";
@@ -23,6 +24,7 @@ import type * as shared_sync from "../shared/sync.js";
 import type * as shared_tilemap from "../shared/tilemap.js";
 import type * as users from "../users.js";
 import type * as world_characters from "../world/characters.js";
+import type * as world_events from "../world/events.js";
 import type * as world_llms from "../world/llms.js";
 import type * as world_objects from "../world/objects.js";
 import type * as world_resources from "../world/resources.js";
@@ -44,6 +46,7 @@ import type * as worlds from "../worlds.js";
 declare const fullApi: ApiFromModules<{
   error: typeof error;
   http: typeof http;
+  "log/llmLogs": typeof log_llmLogs;
   "shared/animatedSprite": typeof shared_animatedSprite;
   "shared/frame": typeof shared_frame;
   "shared/spritesheet": typeof shared_spritesheet;
@@ -52,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   "shared/tilemap": typeof shared_tilemap;
   users: typeof users;
   "world/characters": typeof world_characters;
+  "world/events": typeof world_events;
   "world/llms": typeof world_llms;
   "world/objects": typeof world_objects;
   "world/resources": typeof world_resources;
