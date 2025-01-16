@@ -1,0 +1,10 @@
+# import to convex
+npx convex import --table <tableName> <path>
+
+# transform json to jsonl for json file import have 8M limit
+jq -c '.[]' <data>.json > <data>.jsonl
+
+
+
+# group_by
+jq 'group_by(.genre) | map({genre: .[0].genre})' import/character_codex.json

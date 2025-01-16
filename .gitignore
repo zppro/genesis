@@ -7,3 +7,6 @@ node_modules
 .vscode
 .DS_Store
 .env.local
+
+/import/*.json
+/import/*.jsonl

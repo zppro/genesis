@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as data_characterCodex from "../data/characterCodex.js";
 import type * as error from "../error.js";
 import type * as http from "../http.js";
 import type * as log_llmLogs from "../log/llmLogs.js";
@@ -46,6 +47,7 @@ import type * as worlds from "../worlds.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "data/characterCodex": typeof data_characterCodex;
   error: typeof error;
   http: typeof http;
   "log/llmLogs": typeof log_llmLogs;
