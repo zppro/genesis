@@ -16,7 +16,7 @@ import { LoaderCircle } from "lucide-react"
 import { ClientOnly } from "remix-utils/client-only"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
-import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 
 export async function loader({
   params,

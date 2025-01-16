@@ -3,6 +3,7 @@ import { Doc, Id, TableNames } from "@/_generated/dataModel";
 import { FormErrors, ConvexDocTables, ClientErrors } from "./type"
 import { useEffect } from "react";
 import { useToast } from "~/hooks/use-toast";
+import { FormDataEntryValueEx } from "~/lib/form";
 
 export function FormErrorTip({ tip }: { tip: string }) {
   return <span className="form-field-err-tip">{tip}</span>
@@ -18,6 +19,7 @@ export type FormProps<T extends ConvexDocTables, S extends z.AnyZodObject> = {
   doc?: Doc<T>;
   schema: S;
   onClientErrors: (clientErrors: ClientErrors) => void;
+  onFormChange?: (payload: Record<string, FormDataEntryValueEx>) => void;
 }
 
 export type SlimFormProps<T extends ConvexDocTables> = {

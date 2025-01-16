@@ -2,6 +2,7 @@ import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
+import { Button } from "~/components/ui/button";
 import { CharacterTable } from "@/world/characters";
 import { SpritesheetTable } from "@/world/spritesheets";
 import { useToast } from "~/hooks/use-toast"
@@ -12,29 +13,46 @@ import debounce from "debounce"
 import Combobox, { useConvexCombox, type ConvexComboxItem } from "~/components/ui/combox"
 import { FormProps, FormErrorTip, FormInfoTip } from "~/components/convex/form"
 import { Slider } from "~/components/ui/slider"
-import { convertFormDataToObject } from "~/lib/form";
+import { convertFormDataToObject, FormItemFormatter } from "~/lib/form";
 import {
   Select, SelectContent, SelectGroup, SelectLabel,
   SelectItem, SelectTrigger, SelectValue
 } from "~/components/ui/select";
-import JsonPretty from "~/components/ui/json-pretty";
+import JSON5 from "json5";
 import { PrimaryCharacterSettings, CHARACTERSETTINGS_TYPES } from "@/shared/characterSettings";
+import { Wand } from "lucide-react";
+
 
 export const mergeNamePrefixsAsObject = ["settingsVariant"]
+export const formatters: FormItemFormatter[] = [{
+  key: "settingsVariant.settings",
+  format(v) {
+    return JSON5.parse(v as string)
+  },
+}]
 
-export default function CharacterForm<S extends z.AnyZodObject>({ children, errors, doc, schema, onClientErrors }: FormProps<CharacterTable, S>) {
+export type CharacterFormProps<S extends z.AnyZodObject> = FormProps<CharacterTable, S> & {
+  onMagic: () => void;
+  magicReturn: any;
+}
+
+export default function CharacterForm<S extends z.AnyZodObject>({ children, errors, doc, schema, magicReturn, onMagic, onClientErrors, onFormChange }: CharacterFormProps<S>) {
   const { toast } = useToast()
   const spritesheetCombox = useConvexCombox<SpritesheetTable>()
   const [spritesheetId, setSpritesheetId] = useState(doc?.spritesheetId)
   const [speed, setSpeed] = useState(doc?.speed ?? 0.1)
   const spritesheetIdInput = useRef<HTMLInputElement>(null);
+  const descTextarea = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const [settings, setSettings] = useState<PrimaryCharacterSettings | null>(null)
+  const [settings, setSettings] = useState("")
 
   function validateFormData(formData: FormData) {
-    const formPayload = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject })
+    const formPayload = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject }, formatters)
     // form number
     console.log('validateFormData=>', formPayload)
+    if (onFormChange) {
+      onFormChange(formPayload)
+    }
     const result = schema.safeParse(formPayload);
     return { ...result.error?.formErrors.fieldErrors }
   }
@@ -66,10 +84,16 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
   }, [errors?.["__err__"]])
 
   useEffect(() => {
+    console.log("magicReturn=>", typeof magicReturn, magicReturn)
     if (doc?.settingsVariant?.settings) {
-      setSettings(doc?.settingsVariant?.settings as PrimaryCharacterSettings)
+      setSettings(JSON5.stringify(doc?.settingsVariant?.settings as PrimaryCharacterSettings, null, 2))
+    } else if (magicReturn) {
+      const newSettings = magicReturn.replace(/```json\n?|```/g, '')
+      console.log("newSettings=>", JSON5.parse(newSettings))
+      console.log("newSettings=>", JSON5.stringify(newSettings))
+      setSettings(newSettings)
     }
-  }, [doc?.settingsVariant?.settings])
+  }, [magicReturn, doc?.settingsVariant?.settings])
 
   return (
     <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
@@ -119,8 +143,23 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
               {(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.type"))) ? <FormErrorTip tip={(errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.type"))!} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="settingsVariant-desc">Description</Label>
-              <Textarea id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc}
+              <Label htmlFor="settingsVariant-desc">Description
+                <Button variant="ghost" className="border ml-2" type="button" onClick={() => {
+                  if (descTextarea.current?.value) {
+                    onMagic()
+                  } else {
+                    toast({
+                      title: "runLLM error:",
+                      description: "runLLM must set the description of your character",
+                    })
+                    descTextarea.current?.focus()
+                  }
+                }} >
+                  <Wand className="h-4 w-4" />
+                  <span >{false ? "Magicing..." : "Magic"}</span>
+                </Button>
+              </Label>
+              <Textarea ref={descTextarea} id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc}
                 placeholder="Description of your character"
                 className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.desc"))) ? "form-input-err" : undefined}
               />
@@ -128,7 +167,10 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="settingsVariant-settings">Settings</Label>
-              {settings && <div className="whitespace-pre-wrap"><JsonPretty data={settings} className="w-[450px]" /></div>}
+              <Textarea id="settingsVariant-settings" name="settingsVariant.settings" defaultValue={settings ? JSON5.stringify(settings, null, 2) : ""}
+                placeholder="Settings of your character"
+                className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.settings"))) ? "form-input-err" : undefined}
+              />
             </div>
           </div>
         </div>

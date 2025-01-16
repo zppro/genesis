@@ -2,7 +2,7 @@ import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-ru
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import SpritesheetForm from "~/routes/world.$worldId.spritesheet/form"
 import { z } from "zod";
-import { zodSpritesheet } from "~/lib/spritesheet";
+import { zodSpritesheet } from "~/zod/spritesheet";
 import { createWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
 import { type InsertArgs, table, SPRITESHEET_TYPES } from "@/world/spritesheets";

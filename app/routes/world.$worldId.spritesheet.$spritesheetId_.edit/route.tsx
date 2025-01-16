@@ -6,7 +6,7 @@ import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 import SpritesheetForm from "~/routes/world.$worldId.spritesheet/form"
 import { object, z } from "zod";
-import { zodSpritesheet } from "~/lib/spritesheet";
+import { zodSpritesheet } from "~/zod/spritesheet";
 import { getWorldSpritesheet, updateWorldSpritesheet } from "~/data/convexProxy/spritesheet.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
 import { type SpritesheetId, type UpdateArgs, table, SPRITESHEET_TYPES } from "@/world/spritesheets";

@@ -15,7 +15,7 @@ import { LoaderCircle } from "lucide-react"
 import { ClientOnly } from "remix-utils/client-only"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
-import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 import { TabsList, Tabs, TabsTrigger, TabsContent } from "~/components/ui/tabs"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";

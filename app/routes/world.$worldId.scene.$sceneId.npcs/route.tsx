@@ -28,7 +28,7 @@ import { createSceneNPC, updateSceneNPC, listSceneNPCExtends } from "~/data/conv
 import { type InsertArgs, type UpdateArgs, SceneNPCDoc, SceneNPCId } from "@/world/sceneNPCs";
 import { listWorldCharacterExtends } from "~/data/convexProxy/character.server";
 import { CharacterTable } from "@/world/characters";
-import { parsePixiSpritesheet } from "~/lib/spritesheet";
+import { parsePixiSpritesheet } from "~/zod/spritesheet";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 

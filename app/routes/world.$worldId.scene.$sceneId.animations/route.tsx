@@ -33,7 +33,7 @@ import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/s
 import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
-import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
