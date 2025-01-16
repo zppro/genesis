@@ -9,7 +9,7 @@ import Tilemap from "~/components/pixi/tilemap.client";
 import { LoaderCircle } from "lucide-react"
 import { Separator } from "~/components/ui/separator"
 import { Button } from "~/components/ui/button"
-import SetBlockLayersForm, { mergeNamePrefixs } from "~/routes/world.$worldId.scene.$sceneId.map/form"
+import SetBlockLayersForm, { mergeNamePrefixsAsArray } from "~/routes/world.$worldId.scene.$sceneId.map/form"
 import { ListCheck } from "lucide-react";
 import { SheetTrigger } from "~/components/ui/sheet"
 import { type LoaderFunctionArgs, LinksFunction, ActionFunctionArgs } from "@remix-run/node";
@@ -32,7 +32,7 @@ export async function action({
   const { worldId, sceneId } = params;
   let serverErrors: ServerErrors = {}
   const formData = await request.formData();
-  const _formData = convertFormDataToObject(formData, { mergeNamePrefixs });
+  const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsArray });
   const formPayload = { ..._formData, id: sceneId as SceneId }
   console.log('formPayload=>', formPayload)
   // payload z schema validation

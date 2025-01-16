@@ -32,7 +32,7 @@ export type SetBlockLayersFormProps = SlimFormProps<SceneTable> & {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const mergeNamePrefixs = ["blockLayers"]
+export const mergeNamePrefixsAsArray = ["blockLayers"]
 
 export default function SetBlockLayersForm({ open, setOpen, isSubmitting, checkItems, children, errors, doc }: SetBlockLayersFormProps) {
   const { toast } = useToast()

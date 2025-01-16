@@ -28,7 +28,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
   const llms = await listWorldLLMs(worldId as WorldId)
   const breadcrumbData = { routeName: "llm", routeUrl: `/world/${worldId}/llm` }
-
   return { ...breadcrumbData, worldId: worldId as WorldId,  llms }
 }
 

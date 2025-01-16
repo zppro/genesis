@@ -19,7 +19,12 @@ import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { useState, useEffect } from 'react'
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
 import { convertFormDataToObject } from "~/lib/form";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
 
+export const handle: Handle = {
+  breadcrumb
+};
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
 ];
@@ -98,7 +103,9 @@ export async function loader({
       });
     }
     const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
-    return { character, spritesheetExs }
+    const breadcrumbData = { routeName: `edit llm (${character.name})`, routeUrl: `/world/${worldId}/character/${character._id}/edit` }
+
+    return {...breadcrumbData, character, spritesheetExs }
   }
 }
 

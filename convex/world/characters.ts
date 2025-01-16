@@ -7,6 +7,7 @@ import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./sprite
 import { TextureDoc, read as readTexture } from "./textures"
 import { asyncMap } from "convex-helpers";
 import { api } from "../_generated/api";
+import { characterSettingsVariantSerialized } from '../shared/characterSettings';
 
 
 export const table = 'characters';
@@ -22,6 +23,7 @@ export const characterSerialized = {
   speed: v.number(),
   // spritesheet as pixijs definition 
   spritesheetId: idSpritesheet,
+  settingsVariant: v.optional(characterSettingsVariantSerialized),
 };
 
 

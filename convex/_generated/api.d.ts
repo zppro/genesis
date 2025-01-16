@@ -18,6 +18,7 @@ import type * as error from "../error.js";
 import type * as http from "../http.js";
 import type * as log_llmLogs from "../log/llmLogs.js";
 import type * as shared_animatedSprite from "../shared/animatedSprite.js";
+import type * as shared_characterSettings from "../shared/characterSettings.js";
 import type * as shared_frame from "../shared/frame.js";
 import type * as shared_spritesheet from "../shared/spritesheet.js";
 import type * as shared_storage from "../shared/storage.js";
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "log/llmLogs": typeof log_llmLogs;
   "shared/animatedSprite": typeof shared_animatedSprite;
+  "shared/characterSettings": typeof shared_characterSettings;
   "shared/frame": typeof shared_frame;
   "shared/spritesheet": typeof shared_spritesheet;
   "shared/storage": typeof shared_storage;

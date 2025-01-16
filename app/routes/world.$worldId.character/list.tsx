@@ -31,7 +31,7 @@ export default function SceneScrollList({ worldId, characters }: { worldId: Worl
           </div>
         </form>
       </div>
-      <ScrollArea className="h-full max-h-[calc(100vh-180px)]">
+      <ScrollArea className="h-full max-h-[calc(100vh-190px)]">
         <div className="flex flex-col gap-2 p-4 pt-0">
           {characters.map((item) => (
             <Link

@@ -16,11 +16,19 @@ import { ClientOnly } from "remix-utils/client-only"
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
 import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/lib/spritesheet";
+import { TabsList, Tabs, TabsTrigger, TabsContent } from "~/components/ui/tabs"
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
 
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { characterId } = params;
+  const {worldId, characterId } = params;
+  const routeUrl = `/world/${worldId}/llm/${characterId}`
   let characterEx = null
   try {
     characterEx = await getWorldCharacterExtend(characterId as CharacterId)
@@ -40,8 +48,8 @@ export async function loader({
         statusText: "Not Found",
       });
     }
-
-    return { characterEx }
+    const breadcrumbData = { routeName: characterEx.name, routeUrl }
+    return {...breadcrumbData, characterEx }
   }
 }
 
@@ -55,7 +63,7 @@ export default function Index() {
   const pixiSpriteSheet = parsePixiSpritesheet(data)
   const sourceSize = parsePixiAnmimationSourceSize(pixiSpriteSheet)
   const animationNames = parsePixiAnmimationAnimationNames(pixiSpriteSheet)
-  
+
   return (
     <div className="flex h-full items-start flex-col">
       <Toolbar entityName={table} />
@@ -70,39 +78,59 @@ export default function Index() {
           )}
         </div>
         <Separator />
-        <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
-          <div className="flex flex-col space-y-2">
-            <div>
-              <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
-                {
-                  () =>
-                    <Stage key={characterEx._id} width={sourceSize.w * animationNames.length } height={sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
-                      console.log('stage on mounted')
-                    }}>
+        <Tabs defaultValue="ui" className="relative mt-2 mr-auto w-full">
+          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+            <TabsTrigger
+              value="ui"
+              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            >
+              UI
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            >
+              Settings
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="ui">
+            <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-260px)]">
+              <div className="flex flex-col space-y-2">
+                <div>
+                  <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
+                    {
+                      () =>
+                        <Stage key={characterEx._id} width={sourceSize.w * animationNames.length} height={sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
+                          console.log('stage on mounted')
+                        }}>
 
-                      {
+                          {
 
-                        animationNames.map((aname, idx) =>
+                            animationNames.map((aname, idx) =>
 
-                          <PixiAnimationObject
-                            animationSpritesheet={pixiSpriteSheet} speed={characterEx.speed}
-                            animationName={aname}
-                            x={sourceSize.w * idx}
-                            y={0}
-                            w={sourceSize.w}
-                            h={sourceSize.h}
-                          />
-                        )
-                      }
+                              <PixiAnimationObject
+                                animationSpritesheet={pixiSpriteSheet} speed={characterEx.speed}
+                                animationName={aname}
+                                x={sourceSize.w * idx}
+                                y={0}
+                                w={sourceSize.w}
+                                h={sourceSize.h}
+                              />
+                            )
+                          }
 
-                    </Stage>
-                }
-              </ClientOnly>
-              <ImageDialog src={characterEx?.textureUrl} maxWidth={400} maxHeight={300} />
-            </div>
-            <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[520px]" /></div>
-          </div>
-        </ScrollArea>
+                        </Stage>
+                    }
+                  </ClientOnly>
+                  {/* <ImageDialog src={characterEx?.textureUrl} maxWidth={400} maxHeight={300} /> */}
+                </div>
+                <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[450px]" /></div>
+              </div>
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value="settings">Change your password here.</TabsContent>
+        </Tabs>
+
         <Separator className="mt-auto" />
         <div className="p-2">
         </div>

@@ -1,6 +1,6 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import CharacterForm from "~/routes/world.$worldId.character/form"
+import CharacterForm, { mergeNamePrefixsAsObject } from "~/routes/world.$worldId.character/form"
 import { z } from "zod";
 import { createWorldCharacter } from "~/data/convexProxy/character.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server";
@@ -14,7 +14,15 @@ import { type SpritesheetTable, SPRITESHEET_TYPES, type SpritesheetTypes } from 
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
+import { PrimaryCharacterSettings, CHARACTERSETTINGS_TYPES } from "@/shared/characterSettings";
 import { convertFormDataToObject } from "~/lib/form";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
+
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
 ];
@@ -22,6 +30,11 @@ const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   speed: z.number().gt(0),
   spritesheetId: z.string().min(1, { message: "Spritesheet is required" }),
+  settingsVariant: z.object({
+    type: z.enum(CHARACTERSETTINGS_TYPES, { message: "settingsVariant.type is required" }),
+    desc: z.string().min(1, { message: "settingsVariant.desc is required" }),
+    settings: z.any(),
+  })
 });
 
 export async function action({
@@ -35,7 +48,7 @@ export async function action({
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
-  const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"] });
+  const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject });
   const formPayload = { ..._formData, worldId }
   // console.log('new formPayload=>', formPayload)
 
@@ -64,7 +77,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Error("invalid world params!");
   }
   const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
-  return { worldId: worldId as WorldId, spritesheetExs }
+  const breadcrumbData = { routeName: "create new llm", routeUrl: `/world/${worldId}/character/new` }
+
+  return { ...breadcrumbData, worldId: worldId as WorldId, spritesheetExs }
 }
 
 
