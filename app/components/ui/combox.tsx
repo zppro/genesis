@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useContext } from "react"
+import { useState, useContext, createElement } from "react"
 import { Check, ChevronsUpDown, LucideIcon } from "lucide-react"
 import { cn } from "~/lib/utils"
 import { Button } from "~/components/ui/button"
@@ -48,21 +48,32 @@ export const ConvexComboxProvider = <T extends ConvexTables>({ value, children }
 export type ConvexComboxItem<T extends ConvexTables> = {
   key: Id<T>;
   text: string;
-  icon?: string | LucideIcon;
+  icon?: string | JSX.Element;
   data?: any;
 }
 
 export type ComboxProps<T extends ConvexTables> = {
   errClass?: string;
   items?: ConvexComboxItem<T>[];
+  height?: number;
   defaultItemKey?: Id<T>;
   onSelectChange: (item: ConvexComboxItem<T>) => void;
 }
 
-export default function Combox<T extends ConvexTables>({ errClass, items, defaultItemKey, onSelectChange }: ComboxProps<T>) {
+export default function Combox<T extends ConvexTables>({ errClass, items, height, defaultItemKey, onSelectChange }: ComboxProps<T>) {
   const [open, setOpen] = useState(false)
   const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
+  const showItemIcon = (item: ConvexComboxItem<T>) => {
+    return item.icon ?
+      (
+        (typeof item.icon === 'string') ?
+          <img src={item.icon} className="list-image-file" />
+          :
+          item.icon
+      ) : null;
+  }
+  console.log("combox=>", height)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -71,7 +82,13 @@ export default function Combox<T extends ConvexTables>({ errClass, items, defaul
           role="combobox"
           aria-expanded={open}
           className={cn('w-full justify-between', errClass)}
+          style={height ? {
+            height
+          } : undefined}
         >
+          {
+            selectItem && showItemIcon(selectItem)
+          }
           {selectItem
             ? items?.find((item) => item.key === selectItem.key)?.text
             : "Select item..."}
@@ -98,13 +115,7 @@ export default function Combox<T extends ConvexTables>({ errClass, items, defaul
                   }}
                 >
                   {
-                    item.icon &&
-                    (
-                      (typeof item.icon === 'string') ?
-                        <img src={item.icon} className="list-image-file" />
-                        :
-                        <item.icon />
-                    )
+                    showItemIcon(item)
                   }
                   {item.text}
                   <Check

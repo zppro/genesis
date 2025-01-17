@@ -1,5 +1,10 @@
 import { v, Infer } from 'convex/values';
 
+export const sizeSerialized = v.object({
+  w: v.number(),
+  h: v.number(),
+})
+
 export const frameSerialized = v.object({
   frame: v.object({
     x: v.number(),
@@ -13,10 +18,8 @@ export const frameSerialized = v.object({
     x: v.number(),
     y: v.number(),
   }),
-  sourceSize: v.object({
-    w: v.number(),
-    h: v.number(),
-  }),
+  sourceSize: sizeSerialized,
 })
 
+export type Size = Infer<typeof sizeSerialized>
 export type Frame = Infer<typeof frameSerialized>

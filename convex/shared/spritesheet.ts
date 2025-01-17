@@ -1,5 +1,5 @@
 import { v, Infer } from 'convex/values';
-import { frameSerialized } from "./frame"
+import { sizeSerialized, frameSerialized } from "./frame"
 
 // export type SpritesheetData = {
 //   frames: Record<string, Frame>;
@@ -15,10 +15,7 @@ export const pixiSpritesheetSerialized = v.object({
   meta: v.object({
     image: v.string(),
     format: v.string(),
-    size: v.object({
-      w: v.number(),
-      h: v.number(),
-    }),
+    size: sizeSerialized,
     scale: v.string(),
   })
 })
