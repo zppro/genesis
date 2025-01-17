@@ -10,3 +10,4 @@ node_modules
 
 /import/*.json
 /import/*.jsonl
+/temp-character/

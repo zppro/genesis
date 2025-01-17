@@ -61,6 +61,9 @@ export default function SceneAnimationsScrollList({ children, sceneNPCExs, onEdi
                 </div>
                 {/* <div className="text-xs font-medium">{item.name}</div> */}
               </div>
+              <div>
+                {item.characterEx.name}
+              </div>
               <div className="line-clamp-2 text-xs text-muted-foreground">
                 {item.x}x, {item.y}y, {item.w}w, {item.h}h
               </div>

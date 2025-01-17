@@ -133,7 +133,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label>Settings Schema</Label>
-              <Select name="settingsVariant.type" defaultValue={doc?.settingsVariant?.type} >
+              <Select name="settingsVariant.type" defaultValue={doc?.settingsVariant?.type || CHARACTERSETTINGS_TYPES[0]} >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a schema predefined" />
                 </SelectTrigger>
