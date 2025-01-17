@@ -97,7 +97,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
     }
   }, [magicReturn])
 
-  const debugDesc = `Sam Alexander is a teenager who inherits the mantle of Nova from his father, a former member of the Nova Corps. He possesses superhuman abilities and advanced technology. Sam often struggles with his new responsibilities as a superhero while dealing with the challenges of high school life.`
+  // const debugDesc = `Sam Alexander is a teenager who inherits the mantle of Nova from his father, a former member of the Nova Corps. He possesses superhuman abilities and advanced technology. Sam often struggles with his new responsibilities as a superhero while dealing with the challenges of high school life.`
 
   return (
     <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
@@ -163,7 +163,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
                   <span >{false ? "Magicing..." : "Magic"}</span>
                 </Button>
               </Label>
-              <Textarea ref={descTextarea} id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc || debugDesc}
+              <Textarea ref={descTextarea} id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc}
                 placeholder="Description of your character"
                 className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.desc"))) ? "form-input-err" : undefined}
               />

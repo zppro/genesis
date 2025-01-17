@@ -1,5 +1,6 @@
 import { format } from "date-fns/format"
 import { useLoaderData } from "@remix-run/react";
+import { Label } from "~/components/ui/label"
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldCharacterExtend } from "~/data/convexProxy/character.server"
@@ -27,7 +28,7 @@ export const handle: Handle = {
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const {worldId, characterId } = params;
+  const { worldId, characterId } = params;
   const routeUrl = `/world/${worldId}/llm/${characterId}`
   let characterEx = null
   try {
@@ -49,7 +50,7 @@ export async function loader({
       });
     }
     const breadcrumbData = { routeName: characterEx.name, routeUrl }
-    return {...breadcrumbData, characterEx }
+    return { ...breadcrumbData, characterEx }
   }
 }
 
@@ -128,7 +129,18 @@ export default function Index() {
               </div>
             </ScrollArea>
           </TabsContent>
-          <TabsContent value="settings">Change your password here.</TabsContent>
+          <TabsContent value="settings">
+            <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-260px)]">
+              <div className="flex flex-col space-y-2">
+                <h2>Description:</h2>
+                <p className="text-gray-400 text-sm italic indent-8 pb-2">{characterEx?.settingsVariant?.desc}</p>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <div className="whitespace-pre-wrap"><JsonPretty data={JSON.stringify(characterEx?.settingsVariant?.settings, null, 2)} className="w-[450px]" /></div>
+              </div>
+            </ScrollArea>
+
+          </TabsContent>
         </Tabs>
 
         <Separator className="mt-auto" />

@@ -25,13 +25,13 @@ export default function Layout({ children, navMain }: { children: React.ReactNod
 
   function setActiveItems() {
     let matchNavItem = navMain.find(item => {
-      return item.url === location.pathname || item.items?.some(subItem => subItem.url === location.pathname)
+      return location.pathname.startsWith(item.url) || item.items?.some(subItem => location.pathname.startsWith(subItem.url))
     })
     if (!matchNavItem) {
       matchNavItem = navMain[0];
     }
     matchNavItem.isActive = true
-    let matchNavSubItem = matchNavItem.items?.find(subItem => subItem.url === location.pathname)
+    let matchNavSubItem = matchNavItem.items?.find(subItem => location.pathname.startsWith(subItem.url))
     if (!matchNavSubItem) {
       matchNavSubItem = matchNavItem.items?.[0]
     }

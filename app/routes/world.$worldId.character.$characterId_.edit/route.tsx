@@ -177,7 +177,7 @@ export async function loader({
     }
     const llms = await listWorldLLMs(worldId as WorldId)
     const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
-    const breadcrumbData = { routeName: `edit llm (${character.name})`, routeUrl: `/world/${worldId}/character/${character._id}/edit` }
+    const breadcrumbData = { routeName: `edit character (${character.name})`, routeUrl: `/world/${worldId}/character/${character._id}/edit` }
 
     return {...breadcrumbData, character, llms, spritesheetExs }
   }
