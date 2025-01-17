@@ -134,6 +134,7 @@ export default function SceneNPCForm<S extends z.AnyZodObject>({ open, setOpen, 
                   <div className="flex flex-col space-y-1.5">
                     <Combobox errClass={errors?.objectId ? "form-input-err" : undefined}
                       items={characterItems}
+                      showSelectedTextWithIcon={true}
                       height={48}
                       defaultItemKey={doc?.characterId}
                       onSelectChange={onComboxItemChange} />

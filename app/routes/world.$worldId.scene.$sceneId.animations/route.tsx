@@ -33,7 +33,10 @@ import { createSceneAnimation, updateSceneAnimation } from "~/data/convexProxy/s
 import { type InsertArgs, type UpdateArgs, SceneAnimationDoc, SceneAnimationId, table } from "@/world/sceneAnimations";
 import { listWorldObjectExtendsByType } from "~/data/convexProxy/object.server";
 import { ObjectTable } from "@/world/objects";
-import { parsePixiSpritesheet, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
+import { PixiSpritesheet } from "@/shared/spritesheet";
+import { Size } from "@/shared/frame";
+import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
+import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -125,9 +128,6 @@ export async function loader({
 export default function AnimationsTab() {
   const { sceneEx } = useRouteLoaderData<typeof sceneLoader>("routes/world.$worldId.scene.$sceneId")!;
   const { worldId, sceneId, sceneAnimationExs, objectExs } = useLoaderData<typeof loader>();
-  const objectItems = objectExs.map<ConvexComboxItem<ObjectTable>>(t => ({
-    key: t._id, text: t.name, icon: t.textureUrl, data: t.spritesheet
-  }))
   const [map, setMap] = useState<PixiTilemapConverted>()
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
@@ -225,6 +225,46 @@ export default function AnimationsTab() {
   })
   )
 
+  const pixiSpriteSheets: Record<string, { pixiSpriteSheet: PixiSpritesheet, sourceSize: Size, animationNames: string[] }> = {}
+  const objectItems = objectExs.map<ConvexComboxItem<ObjectTable>>(t => {
+    let v = pixiSpriteSheets[t.spritesheetId]
+    if (!v) {
+      const data = t.spritesheet?.data
+      const pixiSpriteSheet = parsePixiSpritesheet(data)
+      const sourceSize = parsePixiAnmimationSourceSize(pixiSpriteSheet)
+      const animationNames = parsePixiAnmimationAnimationNames(pixiSpriteSheet)
+      v = { pixiSpriteSheet, sourceSize, animationNames }
+      pixiSpriteSheets[t.spritesheetId] = v
+    }
+    const speed = 0.1
+    const elem = <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
+      {
+        () =>
+          <Stage key={t._id} width={v.sourceSize.w * v.animationNames.length} height={v.sourceSize.h} options={{ background: 0xffffff }} onMount={() => {
+            console.log(`stage(${t.name}) on mounted`)
+          }}>
+
+            {
+
+              v.animationNames.map((aname, idx) =>
+
+                <PixiAnimationObject
+                  animationSpritesheet={v.pixiSpriteSheet} speed={speed}
+                  animationName={aname}
+                  x={v.sourceSize.w * idx}
+                  y={0}
+                  w={v.sourceSize.w}
+                  h={v.sourceSize.h}
+                />
+              )
+            }
+
+          </Stage>
+      }
+    </ClientOnly>
+    
+    return {key: t._id, text: t.name, icon: elem, data: t.spritesheet}
+  })
 
   return (
     <div className="border flex-1 flex flex-col">

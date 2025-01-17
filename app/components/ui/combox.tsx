@@ -55,12 +55,13 @@ export type ConvexComboxItem<T extends ConvexTables> = {
 export type ComboxProps<T extends ConvexTables> = {
   errClass?: string;
   items?: ConvexComboxItem<T>[];
+  showSelectedTextWithIcon?: boolean;
   height?: number;
   defaultItemKey?: Id<T>;
   onSelectChange: (item: ConvexComboxItem<T>) => void;
 }
 
-export default function Combox<T extends ConvexTables>({ errClass, items, height, defaultItemKey, onSelectChange }: ComboxProps<T>) {
+export default function Combox<T extends ConvexTables>({ errClass, items, showSelectedTextWithIcon, height, defaultItemKey, onSelectChange }: ComboxProps<T>) {
   const [open, setOpen] = useState(false)
   const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
@@ -82,12 +83,12 @@ export default function Combox<T extends ConvexTables>({ errClass, items, height
           role="combobox"
           aria-expanded={open}
           className={cn('w-full justify-between', errClass)}
-          style={height ? {
+          style={showSelectedTextWithIcon && height ? {
             height
           } : undefined}
         >
           {
-            selectItem && showItemIcon(selectItem)
+            showSelectedTextWithIcon && selectItem && showItemIcon(selectItem)
           }
           {selectItem
             ? items?.find((item) => item.key === selectItem.key)?.text
