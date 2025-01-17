@@ -14,19 +14,17 @@ import { type SpritesheetTable, SPRITESHEET_TYPES, type SpritesheetTypes } from 
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
-import { PrimaryCharacterSettings, CHARACTERSETTINGS_TYPES } from "@/shared/characterSettings";
+import { CHARACTERSETTINGS_TYPES } from "@/shared/characterSettings";
 import { convertFormDataToObject } from "~/lib/form";
-import { Handle } from "~/lib/routeHandle";
-import { breadcrumb } from "~/components/app-breadcrumb";
 import JSON5 from "json5";
 import { zodPrimaryCharacterSettings } from "~/zod/characterSettings";
 import RunLLMForm from "~/routes/world.$worldId.character/runLLMForm"
-import { SheetTrigger } from "~/components/ui/sheet"
 import { listWorldLLMs } from "~/data/convexProxy/llm.server";
 import { LLMTable } from "@/world/llms";
 import { runLLM } from "~/data/convexProxy/llm.server";
 import { RunLLMArgs } from "@/world/llmsAction";
-import { FormDataEntryValueEx } from "~/lib/form";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
 
 export const handle: Handle = {
   breadcrumb
@@ -102,7 +100,7 @@ export async function action({
       data = JSON5.parse((_formData["settingsVariant"] as Record<string, any>)["settings"]);
     } catch (ex) {
       serverErrors["settingsVariant.settings"] = "parse json err"
-      console.log("serverErrors1=>", serverErrors)
+      // console.log("serverErrors1=>", serverErrors)
       return { serverErrors, sheetClose }
     }
 
@@ -110,7 +108,7 @@ export async function action({
     if (!result0.success) {
       serverErrors = { ...result0.error.formErrors.fieldErrors }
       serverErrors["data"] = "parse json as character settings err: " + Object.keys(serverErrors).map(se => serverErrors[se].join()).join()
-      console.error(serverErrors)
+      // console.error(serverErrors)
       return { serverErrors, sheetClose }
     }
 
@@ -136,7 +134,7 @@ export async function action({
     }
 
   }
-  console.log("serverErrors=>", serverErrors)
+  // console.log("serverErrors=>", serverErrors)
   return { serverErrors, sheetClose }
 }
 
@@ -172,7 +170,6 @@ export default function NewScene() {
     }
     if (actionData && "sheetClose" in actionData) {
       const _sheetOpen = !(actionData["sheetClose"] as boolean)
-      console.log("_sheetOpen", _sheetOpen);
       setSheetOpen(_sheetOpen)
     }
   }, [actionData])

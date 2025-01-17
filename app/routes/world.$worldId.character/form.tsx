@@ -84,17 +84,18 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
   }, [errors?.["__err__"]])
 
   useEffect(() => {
-    console.log("magicReturn=>", typeof magicReturn, magicReturn)
     if (doc?.settingsVariant?.settings) {
       setSettings(JSON5.stringify(doc?.settingsVariant?.settings as PrimaryCharacterSettings, null, 2))
-    } else if (magicReturn) {
-      const newSettings = magicReturn.replace(/```json\n?|```/g, '')
-      console.log("newSettings=>", JSON5.parse(newSettings))
-      console.log("newSettings=>", JSON5.stringify(JSON5.parse(newSettings)))
-      console.log("raw newSettings=>", JSON.stringify(JSON.parse(newSettings), null, 2))
-      setSettings(JSON.stringify(JSON.parse(newSettings), null, 2))
     }
-  }, [magicReturn, doc?.settingsVariant?.settings])
+  }, [])
+  useEffect(() => {
+    // console.log("magicReturn=>", typeof magicReturn, magicReturn)
+    if (magicReturn) {
+      const newSettings = magicReturn.replace(/```json\n?|```/g, '')
+      // setSettings(JSON.stringify(JSON.parse(newSettings), null, 2))
+      setSettings(newSettings)
+    }
+  }, [magicReturn])
 
   const debugDesc = `Sam Alexander is a teenager who inherits the mantle of Nova from his father, a former member of the Nova Corps. He possesses superhuman abilities and advanced technology. Sam often struggles with his new responsibilities as a superhero while dealing with the challenges of high school life.`
 
