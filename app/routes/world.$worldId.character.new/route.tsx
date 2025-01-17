@@ -1,6 +1,6 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import CharacterForm, { mergeNamePrefixsAsObject } from "~/routes/world.$worldId.character/form"
+import CharacterForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/world.$worldId.character/form"
 import { z } from "zod";
 import { createWorldCharacter } from "~/data/convexProxy/character.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server";
@@ -94,11 +94,12 @@ export async function action({
     }
 
   } else {
-    const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject });
+    const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject }, formatters);
 
+    // console.log('_formData:', (_formData["settingsVariant"] as Record<string, any>)["settings"])
     let data = null
     try {
-      data = JSON5.parse(_formData["settingsVariant.settings"].toString());
+      data = JSON5.parse((_formData["settingsVariant"] as Record<string, any>)["settings"]);
     } catch (ex) {
       serverErrors["settingsVariant.settings"] = "parse json err"
       console.log("serverErrors1=>", serverErrors)
@@ -113,6 +114,8 @@ export async function action({
       return { serverErrors, sheetClose }
     }
 
+    // make json str => json object
+    (_formData["settingsVariant"] as Record<string, any>)["settings"] = data;
     const formPayload = { ..._formData, worldId }
     // console.log('new formPayload=>', formPayload)
 
@@ -183,13 +186,14 @@ export default function NewScene() {
   function setResult(v: any) {
     console.log("runLLM result:", v)
   }
-  function onFormChange(payload: Record<string, FormDataEntryValueEx>) {
-    const desc = (payload["settingsVariant"] as Record<string, any>)["desc"] as string
-    console.log("desc=>", desc)
-    setUserInput(desc)
-  }
-  function onMagic() {
+  // function onFormChange(payload: Record<string, FormDataEntryValueEx>) {
+  //   const desc = (payload["settingsVariant"] as Record<string, any>)["desc"] as string
+  //   console.log("desc=>", desc)
+  //   setUserInput(desc)
+  // }
+  function onMagic(useInput: string) {
     console.log("on magic click")
+    setUserInput(useInput)
     setSheetOpen(true)
   }
   return (
@@ -198,7 +202,9 @@ export default function NewScene() {
         <CharacterForm errors={errors}
           onMagic={onMagic}
           magicReturn={actionData?.res}
-          onClientErrors={onClientErrors} schema={createSchema} onFormChange={onFormChange} >
+          onClientErrors={onClientErrors} schema={createSchema} 
+          // onFormChange={onFormChange} 
+          >
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
         </CharacterForm>

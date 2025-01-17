@@ -32,7 +32,7 @@ export const formatters: FormItemFormatter[] = [{
 }]
 
 export type CharacterFormProps<S extends z.AnyZodObject> = FormProps<CharacterTable, S> & {
-  onMagic: () => void;
+  onMagic: (userInput: string) => void;
   magicReturn: any;
 }
 
@@ -90,10 +90,13 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
     } else if (magicReturn) {
       const newSettings = magicReturn.replace(/```json\n?|```/g, '')
       console.log("newSettings=>", JSON5.parse(newSettings))
-      console.log("newSettings=>", JSON5.stringify(newSettings))
-      setSettings(newSettings)
+      console.log("newSettings=>", JSON5.stringify(JSON5.parse(newSettings)))
+      console.log("raw newSettings=>", JSON.stringify(JSON.parse(newSettings), null, 2))
+      setSettings(JSON.stringify(JSON.parse(newSettings), null, 2))
     }
   }, [magicReturn, doc?.settingsVariant?.settings])
+
+  const debugDesc = `Sam Alexander is a teenager who inherits the mantle of Nova from his father, a former member of the Nova Corps. He possesses superhuman abilities and advanced technology. Sam often struggles with his new responsibilities as a superhero while dealing with the challenges of high school life.`
 
   return (
     <Form method="post" ref={formRef} onChange={handleChange} className="flex flex-col h-full">
@@ -146,7 +149,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
               <Label htmlFor="settingsVariant-desc">Description
                 <Button variant="ghost" className="border ml-2" type="button" onClick={() => {
                   if (descTextarea.current?.value) {
-                    onMagic()
+                    onMagic(descTextarea.current?.value)
                   } else {
                     toast({
                       title: "runLLM error:",
@@ -159,7 +162,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
                   <span >{false ? "Magicing..." : "Magic"}</span>
                 </Button>
               </Label>
-              <Textarea ref={descTextarea} id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc}
+              <Textarea ref={descTextarea} id="settingsVariant-desc" name="settingsVariant.desc" defaultValue={doc?.settingsVariant?.desc || debugDesc}
                 placeholder="Description of your character"
                 className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.desc"))) ? "form-input-err" : undefined}
               />
@@ -167,7 +170,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="settingsVariant-settings">Settings</Label>
-              <Textarea id="settingsVariant-settings" name="settingsVariant.settings" defaultValue={settings ? JSON5.stringify(settings, null, 2) : ""}
+              <Textarea id="settingsVariant-settings" name="settingsVariant.settings" defaultValue={settings ? settings : ""}
                 placeholder="Settings of your character"
                 className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.settings"))) ? "form-input-err" : undefined}
               />
