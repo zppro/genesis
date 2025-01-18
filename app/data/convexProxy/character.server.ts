@@ -1,7 +1,7 @@
 import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds"
-import type { CharacterId, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/characters";
+import type { CharacterId, InsertArgs, UpdateArgs, DeleteArgs, UpdateTimeArgs } from "@/world/characters";
 // import { parseNotFoundRecordError, parseConvexError } from "@/error";
 
 
@@ -38,4 +38,8 @@ export const updateWorldCharacter = async (args: UpdateArgs) => {
 
 export const deleteWorldCharacter = async (args: DeleteArgs) => {
   await proxy().mutation(api.world.characters.delete_, args)
+}
+
+export const updateWorldCharacterSyncTime = async (args: UpdateTimeArgs) => {
+  await proxy().mutation(api.world.characters.updateSyncTime, args)
 }

@@ -1,7 +1,7 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
-import { mutation, query } from '../_generated/server';
+import { mutation, query, internalMutation } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
 import { TextureDoc, read as readTexture } from "./textures"
@@ -19,6 +19,7 @@ export const characterSerialized = {
   modifyTime: v.number(),
   name: v.string(),
   worldId: idWorld,
+  syncTime: v.optional(v.number()),
   // The speed of the animation. Can be tuned depending on the side and speed of the NPC.
   speed: v.number(),
   // spritesheet as pixijs definition 
@@ -27,11 +28,11 @@ export const characterSerialized = {
 };
 
 
-
 const { modifyTime, ...insertArgs } = characterSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idCharacter, ..._updateArgs }
 const deleteArgs = { id: idCharacter }
+const updateTimeArgs = { id: idCharacter }
 
 export type CharacterTable = typeof table
 export type CharacterId = Id<CharacterTable>
@@ -48,6 +49,8 @@ export type SerializedCharacter = ObjectType<typeof characterSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
+
 
 export const tableSchema = defineTable(characterSerialized)
   .index(indexName_ByWorldId, ["worldId"])
@@ -135,5 +138,23 @@ export const delete_ = mutation({
       throw new ConvexError(`current character reference by sceneNPCs:[${sceneNPCs.map(v => v.name).join()}]`);
     }
     await ctx.db.delete(id);
+  },
+});
+
+export const updateModifyTime = internalMutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const modifyTime = +new Date()
+    return await ctx.db.patch(id, { modifyTime });
+  },
+});
+
+export const updateSyncTime = mutation({
+  args: updateTimeArgs,
+  handler: async (ctx, args) => {
+    const { id } = args
+    const syncTime = +new Date()
+    return await ctx.db.patch(id, { syncTime });
   },
 });

@@ -155,8 +155,17 @@ export const update = mutation({
   args: updateArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
+    const entity = await ctx.db.get(id);
+    if (!entity) {
+      throw new ConvexError(`Invalid \`${table}\` ID: ${args.id}`);
+    }
     const modifyTime = +new Date()
-    return await ctx.db.patch(id, { ...patchData, modifyTime });
+    await ctx.db.patch(id, { ...patchData, modifyTime });
+    // make ref entity updateModifyTime
+    const characters = await ctx.runQuery(api.world.characters.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
+    await Promise.all(characters.map(async (character) => {
+      await ctx.runMutation(internal.world.characters.updateModifyTime, { id: character._id })
+    }))
   },
 });
 

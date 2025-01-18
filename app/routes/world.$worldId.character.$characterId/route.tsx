@@ -1,5 +1,5 @@
 import { format } from "date-fns/format"
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigation, Form } from "@remix-run/react";
 import { Label } from "~/components/ui/label"
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
@@ -18,6 +18,10 @@ import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
 import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 import { TabsList, Tabs, TabsTrigger, TabsContent } from "~/components/ui/tabs"
+import { useRedirectToast } from "~/hooks/use-redirectToast";
+import ToolItem from "~/components/toolbars/tool-item"
+import { Button } from "~/components/ui//button";
+import { CloudUpload, Check, TriangleAlert } from "lucide-react"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -60,6 +64,11 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { characterEx } = useLoaderData<typeof loader>();
+  const state = useRedirectToast("sync")
+  const navigation = useNavigation()
+  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
+  const isSynced = characterEx.syncTime && characterEx.modifyTime && characterEx.modifyTime < characterEx.syncTime
+
   const data = characterEx?.spritesheet?.data
   const pixiSpriteSheet = parsePixiSpritesheet(data)
   const sourceSize = parsePixiAnmimationSourceSize(pixiSpriteSheet)
@@ -67,7 +76,17 @@ export default function Index() {
 
   return (
     <div className="flex h-full items-start flex-col">
-      <Toolbar entityName={table} />
+      <Toolbar entityName={table} >
+        <ToolItem itemTip="sync to the world">
+          <Form method="post" action="sync">
+            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSyncing} >
+              <CloudUpload className="h-4 w-4" />
+              <span>{isSyncing ? "Syncing..." : "Sync"}</span>
+              {isSynced ? <Check className="text-green-500" /> : <TriangleAlert className="text-yellow-500" />}
+            </Button>
+          </Form>
+        </ToolItem>
+      </Toolbar>
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">
