@@ -30,6 +30,12 @@ export default function BaiscTab() {
           <Field title="Base Url:" value={llm?.baseUrl} />
         </div>
         <div>
+          <Field title="Provider:" value={llm?.provider} />
+        </div>
+        <div>
+          <Field title="Model Name:" value={llm?.model} />
+        </div>
+        <div>
           <Field title="API Key Name:" value={llm?.apiKeyName} />
         </div>
         <div className="flex-1 whitespace-pre-wrap text-sm">

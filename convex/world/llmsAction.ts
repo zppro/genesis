@@ -19,14 +19,14 @@ export const _beforeRunLLM = internalMutation({
   args: runLLMArgs,
   handler: async (ctx, args) => {
     const { llmId, messages } = args;
-    const { apiKeyName, baseUrl, name } = await _readOrThrow(ctx, llmId)
+    const { apiKeyName, baseUrl, model } = await _readOrThrow(ctx, llmId)
     const apiKey = process.env[apiKeyName]
     const reqRaw = {
-      model: name,
+      model,
       messages,
     }
     const llmLogId = await _create(ctx, { llmId, reqTime: +new Date(), reqRaw })
-    return { apiKey, baseUrl, llmLogId, messages, model: name }
+    return { apiKey, baseUrl, llmLogId, messages, model }
   },
 });
 

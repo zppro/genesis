@@ -29,6 +29,8 @@ export const links: LinksFunction = () => [
 const updateSceneFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   desc: z.string(),
+  provider: z.string().min(1, { message: "Provider is required" }),
+  model: z.string().min(1, { message: "Model is required" }),
   apiKeyName: z.string().min(1, { message: "api key name is required" }),
   baseUrl: z.string().min(1, { message: "base url is required" }).url(),
 });

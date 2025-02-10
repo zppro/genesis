@@ -19,6 +19,8 @@ export const llmSerialized = {
   name: v.string(), // model name
   desc: v.optional(v.string()),
   worldId: idWorld,
+  provider: v.string(),
+  model: v.string(),
   // store apikeyname in the enviorment variables
   apiKeyName: v.string(),
   baseUrl: v.string(),

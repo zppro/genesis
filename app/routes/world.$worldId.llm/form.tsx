@@ -60,6 +60,16 @@ export default function LLMForm<S extends z.AnyZodObject>({ children, errors, do
               {errors?.baseUrl ? <FormErrorTip tip={errors?.baseUrl} /> : null}
             </div>
             <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="provider">Provider<span className="text-red-500">*</span></Label>
+              <Input id="provider" name="provider" defaultValue={doc?.provider} placeholder="Provider of your llm" className={errors?.provider ? "form-input-err" : undefined} />
+              {errors?.provider ? <FormErrorTip tip={errors.moproviderdel} /> : null}
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="model">Model<span className="text-red-500">*</span></Label>
+              <Input id="model" name="model" defaultValue={doc?.model} placeholder="Model name of your llm" className={errors?.model ? "form-input-err" : undefined} />
+              {errors?.model ? <FormErrorTip tip={errors.model} /> : null}
+            </div>
+            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="apiKeyName">Api Key Name<span className="text-red-500">*</span></Label>
               <Input id="apiKeyName" name="apiKeyName" defaultValue={doc?.apiKeyName} placeholder="api key name as enviroment variable of llm model" className={errors?.apiKeyName ? "form-input-err" : undefined} />
               {errors?.apiKeyName ? <FormErrorTip tip={errors?.apiKeyName} /> : null}
