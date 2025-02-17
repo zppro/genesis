@@ -15,6 +15,10 @@ import PixiNPCObject, { AnimationData as NPCAnimationData } from "~/components/p
 import Character from "~/components/pixi/character"
 import { ClickedEvent } from 'pixi-viewport/dist/types';
 import { array2Map } from "~/lib/utils";
+import { translateToPosition } from '~/lib/algorithm';
+import type { CustomTileLayer } from '@/shared/tilemap';
+import { setCustomLayers } from '@/world/scenes';
+
 
 type Frame = {
   x: number;
@@ -54,12 +58,17 @@ type TilemapData = {
 }
 
 type PixiStaticMapProps = {
+  mode: TilemapMode;
+  obstacleArray: number[];
+  width: number; // viewport可视宽度
+  height: number; // viewport可视高度
   map: TilemapData,
   staticMapRef?: MutableRefObject<PIXI.Container | undefined>;
   [k: string]: any;
 }
 const PixiStaticMap = PixiComponent('StaticMap', {
-  create: ({ map, staticMapRef, ...props }: PixiStaticMapProps) => {
+  create: ({ mode, obstacleArray, width, height, map, staticMapRef, ...props }: PixiStaticMapProps) => {
+    console.log('PixiStaticMap mode=>', mode)
     const numxtiles = Math.floor(map.tileSetDimX / map.tileDim);
     const numytiles = Math.floor(map.tileSetDimY / map.tileDim);
     const bt = PIXI.BaseTexture.from(map.tileSetUrl, {
@@ -89,9 +98,25 @@ const PixiStaticMap = PixiComponent('StaticMap', {
     const allLayers = [...map.bgTiles, ...map.objectTiles];
 
     // blit bg & object layers of map onto canvas
+    //   const style = new PIXI.TextStyle({
+    //     fontFamily: 'Arial',
+    //     fontSize: 10,
+    //     fontStyle: 'italic',
+    //     fontWeight: 'bold',
+    //     stroke: '#4a1850',
+    //     strokeThickness: 5,
+    //     dropShadow: true,
+    //     dropShadowColor: '#000000',
+    //     dropShadowBlur: 4,
+    //     dropShadowAngle: Math.PI / 6,
+    //     dropShadowDistance: 6,
+    //     wordWrap: true,
+    //     wordWrapWidth: 440,
+    //     lineJoin: 'round',
+    // });
     for (let i = 0; i < screenxtiles * screenytiles; i++) {
       const x = i % screenxtiles;
-      const y = Math.floor(i / screenxtiles);
+      const y = Math.floor(i / screenytiles);
       const xPx = x * map.tileDim;
       const yPx = y * map.tileDim;
 
@@ -103,8 +128,29 @@ const PixiStaticMap = PixiComponent('StaticMap', {
         const ctile = new PIXI.Sprite(tiles[tileIndex]);
         ctile.x = xPx;
         ctile.y = yPx;
+
         container.addChild(ctile);
       }
+
+      if (mode === "obstacle") {
+        const graphics = new PIXI.Graphics();
+        // Rectangle
+        const alphaFill = obstacleArray[i] === 1 ? 1 : 0.3;
+        // console.log('alphaFill=>', alphaFill);
+        graphics.lineStyle(1, 0xfeeb77, 0.5);
+        graphics.beginFill(0x650a5a, alphaFill);
+        graphics.drawRect(xPx, yPx, map.tileDim, map.tileDim);
+        graphics.endFill();
+        graphics.name = `tile${i}`;
+        container.addChild(graphics);
+
+        // const idxText = new PIXI.Text(`${x}`);
+        // idxText.x = xPx;
+        // idxText.y = yPx;
+        // idxText.style = { fontSize: 9 };
+        // container.addChild(idxText);
+      }
+
     }
 
     // TODO: Add layers.
@@ -150,6 +196,7 @@ const PixiStaticMap = PixiComponent('StaticMap', {
     container.x = 0;
     container.y = 0;
 
+
     // Set the hit area manually to ensure `pointerdown` events are delivered to this container.
     container.interactive = true;
     container.hitArea = new PIXI.Rectangle(
@@ -158,41 +205,94 @@ const PixiStaticMap = PixiComponent('StaticMap', {
       screenxtiles * map.tileDim,
       screenytiles * map.tileDim,
     );
-    // container.onclick! = (event: PIXI.FederatedMouseEvent) => {
-    //   console.log("event onpointerdown:", container.hitArea)
-    //   console.log("event client:", event.global.x)
-    //   console.log("event client2:", event.client.x, event.clientX)
-    //   console.log("event client2:", event.offset.x, event.offsetX)
+    // if (mode === 'obstacle') {
+    //   container.onclick! = (event: PIXI.FederatedMouseEvent) => {
+    //     // console.log("event onpointerdown:", container.hitArea)
+    //     console.log("event client:", event.global.x)
+    //     console.log("event client2:", event.client.x, event.clientX)
+    //     // console.log("event client2:", event.offset.x, event.offsetX)
+    //     console.log("event client2:", event.offsetX)
+    //     console.log("event map width:", map.width, width, screenxtiles, map.tileDim)
+    //     const tilePosition = translateToPosition({ width: screenxtiles * map.tileDim, height: screenytiles * map.tileDim, itemRows: map.height, itemColumns: map.width, x: event.global.x, y: event.global.y })
+    //     console.log("event tile position:",tilePosition.columns, map.width * width / (screenxtiles * map.tileDim))
+    //   }
     // }
+
 
     return container;
   },
 
   applyProps: (instance, oldProps, newProps) => {
-    applyDefaultProps(instance, oldProps, newProps);
+    // apply rest props
+    const { obstacleArray: oldObstacleArray, ...oldP } = oldProps as PixiStaticMapProps;
+    const { obstacleArray: newObstacleArray, ...newP } = newProps;
+    // console.log('applyProps...', oldObstacleArray, newObstacleArray, newP.mode === 'obstacle' && oldObstacleArray && newObstacleArray && oldObstacleArray.length === newObstacleArray.length)
+    if (newP.mode === 'obstacle') {
+      applyDefaultProps(instance, oldP, newP);
+
+      const screenxtiles = newP.map.bgTiles[0].length;
+      const screenytiles = newP.map.bgTiles[0][0].length;
+      const map = newP.map;
+
+      for (let i = 0; i < newObstacleArray.length; i++) {
+        const x = i % screenxtiles;
+        const y = Math.floor(i / screenytiles);
+        const xPx = x * map.tileDim;
+        const yPx = y * map.tileDim;
+
+        const graphics = instance.getChildByName(`tile${i}`) as PIXI.Graphics
+        if (!graphics) {
+          console.log("ctl is not found!!!!")
+          continue;
+        }
+        const alphaFill = newObstacleArray[i] === 1 ? 1 : 0.3;
+        graphics.clear()
+        graphics.lineStyle(1, 0xfeeb77, 0.5);
+        graphics.beginFill(0x650a5a, alphaFill);
+        graphics.drawRect(xPx, yPx, map.tileDim, map.tileDim);
+        graphics.endFill();
+      }
+
+    } else {
+      applyDefaultProps(instance, oldProps, newProps);
+    }
   },
 });
+
+export type TilemapMode = 'normal' | 'obstacle';
 
 export type TilemapProps = {
   width: number; // viewport可视宽度
   height: number; // viewport可视高度
+  mode: TilemapMode;
   map: PixiTilemapConverted;
-  tilemapAnimations: TilemapAnimation[]
+  tilemapAnimations: TilemapAnimation[];
+  customLayers: CustomTileLayer[];
+  onCustomLayersChanged?: (v: CustomTileLayer[]) => void;
 }
 
 // const PixiViewport = lazy(() => import('./PixiViewport'));
-export default function Tilemap({ width, height, map, tilemapAnimations }: TilemapProps) {
+export default function Tilemap({ width, height, mode, map, tilemapAnimations, customLayers, onCustomLayersChanged }: TilemapProps) {
   const pixiApp = useApp();
   const viewportRef = useRef<Viewport | undefined>();
   const staticMapRef = useRef<PIXI.Container>();
   const [loaded, setLoaded] = useState(false)
   const [mapData, setMapData] = useState<TilemapData>();
   const [pointOfNPC, setPointOfNPC] = useState<PIXI.Point>()
+
   // const [baseTextures, setBaseTextures] = useState<Record<string, PIXI.BaseTexture>>({})
 
   const tileDim = map.tiledim;
   const tilesX = map.screenxtiles;
   const tilesY = map.screenytiles;
+  const worldWidth = tilesX * tileDim
+  const worldHeight = tilesY * tileDim
+
+  const obstacleLayer = customLayers.find(l => l.name === 'obstacle')
+  // console.log('obstacleLayer=>', customLayers)
+  const initObstacleArray = obstacleLayer ? obstacleLayer.data : new Array(tilesX * tilesY).fill(0);
+  const [obstacleArray, setObstacleArray] = useState<number[]>(initObstacleArray)
+
 
   // console.log('width:', width)
   // console.log('height:', height)
@@ -206,19 +306,26 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
   const onMapPointerDown = (e: any) => {
     // https://pixijs.download/dev/docs/PIXI.FederatedPointerEvent.html
     dragStart.current = { screenX: e.screenX, screenY: e.screenY };
+    // pause==true disabled drag
+    //  viewportRef.current!.pause = true
   };
   const onMapPointerUp = async (e: any) => {
     if (dragStart.current) {
       const { screenX, screenY } = dragStart.current;
-      dragStart.current = null;
       const [dx, dy] = [screenX - e.screenX, screenY - e.screenY];
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > 10) {
-        console.log(`Skipping navigation on drag event (${dist}px)`);
-        return;
-      }
+      dragStart.current = null;
+      // viewportRef.current!.pause = false
     }
   };
+
+  const onMapPointerMove = async (e: any) => {
+    if (dragStart.current) {
+      if (mode === 'obstacle') {
+        const tilePosition = translateToPosition({ width: width, height: height, itemRows: tilesY, itemColumns: tilesX, x: e.screenX, y: e.screenY })
+        console.log('move:', e.screenX, e.screenY, tilePosition)
+      }
+    }
+  }
 
   useEffect(() => {
     setLoaded(true);
@@ -258,8 +365,31 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
   // }, [tilemapAnimations])
 
   const onClicked = (e: ClickedEvent) => {
-    // console.log('viewport clicked:', e)
-    setPointOfNPC(e.world)
+    console.log("isShiftKeyPressed:", e.viewport.checkKeyPress())
+    if (mode === 'obstacle') {
+      const tilePosition = translateToPosition({ width: width, height: height, itemRows: tilesY, itemColumns: tilesX, x: e.world.x, y: e.world.y })
+      const idx = tilePosition.rows * tilesX + tilePosition.columns
+      obstacleArray[idx] = obstacleArray[idx] === 1 ? 0 : 1;
+      // console.log('viewport clicked:', tilePosition, idx, obstacleArray[idx])
+      setObstacleArray([...obstacleArray])
+      if (onCustomLayersChanged) {
+        let idxInCustomLayers = customLayers.findIndex(l => l.name === 'obstacle')
+        if (idxInCustomLayers === -1) {
+          idxInCustomLayers = customLayers.length
+        }
+        customLayers[idxInCustomLayers] = {
+          width: tilesX,
+          height: tilesY,
+          x: 0,
+          y: 0,
+          name: "obstacle",
+          data: obstacleArray
+        }
+        onCustomLayersChanged(customLayers)
+      }
+    } else {
+      setPointOfNPC(e.world)
+    }
   }
 
 
@@ -269,16 +399,21 @@ export default function Tilemap({ width, height, map, tilemapAnimations }: Tilem
       app={pixiApp}
       screenWidth={width}
       screenHeight={height}
-      worldWidth={tilesX * tileDim}
-      worldHeight={tilesY * tileDim}
+      worldWidth={worldWidth}
+      worldHeight={worldHeight}
       viewportRef={viewportRef}
       onClicked={onClicked}
     >
       {
         mapData && <PixiStaticMap
+          mode={mode}
+          obstacleArray={obstacleArray}
+          width={width}
+          height={height}
           map={mapData}
           onpointerup={onMapPointerUp}
           onpointerdown={onMapPointerDown}
+          // onpointermove={onMapPointerMove}
           staticMapRef={staticMapRef}
         />
       }

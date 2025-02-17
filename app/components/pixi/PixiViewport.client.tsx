@@ -25,7 +25,7 @@ export default PixiComponent('Viewport', {
     const { app, children, viewportRef, onClicked, ...viewportProps } = props;
     const events = new EventSystem(app.renderer)
     events.domElement = app.renderer.view as any
-
+    // console.log("viewportProps=>", viewportProps)
     const viewport = new Viewport({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       // events: app.renderer.events,
@@ -44,6 +44,10 @@ export default PixiComponent('Viewport', {
       .decelerate()
       .clamp({ direction: 'all', underflow: 'center' })
       .setZoom(-10)
+      // .clampZoom({
+      //   minScale: props.screenWidth / props.worldWidth,
+      //   maxScale: (1.04 * props.screenWidth) / (props.worldWidth / 2),
+      // });
       .clampZoom({
         minScale: (1.04 * props.screenWidth) / (props.worldWidth / 2),
         maxScale: 3.0,

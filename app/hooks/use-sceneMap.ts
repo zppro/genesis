@@ -1,11 +1,12 @@
 
 import { useEffect, useState } from "react"
 import { SceneExtendDoc } from "@/world/scenes"
-import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer } from "@/shared/tilemap"
+import { PixiTilemapConverted, parseLayerData, convertLayerData, TileLayer, CustomTileLayer } from "@/shared/tilemap"
 
 export function useSceneMap(sceneEx: SceneExtendDoc) {
   const [map, setMap] = useState<PixiTilemapConverted>()
-  const [tileLayers, setTileLayers] = useState<string[]>([])
+  const [tileLayers, setTileLayers] = useState<string[]>(sceneEx.blockLayers)
+  const [customLayers, setCustomLayers] = useState<CustomTileLayer[]>(sceneEx.customLayers)
   useEffect(() => {
     console.log("refresh useSceneMap=>", sceneEx.blockLayers)
     const tilesetUrl = sceneEx.tileset.url!;
@@ -21,9 +22,9 @@ export function useSceneMap(sceneEx: SceneExtendDoc) {
       const objmap: TileLayer[] = [] // 实际上是block bg
       const _tilelayers = parsed.layers.filter((layer: any) => layer.type === 'tilelayer');
 
-      _tilelayers.forEach((layer: any) => {
-        console.log(layer)
-      })
+      // _tilelayers.forEach((layer: any) => {
+      //   console.log(layer)
+      // })
       // let bgs = tilelayers;
       // let blocks: any[] = [];
       // if (blockLayers) {
@@ -77,5 +78,5 @@ export function useSceneMap(sceneEx: SceneExtendDoc) {
 
     })();
   }, [sceneEx])
-  return {map, tileLayers}
+  return {map, tileLayers, customLayers, setCustomLayers}
 }

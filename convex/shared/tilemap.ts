@@ -1,4 +1,4 @@
-import { v, Infer } from 'convex/values';
+import { v, Infer, ObjectType } from 'convex/values';
 import { animatedSpriteSerialized } from "./animatedSprite";
 
 export const tilesetpath = "/ai-town/assets/gentle-obj.png"
@@ -9,7 +9,20 @@ export const tilesetpxw = 1440
 export const tilesetpxh = 1024
 
 const tileLayer = v.array(v.array(v.number()));
+export const CUSTOM_TILE_NAMES = ['obstacle'] as const
+export type CustomTileNames = typeof CUSTOM_TILE_NAMES[number];
+export const customTileLayer = {
+  name: v.union(...CUSTOM_TILE_NAMES.map(t => v.literal(t))),
+  data: v.array(v.number()),
+  x: v.number(),
+  y: v.number(),
+  width: v.number(),
+  height: v.number(),
+}
+
 export type TileLayer = Infer<typeof tileLayer>;
+export type CustomTileLayer = ObjectType<typeof customTileLayer>;
+
 
 
 export const pixiTilemapSerialized = v.object({

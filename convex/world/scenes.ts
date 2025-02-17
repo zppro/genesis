@@ -6,6 +6,7 @@ import { Doc, Id } from "../_generated/dataModel";
 import { idResource, ResourceDoc } from "./resources";
 import { api } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
+import { customTileLayer } from '../shared/tilemap';
 
 export const table = 'scenes';
 export const indexName_ByWorldId = 'by_worldId';
@@ -34,13 +35,16 @@ export const sceneSerialized = {
   // reource type = 'tilemap'
   tilemapId: idResource,
   // 作为前景，会对character产生block
-  blockLayers: v.optional(v.array(v.string())),
+  blockLayers: v.array(v.string()),
+  // 自定义障碍block
+  customLayers: v.array(v.object(customTileLayer)),
 };
 const { modifyTime, ...insertArgs } = sceneSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idScene, ..._updateArgs }
 const deleteArgs = { id: idScene }
 const setBlockLayersArgs = { id: idScene, blockLayers: v.array(v.string()) }
+const setCustomLayersArgs = { id: idScene, customLayers: v.array(v.object(customTileLayer)) }
 const updateTimeArgs = { id: idScene }
 
 export type SceneTable = typeof table
@@ -55,6 +59,7 @@ export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 export type SetBlockerLayersArgs = ObjectType<typeof setBlockLayersArgs>;
+export type SetCustomLayersArgs = ObjectType<typeof setCustomLayersArgs>;
 export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
 
 export const tableSchema = defineTable(sceneSerialized)
@@ -160,6 +165,15 @@ export const delete_ = mutation({
 
 export const setBlockerLayers = mutation({
   args: setBlockLayersArgs,
+  handler: async (ctx, args) => {
+    const { id, ...patchData } = args
+    const modifyTime = +new Date()
+    return await ctx.db.patch(args.id, { ...patchData, modifyTime });
+  },
+});
+
+export const setCustomLayers = mutation({
+  args: setCustomLayersArgs,
   handler: async (ctx, args) => {
     const { id, ...patchData } = args
     const modifyTime = +new Date()
