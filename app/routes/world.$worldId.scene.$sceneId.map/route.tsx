@@ -42,8 +42,9 @@ export async function action({
   let serverErrors: ServerErrors = {}
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsArray });
-  const formPayload = { ..._formData, id: sceneId as SceneId }
+  const formPayload = { blockLayers: [], ..._formData, id: sceneId as SceneId }
   console.log('formPayload=>', formPayload)
+  
   // payload z schema validation
   try {
     await setSceneBlockerLayers(formPayload as unknown as SetBlockerLayersArgs)

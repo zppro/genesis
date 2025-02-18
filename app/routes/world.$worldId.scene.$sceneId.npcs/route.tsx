@@ -129,6 +129,7 @@ export default function NPCsTab() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [currentSceneNPC, setCurrentSceneNPC] = useState<SceneNPCDoc>();
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [screenWidth, screenHeight] = [400, 400]
 
   useEffect(() => {
     const tilesetUrl = sceneEx.tileset.url!;
@@ -307,11 +308,19 @@ export default function NPCsTab() {
           <div className="h-full p-2 grid place-content-center">
             <ClientOnly fallback={<LoaderCircle className="h-4 w-4 loading-icon" />}>
               {() =>
-                <Stage key={sceneEx._id} width={400} height={400} options={{ background: 0xffffff }} onMount={() => {
+                <Stage key={sceneEx._id} width={screenWidth} height={screenHeight} options={{ background: 0xffffff }} onMount={() => {
                   console.log('stage on mounted')
                 }}>
                   {
-                    map && <Tilemap width={400} height={400} map={map} tilemapAnimations={tilemapAnimations} />
+                    map && <Tilemap
+                      mode="normal"
+                      width={screenWidth}
+                      height={screenHeight}
+                      map={map}
+                      tilemapAnimations={tilemapAnimations}
+                      customLayers={[]}
+                      customLayerOp=""
+                    />
                   }
 
                 </Stage>
