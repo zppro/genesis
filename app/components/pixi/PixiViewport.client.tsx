@@ -7,6 +7,7 @@ import { Application } from 'pixi.js';
 import { MutableRefObject, ReactNode } from 'react';
 import { EventSystem } from "@pixi/events";
 import { ClickedEvent } from 'pixi-viewport/dist/types';
+import { FederatedPointerEvent } from "pixi.js";
 
 export type ViewportProps = {
   app: Application;
@@ -17,12 +18,15 @@ export type ViewportProps = {
   worldHeight: number;
   children?: ReactNode;
   onClicked?: (e: ClickedEvent) => void
+  onPointerDown?: (e: FederatedPointerEvent) => void
+  onPointerMove?: (e: FederatedPointerEvent) => void
+  onPointerUp?: (e: FederatedPointerEvent) => void
 };
 
 // https://davidfig.github.io/pixi-viewport/jsdoc/Viewport.html
 export default PixiComponent('Viewport', {
   create(props: ViewportProps) {
-    const { app, children, viewportRef, onClicked, ...viewportProps } = props;
+    const { app, children, viewportRef, onClicked, onPointerDown, onPointerMove, onPointerUp, ...viewportProps } = props;
     const events = new EventSystem(app.renderer)
     events.domElement = app.renderer.view as any
     // console.log("viewportProps=>", viewportProps)
@@ -55,7 +59,11 @@ export default PixiComponent('Viewport', {
 
 
     onClicked && viewport.on("clicked", onClicked)
-    
+    onPointerDown && viewport.on("pointerdown", onPointerDown)
+    onPointerMove && viewport.on('pointermove', onPointerMove)
+    onPointerUp && viewport.on("pointerup", onPointerUp)
+
+
     return viewport;
   },
   applyProps(viewport, oldProps: any, newProps: any) {

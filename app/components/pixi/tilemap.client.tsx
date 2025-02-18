@@ -4,7 +4,7 @@ import { PixiComponent, useApp, applyDefaultProps } from '@pixi/react';
 import { ResourceDoc } from "@/world/resources"
 import JSON5 from "json5"
 import { PixiSpritesheet } from "@/shared/spritesheet";
-import { useState, useEffect, useRef, lazy, Suspense, ReactNode, MutableRefObject } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense, ReactNode, MutableRefObject } from 'react';
 import PixiViewport from './PixiViewport.client';
 import { Viewport } from 'pixi-viewport';
 import { Container, Sprite } from '@pixi/react';
@@ -17,7 +17,9 @@ import { ClickedEvent } from 'pixi-viewport/dist/types';
 import { array2Map } from "~/lib/utils";
 import { translateToPosition } from '~/lib/algorithm';
 import type { CustomTileLayer } from '@/shared/tilemap';
-import { setCustomLayers } from '@/world/scenes';
+// import { useKey, useOnClickRef } from "rooks";
+import { FederatedPointerEvent } from "pixi.js";
+import { OpValue } from "~/components/customLayers/obstacle";
 
 
 type Frame = {
@@ -268,17 +270,20 @@ export type TilemapProps = {
   map: PixiTilemapConverted;
   tilemapAnimations: TilemapAnimation[];
   customLayers: CustomTileLayer[];
+  customLayerOp: OpValue | "";
   onCustomLayersChanged?: (v: CustomTileLayer[]) => void;
 }
 
+// render的props包括变量在闭包方法里是不变的,在函数里用最新的值需要用useRef，或者在外部的key设置变量值类似mode
 // const PixiViewport = lazy(() => import('./PixiViewport'));
-export default function Tilemap({ width, height, mode, map, tilemapAnimations, customLayers, onCustomLayersChanged }: TilemapProps) {
+export default function Tilemap({ width, height, mode, map, tilemapAnimations, customLayers, customLayerOp, onCustomLayersChanged }: TilemapProps) {
   const pixiApp = useApp();
   const viewportRef = useRef<Viewport | undefined>();
   const staticMapRef = useRef<PIXI.Container>();
   const [loaded, setLoaded] = useState(false)
   const [mapData, setMapData] = useState<TilemapData>();
   const [pointOfNPC, setPointOfNPC] = useState<PIXI.Point>()
+  // const [isShiftClicked, setIsShiftClicked] = useState(false);
 
   // const [baseTextures, setBaseTextures] = useState<Record<string, PIXI.BaseTexture>>({})
 
@@ -302,8 +307,12 @@ export default function Tilemap({ width, height, mode, map, tilemapAnimations, c
 
   // Interaction for clicking on the world to navigate.
 
+  const canDragRef = useRef<boolean>(true);
+  canDragRef.current = mode === 'normal' || (mode === 'obstacle' && !customLayerOp)
   const dragStart = useRef<{ screenX: number; screenY: number } | null>(null);
   const onMapPointerDown = (e: any) => {
+    console.log('canDragRef.current', canDragRef.current)
+    viewportRef.current!.pause = !canDragRef.current
     // https://pixijs.download/dev/docs/PIXI.FederatedPointerEvent.html
     dragStart.current = { screenX: e.screenX, screenY: e.screenY };
     // pause==true disabled drag
@@ -317,15 +326,6 @@ export default function Tilemap({ width, height, mode, map, tilemapAnimations, c
       // viewportRef.current!.pause = false
     }
   };
-
-  const onMapPointerMove = async (e: any) => {
-    if (dragStart.current) {
-      if (mode === 'obstacle') {
-        const tilePosition = translateToPosition({ width: width, height: height, itemRows: tilesY, itemColumns: tilesX, x: e.screenX, y: e.screenY })
-        console.log('move:', e.screenX, e.screenY, tilePosition)
-      }
-    }
-  }
 
   useEffect(() => {
     setLoaded(true);
@@ -365,13 +365,83 @@ export default function Tilemap({ width, height, mode, map, tilemapAnimations, c
   // }, [tilemapAnimations])
 
   const onClicked = (e: ClickedEvent) => {
-    console.log("isShiftKeyPressed:", e.viewport.checkKeyPress())
-    if (mode === 'obstacle') {
-      const tilePosition = translateToPosition({ width: width, height: height, itemRows: tilesY, itemColumns: tilesX, x: e.world.x, y: e.world.y })
-      const idx = tilePosition.rows * tilesX + tilePosition.columns
-      obstacleArray[idx] = obstacleArray[idx] === 1 ? 0 : 1;
-      // console.log('viewport clicked:', tilePosition, idx, obstacleArray[idx])
-      setObstacleArray([...obstacleArray])
+    if (mode !== 'obstacle') {
+      setPointOfNPC(e.world)
+    }
+  };
+
+  const obstacleTileVal = useRef<number | null>(null);
+  obstacleTileVal.current = customLayerOp === 'stamp' ? 1 : (customLayerOp === 'eraser' ? 0 : null)
+  const shiftStart = useRef<{ screenX: number; screenY: number } | null>(null);
+  const onPointerDown = (e: FederatedPointerEvent) => {
+    if (mode === 'obstacle' && obstacleTileVal.current !== null) {
+      if (e.shiftKey) {
+        // const worldCoordinate = viewportRef.current!.toWorld(e.screenX, e.screenY);
+        // const tilePosition = translateToPosition({ width: width, height: height, itemRows: tilesY, itemColumns: tilesX, x: worldCoordinate.x, y: worldCoordinate.y })
+        // console.log("onPointerDown tilePosition:", tilePosition)
+        shiftStart.current = { screenX: e.screenX, screenY: e.screenY };
+        // console.log('shiftStart.current=>', shiftStart.current)
+      }
+    }
+  };
+  const onPointerMove = (e: FederatedPointerEvent) => {
+    if (mode === 'obstacle' && obstacleTileVal.current !== null) {
+      if (shiftStart.current) {
+        const { x: startX, y: startY } = viewportRef.current!.toWorld(shiftStart.current.screenX, shiftStart.current.screenY);
+        const { x: endX, y: endY } = viewportRef.current!.toWorld(e.screenX, e.screenY);
+        const tilePositionStart = translateToPosition({ width, height, itemRows: tilesY, itemColumns: tilesX, x: startX, y: startY })
+        const tilePositionEnd = translateToPosition({ width, height, itemRows: tilesY, itemColumns: tilesX, x: endX, y: endY })
+
+        const lowerX = Math.min(tilePositionStart.columns, tilePositionEnd.columns);
+        const lowerY = Math.min(tilePositionStart.rows, tilePositionEnd.rows);
+        const upperX = Math.max(tilePositionStart.columns, tilePositionEnd.columns);
+        const upperY = Math.max(tilePositionStart.rows, tilePositionEnd.rows);
+
+        for (let row = lowerY; row <= upperY; row++) {
+          for (let col = lowerX; col <= upperX; col++) {
+            console.log(`(${col}, ${row})`)
+            const idx = row * tilesX + col;
+            obstacleArray[idx] = obstacleTileVal.current!
+          }
+        }
+        setObstacleArray([...obstacleArray])
+      }
+    }
+  }
+  const onPointerUp = (e: FederatedPointerEvent) => {
+    console.log('onPointerUp customLayerOp=', customLayerOp, obstacleTileVal.current)
+    if (mode === 'obstacle' && obstacleTileVal.current !== null) {
+      if (shiftStart.current) {
+        // area from shiftStart to current point
+        // const { x: startX, y: startY } = viewportRef.current!.toWorld(shiftStart.current.screenX, shiftStart.current.screenY);
+        // const { x: endX, y: endY } = viewportRef.current!.toWorld(e.screenX, e.screenY);
+        // const tilePositionStart = translateToPosition({ width, height, itemRows: tilesY, itemColumns: tilesX, x: startX, y: startY })
+        // const tilePositionEnd = translateToPosition({ width, height, itemRows: tilesY, itemColumns: tilesX, x: endX, y: endY })
+
+        // const lowerX = Math.min(tilePositionStart.columns, tilePositionEnd.columns);
+        // const lowerY = Math.min(tilePositionStart.rows, tilePositionEnd.rows);
+        // const upperX = Math.max(tilePositionStart.columns, tilePositionEnd.columns);
+        // const upperY = Math.max(tilePositionStart.rows, tilePositionEnd.rows);
+
+        // for (let row = lowerY; row <= upperY; row++) {
+        //   for (let col = lowerX; col <= upperX; col++) {
+        //     console.log(`(${col}, ${row})`)
+        //     const idx = row * tilesX + col;
+        //     obstacleArray[idx] = obstacleArray[idx] === 1 ? 0 : 1
+        //   }
+        // }
+        // setObstacleArray([...obstacleArray])
+
+      } else {
+        // single point
+        console.log('single point', obstacleTileVal.current)
+        const worldCoordinate = viewportRef.current!.toWorld(e.screenX, e.screenY);
+        const tilePosition = translateToPosition({ width, height, itemRows: tilesY, itemColumns: tilesX, x: worldCoordinate.x, y: worldCoordinate.y })
+        const idx = tilePosition.rows * tilesX + tilePosition.columns
+        obstacleArray[idx] = obstacleTileVal.current!;
+        // console.log('viewport clicked:', tilePosition, idx, obstacleArray[idx])
+        setObstacleArray([...obstacleArray])
+      }
       if (onCustomLayersChanged) {
         let idxInCustomLayers = customLayers.findIndex(l => l.name === 'obstacle')
         if (idxInCustomLayers === -1) {
@@ -387,11 +457,9 @@ export default function Tilemap({ width, height, mode, map, tilemapAnimations, c
         }
         onCustomLayersChanged(customLayers)
       }
-    } else {
-      setPointOfNPC(e.world)
+      shiftStart.current = null;
     }
-  }
-
+  };
 
   return (
     loaded &&
@@ -403,6 +471,9 @@ export default function Tilemap({ width, height, mode, map, tilemapAnimations, c
       worldHeight={worldHeight}
       viewportRef={viewportRef}
       onClicked={onClicked}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
     >
       {
         mapData && <PixiStaticMap
