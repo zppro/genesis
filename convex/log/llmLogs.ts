@@ -1,6 +1,6 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idLLM } from '../world/llms';
-import { llmMessages } from '../shared/type';
+import { llmMessages, llmTools } from '../shared/type';
 import { defineTable, paginationOptsValidator } from "convex/server";
 import { mutation, query, internalMutation, MutationCtx, QueryCtx } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
@@ -13,7 +13,8 @@ export const idLLMLog = v.id(table);
 
 export const reqRaw = {
   model: v.string(),
-  messages: llmMessages
+  messages: llmMessages,
+  tools: v.optional(llmTools)
 }
 export type ReqRaw = ObjectType<typeof reqRaw>;
 
@@ -40,6 +41,7 @@ export type LLMLogDoc = Doc<LLMLogTable>
 export type SerializedLLMLog = ObjectType<typeof llmLogSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
+export type PatchArgs = { id: LLMLogId } & Partial<ObjectType<typeof llmLogSerialized>>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
 
 export const tableSchema = defineTable(llmLogSerialized)
@@ -97,6 +99,11 @@ export const _update = async (ctx: MutationCtx, args: UpdateArgs) => {
   const { id, ...patchData } = args
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
+}
+
+export async function _patch(ctx: MutationCtx, args: PatchArgs) {
+  const { id, ...patchData } = args
+  return await ctx.db.patch(id, patchData);
 }
 
 export const delete_ = internalMutation({

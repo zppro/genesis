@@ -11,3 +11,10 @@ export const llmMessages = v.array(v.object({
 }))
 
 export type LLMMessages = Infer<typeof llmMessages>
+
+export const toolTypeFunction = 'function' as const;
+export const toolTypes = v.union(v.literal(toolTypeFunction));
+export const llmTools = v.array(v.object({
+  type: v.literal("function"),
+  def: v.record(v.string(), v.any())
+}))

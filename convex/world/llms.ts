@@ -1,13 +1,10 @@
 import { ObjectType, v, ConvexError } from 'convex/values';
 import { idWorld } from '../worlds';
 import { defineTable } from "convex/server";
-import { mutation, query, internalQuery, internalMutation  } from '../_generated/server';
+import { mutation, query, internalQuery, MutationCtx  } from '../_generated/server';
 import { QueryMutationCtx } from '../shared/type';
 import { Doc, Id } from "../_generated/dataModel";
-import { idSpritesheet, read as readSpritesheet, SpritesheetDoc } from "./spritesheets";
-import { TextureDoc, read as readTexture } from "./textures"
-import { asyncMap } from "convex-helpers";
-import { api } from "../_generated/api";
+
 
 
 export const table = 'llms';
@@ -40,7 +37,9 @@ export type LLMDoc = Doc<LLMTable>
 export type SerializedLLM = ObjectType<typeof llmSerialized>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
+export type PatchArgs = { id: LLMId } & Partial<ObjectType<typeof _updateArgs>>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+
 
 export const tableSchema = defineTable(llmSerialized)
   .index(indexName_ByWorldId, ["worldId"])
@@ -89,6 +88,12 @@ export const update = mutation({
     await ctx.db.patch(id, { ...patchData, modifyTime });
   },
 });
+
+
+export async function _patch(ctx: MutationCtx, args: PatchArgs) {
+  const { id, ...patchData } = args
+  return await ctx.db.patch(id, patchData);
+}
 
 export const delete_ = mutation({
   args: deleteArgs,

@@ -2,13 +2,14 @@ import { action, internalMutation } from "../_generated/server";
 import { internal } from "../_generated/api"
 import { ObjectType, v, ConvexError } from "convex/values";
 import { idLLM, _readOrThrow } from "./llms";
-import { _create, _update, idLLMLog } from "../log/llmLogs";
-import { llmMessages, LLMMessages } from "../shared/type";
-import OpenAI from "openai";
-import { ZodFunctionDef, toTool } from "openai-zod-functions";
+import { _create, _update, _patch, idLLMLog } from "../log/llmLogs";
 import { idWorld } from "../worlds";
+import { llmMessages, LLMMessages, llmTools } from "../shared/type";
+import OpenAI from "openai";
+import { ZodFunctionDef, toTool, parseArguments } from "openai-zod-functions";
+
 import { z } from "zod";
-import json5 from "json5";
+
 
 export const runLLMArgs = {
   worldId: idWorld,
@@ -79,26 +80,26 @@ export const runLLM = action({
   },
 });
 
-export function parseArguments<Parameters>(
-  name: string,
-  args: string,
-  schema: z.ZodType<Parameters, any, any>,
-): Parameters {
-  // Parse the arguments string to JSON (should be guaranteed)
-  console.log('before JSON5 parse', args)
-  console.log(json5.parse(args))
-  console.log('before JSON parse', args)
-  const parameters = JSON.parse(args);
-  console.log('after JSON parse')
-  // Then validate against the schema (not guaranteed, can hallucinate)
-  const result = schema.safeParse(parameters);
-  console.log('after schema safeParse')
-  if (!result.success) {
-    throw new ConvexError(`valid scheme ${name} err:${result.error}`);
-  }
+// export function parseArguments<Parameters>(
+//   name: string,
+//   args: string,
+//   schema: z.ZodType<Parameters, any, any>,
+// ): Parameters {
+//   // Parse the arguments string to JSON (should be guaranteed)
+//   console.log('before JSON5 parse', args)
+//   console.log(json5.parse(args))
+//   console.log('before JSON parse', args)
+//   const parameters = JSON.parse(args);
+//   console.log('after JSON parse')
+//   // Then validate against the schema (not guaranteed, can hallucinate)
+//   const result = schema.safeParse(parameters);
+//   console.log('after schema safeParse')
+//   if (!result.success) {
+//     throw new ConvexError(`valid scheme ${name} err:${result.error}`);
+//   }
 
-  return result.data;
-}
+//   return result.data;
+// }
 
 // Define functions using Zod
 const functions: ZodFunctionDef[] = [
@@ -113,6 +114,16 @@ const functions: ZodFunctionDef[] = [
     })
   }
 ];
+
+export const _updateLLMTools = internalMutation({
+  args: { llmLogId: idLLMLog, tools: llmTools },
+  handler: async (ctx, args) => {
+    const { llmLogId, tools } = args;
+    const { reqRaw } = (await ctx.db.get(llmLogId))!
+    reqRaw.tools = tools
+    await _patch(ctx, { id: llmLogId, reqRaw })
+  },
+});
 
 export const runLLMWithFunctionCalling = action({
   args: runLLMWithFunctionCallingArgs,
@@ -134,7 +145,13 @@ export const runLLMWithFunctionCalling = action({
     // console.log("model=>", model)
     try {
       const tools = functions.map(toTool)
-      console.log("tools=>", JSON.stringify(tools))
+      // console.log("tools=>", JSON.stringify(tools))
+      const toolsInLLMLog = tools.map(t => ({
+        type: t.type,
+        def: t,
+      }))
+      await ctx.runMutation(internal.world.llmsAction._updateLLMTools, { llmLogId, tools: toolsInLLMLog })
+
       const completion: any = await openai.chat.completions.create({
         messages,
         model,
