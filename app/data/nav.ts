@@ -47,8 +47,8 @@ export const appNavItems = (worldId: WorldId) => {
           url: `${baseUrl}/object`,
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "skill",
+          url: `${baseUrl}/skill`,
         },
       ],
     },

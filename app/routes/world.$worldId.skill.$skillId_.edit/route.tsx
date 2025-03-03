@@ -4,12 +4,13 @@ import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
-import ObjectForm from "~/routes/world.$worldId.object/form"
+import SkillForm from "~/routes/world.$worldId.skill/form"
 import { z } from "zod";
-import { getWorldObject, updateWorldObject } from "~/data/convexProxy/object.server"
-import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server"
-import { type ObjectId, type UpdateArgs, table, OBJECT_TYPES } from "@/world/objects";
-import { type SpritesheetTable } from "@/world/spritesheets";
+import { getWorldSkill, updateWorldSkill } from "~/data/convexProxy/skill.server"
+import { listWorldTextures } from "~/data/convexProxy/texture.server"
+import { type SkillId, table } from "@/world/skill/schema";
+import { type UpdateArgs } from "@/world/skill/args";
+import { type TextureTable } from "@/world/textures";
 import { WorldId } from "@/worlds";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
@@ -19,6 +20,12 @@ import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { useState, useEffect } from 'react'
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
 import { convertFormDataToObject } from "~/lib/form";
+import { Handle } from "~/lib/routeHandle";
+import { breadcrumb } from "~/components/app-breadcrumb";
+
+export const handle: Handle = {
+  breadcrumb
+};
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
@@ -26,33 +33,33 @@ export const links: LinksFunction = () => [
 
 const updateSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  type: z.enum(OBJECT_TYPES, { message: "Type is required" }),
-  spritesheetId: z.string().min(1, { message: "Spritesheet is required" }),
+  desc: z.string(),
+  textureId: z.string().min(1, { message: "Texture is required" }),
 });
 
 export async function action({
   request,
   params,
 }: ActionFunctionArgs) {
-  const { worldId, objectId } = params;
+  const { worldId, skillId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!objectId) {
-    throw new Error("invalid objectId param!");
+  if (!skillId) {
+    throw new Error("invalid skillId param!");
   }
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData);
-  const formPayload = { ..._formData, id: objectId as ObjectId }
+  const formPayload = { ..._formData, id: skillId as SkillId }
 
   // payload z schema validation
   const result = updateSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      await updateWorldObject(formPayload as UpdateArgs)
-      return redirect(`/world/${worldId}/object/${objectId}`)
+      await updateWorldSkill(formPayload as UpdateArgs)
+      return redirect(`/world/${worldId}/skill/${skillId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
       const fields = Object.keys(updateSchema.keyof().Values)
@@ -70,17 +77,17 @@ export async function action({
 export async function loader({
   params,
 }: LoaderFunctionArgs) {
-  const { worldId, objectId } = params;
+  const { worldId, skillId } = params;
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  if (!objectId) {
-    throw new Error("invalid objectId param!");
+  if (!skillId) {
+    throw new Error("invalid skillId param!");
   }
 
-  let object = null
+  let skill = null
   try {
-    object = await getWorldObject(objectId as ObjectId)
+    skill = await getWorldSkill(skillId as SkillId)
   } catch (error) {
     let isNotFoundError = parseIsNotFoundRecordError(error)
     if (isNotFoundError) {
@@ -91,14 +98,17 @@ export async function loader({
     }
     throw error
   } finally {
-    if (object === null) {
+    if (skill === null) {
       throw new Response(null, {
         status: 404,
         statusText: "Not Found",
       });
     }
-    const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "object")
-    return { object, spritesheetExs }
+    const textures = await listWorldTextures(worldId as WorldId)
+
+    const breadcrumbData = { routeName: `edit skill (${skill.name})`, routeUrl: `/world/${worldId}/skill/${skill._id}/edit` }
+
+    return { ...breadcrumbData, skill, textures }
   }
 }
 
@@ -107,10 +117,10 @@ export function ErrorBoundary() {
 }
 
 
-export default function EditScene() {
-  const { object, spritesheetExs } = useLoaderData<typeof loader>();
-  const comboxitems = spritesheetExs.map<ConvexComboxItem<SpritesheetTable>>(t => ({
-    key: t._id, text: t.name, icon: t.texture.url
+export default function EditSkill() {
+  const { skill, textures } = useLoaderData<typeof loader>();
+  const comboxitems = textures.map<ConvexComboxItem<TextureTable>>(t => ({
+    key: t._id, text: t.name, icon: t.url
   }))
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
@@ -128,14 +138,14 @@ export default function EditScene() {
   }
 
   const navigation = useNavigation();
-  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${object?.worldId}/object/${object?._id}/edit`;
+  const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${skill?.worldId}/skill/${skill?._id}/edit`;
   return (
     <div className="h-full">
       <ConvexComboxProvider value={{ items: comboxitems }}>
-        <ObjectForm errors={errors} onClientErrors={onClientErrors} doc={object} schema={updateSchema}>
+        <SkillForm errors={errors} onClientErrors={onClientErrors} doc={skill} schema={updateSchema}>
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
-        </ObjectForm>
+        </SkillForm>
       </ConvexComboxProvider>
     </div>
   )

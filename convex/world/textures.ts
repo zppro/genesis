@@ -5,6 +5,8 @@ import { mutation, query } from '../_generated/server';
 import { api, internal } from "../_generated/api";
 import { Doc, Id } from "../_generated/dataModel";
 import { idStorage, StorageId } from "../shared/storage"
+import { QueryMutationCtx } from '../shared/context';
+import { Options } from '../shared/opts';
 
 export const table = 'textures';
 export const indexName_ByWorldId = 'byWorldId';
@@ -19,7 +21,7 @@ export const textureSerialized = {
   url: v.string(),
 };
 
-
+export const readArgs = { id: idTexture };
 const { modifyTime, url: _url, ...insertArgs } = textureSerialized
 const { worldId: _, ..._updateArgs } = insertArgs
 const updateArgs = { id: idTexture, ..._updateArgs }
@@ -29,6 +31,8 @@ export type TextureTable = typeof table
 export type TextureId = Id<TextureTable>
 export type TextureDoc = Doc<TextureTable>
 export type SerializedTexture = ObjectType<typeof textureSerialized>;
+
+export type ReadArgs = ObjectType<typeof readArgs>;
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
@@ -45,6 +49,17 @@ export const create = mutation({
     return await ctx.db.insert(table, { ...args, url: url ?? "", modifyTime });
   },
 });
+
+export async function _readOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
+  const entity = await _read(ctx, args);
+  if (!entity) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  return entity;
+}
+
+export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
+  const { id } = args;
+  return await ctx.db.get(id);
+}
 
 export const read = query({
   args: { id: idTexture },
@@ -79,7 +94,7 @@ export const update = mutation({
       await ctx.storage.delete(entity.storageId)
       // 删除旧的stoargeId
     } else {
-      await ctx.db.patch(id, {...patchData, modifyTime});
+      await ctx.db.patch(id, { ...patchData, modifyTime });
     }
 
     // make ref entity updateModifyTime
@@ -100,7 +115,7 @@ export const delete_ = mutation({
     }
     const spritesheets = await ctx.runQuery(api.world.spritesheets.listByTexture, { worldId: entity.worldId, textureId: entity._id })
     if (spritesheets.length > 0) {
-      throw new ConvexError(`current texture reference by spritesheets:[${spritesheets.map(v=>v.name).join()}]`);
+      throw new ConvexError(`current texture reference by spritesheets:[${spritesheets.map(v => v.name).join()}]`);
     }
     await ctx.db.delete(id);
     await ctx.storage.delete(entity.storageId)

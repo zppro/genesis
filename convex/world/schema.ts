@@ -6,9 +6,11 @@ import { table as sceneAnimationTable, tableSchema as sceneAnimationTableSchema 
 import { table as sceneNPCTable, tableSchema as sceneNPCTableSchema } from "./sceneNPCs"
 import { table as objectTable, tableSchema as objectTableSchema } from "./objects"
 import { table as resourceTable, tableSchema as resourceTableSchema } from "./resources"
+import { table as skillTable, tableSchema as skillTableSchema } from "./skill/schema";
 import { table as spritesheetTable, tableSchema as spritesheetTableSchema } from "./spritesheets"
 import { table as textureTable, tableSchema as textureTableSchema } from "./textures"
 import { table as eventTable, tableSchema as eventTableSchema } from "./events";
+
 
 export const worldTables = {
   [characterTable]: characterTableSchema,
@@ -19,6 +21,7 @@ export const worldTables = {
   [sceneTable]: sceneTableSchema,
   [sceneAnimationTable]: sceneAnimationTableSchema,
   [sceneNPCTable]: sceneNPCTableSchema,
+  [skillTable]: skillTableSchema,
   [spritesheetTable]: spritesheetTableSchema,
   [textureTable]: textureTableSchema,
 };

@@ -91,7 +91,7 @@ export default function NewScene() {
     key: t._id, text: t.name, icon: t.url
   }))
   const tilemapItems = tilemaps.map<ConvexComboxItem<ResouceTable>>(t => ({
-    key: t._id, text: t.name, icon: FileJson
+    key: t._id, text: t.name, icon: createElement(FileJson)
   }))
   const [errors, setErrors] = useState(actionData?.serverErrors)
 

@@ -18,3 +18,9 @@ export const llmTools = v.array(v.object({
   type: v.literal("function"),
   def: v.record(v.string(), v.any())
 }))
+
+export const functionDef = v.object({
+  name: v.string(),
+  description: v.string(),
+  schema: v.record(v.string(), v.any())
+}) 

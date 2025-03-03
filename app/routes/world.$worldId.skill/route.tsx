@@ -1,4 +1,4 @@
-import { listWorldObjects } from "~/data/convexProxy/object.server"
+import { listWorldSkills } from "~/data/convexProxy/skill.server"
 import { useLoaderData, Outlet } from "@remix-run/react";
 import {
   ResizableHandle,
@@ -7,12 +7,11 @@ import {
 } from "~/components/ui/resizable"
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
-import SceneScrollList from "./list"
+import SkillScrollList from "./list"
 import { useRedirectToastEx } from "~/hooks/use-redirectToast";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
-
 
 export const handle: Handle = {
   breadcrumb
@@ -27,13 +26,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  const objects = await listWorldObjects(worldId as WorldId)
-  const breadcrumbData = { routeName: "object", routeUrl: `/world/${worldId}/object` }
-  return { ...breadcrumbData, worldId: worldId as WorldId,  objects }
+  const skills = await listWorldSkills(worldId as WorldId)
+  const breadcrumbData = { routeName: "skill", routeUrl: `/world/${worldId}/skill` }
+  return { ...breadcrumbData, worldId: worldId as WorldId, skills }
 }
 
-export default function Scene() {
-  useRedirectToastEx("DELETE", `/delete`, "delete object ok")
+export default function Skill() {
+  useRedirectToastEx("DELETE", `/delete`, "delete skill ok")
   const data = useLoaderData<typeof loader>();
   return (
     <>
@@ -42,7 +41,7 @@ export default function Scene() {
         className="h-full items-stretch"
       >
         <ResizablePanel defaultSize={25} minSize={25}>
-          <SceneScrollList {...data} />
+          <SkillScrollList {...data} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={75}>
