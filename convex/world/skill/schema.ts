@@ -2,8 +2,9 @@ import { v, ObjectType } from 'convex/values';
 import { defineTable } from "convex/server";
 import { idWorld } from '../../worlds';
 import { idTexture } from "../textures";
+import { idLLM } from '../llms';
 import { Doc, Id } from "../../_generated/dataModel";
-import { functionDef } from "../../shared/type";
+// import { functionDef } from "../../shared/type";
 
 export const table = 'skills';
 export const indexName_ByWorldId = 'by_worldId';
@@ -19,9 +20,11 @@ export const skillFields = {
   syncTime: v.optional(v.number()),
   worldId: idWorld,
   name: v.string(),
-  desc: v.optional(v.string()),
   textureId: idTexture,
-  def: functionDef,
+  llmId: idLLM,
+  // functionDef,
+  functionName: v.string(),
+  systemPrompt: v.string(),
 };
 
 

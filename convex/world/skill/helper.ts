@@ -4,6 +4,7 @@ import { MutationCtx } from '../../_generated/server';
 import { table, SkillDoc, SkillId, indexName_ByWorldId } from "./schema";
 import { SkillExtendDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
+import { _readOrThrow as readLLMOrThrow } from '../llms';
 import { InsertArgs, UpdateArgs, PatchArgs, DeleteArgs, ReadArgs, ListArgs, } from "./args";
 import { Options } from '../../shared/opts';
 
@@ -29,7 +30,8 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Ski
     entity = entityOrId
   }
   const { url } = await readTextureOrThrow(ctx, { id: entity.textureId });
-  return { ...entity, textureUrl: url };
+  const llm = await readLLMOrThrow(ctx, entity.llmId)
+  return { ...entity, textureUrl: url, llm };
 }
 
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {

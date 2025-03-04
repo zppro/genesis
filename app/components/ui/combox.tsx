@@ -74,7 +74,6 @@ export default function Combox<T extends ConvexTables>({ errClass, items, showSe
           item.icon
       ) : null;
   }
-  console.log("combox=>", height)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

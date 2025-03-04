@@ -3,7 +3,7 @@ import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds";
 import { type TextureId } from "@/world/textures";
 import type { SkillId } from "@/world/skill/schema";
-import type { InsertArgs, UpdateArgs, DeleteArgs, UpdateTimeArgs } from "@/world/skill/args";
+import type { InsertArgs, UpdateArgs, DeleteArgs, UpdateTimeArgs, TestSkillArgs } from "@/world/skill/args";
 
 export const getWorldSkill = async (id: SkillId) => {
   return await proxy().query(api.world.skill.query.read, { id })
@@ -31,4 +31,8 @@ export const deleteWorldSkill = async (args: DeleteArgs) => {
 
 export const updateWorldSkillSyncTime = async (args: UpdateTimeArgs) => {
   await proxy().mutation(api.world.skill.mutation.updateSyncTime, args)
+}
+
+export const testSkill = async (args: TestSkillArgs) => {
+  return await proxy().action(api.world.skill.action.testSkill, args)
 }

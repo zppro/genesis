@@ -1,9 +1,11 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
+// import SkillForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/world.$worldId.skill/form"
 import SkillForm from "~/routes/world.$worldId.skill/form"
 import { z } from "zod";
 import { createWorldSkill } from "~/data/convexProxy/skill.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
+import { listWorldLLMs } from "~/data/convexProxy/llm.server";
 import { type InsertArgs } from "@/world/skill/args";
 import { table } from "@/world/skill/schema";
 import formcssHref from "~/form.css?url";
@@ -12,10 +14,12 @@ import { Separator } from "~/components/ui/separator"
 import { parseFormError } from "~/lib/error.server"
 import { WorldId } from "@/worlds";
 import { type TextureTable } from "@/world/textures";
+import { type LLMTable } from "@/world/llms";
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
 import { convertFormDataToObject } from "~/lib/form";
+import JSON5 from "json5";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -28,8 +32,15 @@ export const links: LinksFunction = () => [
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  desc: z.string(),
   textureId: z.string().min(1, { message: "Texture is required" }),
+  llmId: z.string().min(1, { message: "LLM is required" }),
+  functionName: z.string().min(1, { message: "Function name is required" }),
+  systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
+  // functionDef: z.object({
+  //   name: z.string(),
+  //   description: z.string(),
+  //   schema: z.record(z.string(), z.any()),
+  // })
 });
 
 export async function action({
@@ -43,23 +54,31 @@ export async function action({
   let serverErrors: ServerErrors = {}
 
   const formData = await request.formData();
+  // const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsObject }, formatters);
+  // if (typeof (_formData.functionDef as Record<string, any>).schema === 'string') {
+  //   const schemaRawVal = (_formData.functionDef as Record<string, any>).schema as string
+  //   (_formData.functionDef as Record<string, any>).schema = JSON5.parse(schemaRawVal)
+  // }
+
   const _formData = convertFormDataToObject(formData);
   const formPayload = { ..._formData, worldId }
-  // console.log('new formPayload=>', formPayload)
+  console.log('new formPayload=>', formPayload)
 
   // payload z schema validation
   const result = createSchema.safeParse(formPayload);
   if (result.success) {
     try {
-      const newObjectId = await createWorldSkill(formPayload as InsertArgs)
-      return redirect(`/world/${worldId}/skill/${newObjectId}`)
+      const newSkillId = await createWorldSkill(formPayload as InsertArgs)
+      return redirect(`/world/${worldId}/skill/${newSkillId}`)
     } catch (error) {
       // {field1: errorMessage, ...}
+      console.log('error:', error)
       const fields = Object.keys(createSchema.keyof().Values)
       serverErrors = parseFormError(error, fields)
     }
   } else {
     // Handle validation errors
+    console.log(result.error)
     serverErrors = { ...result.error.formErrors.fieldErrors }
   }
 
@@ -72,15 +91,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Error("invalid world params!");
   }
   const textures = await listWorldTextures(worldId as WorldId)
+  const llms = await listWorldLLMs(worldId as WorldId)
   const breadcrumbData = { routeName: "create new skill", routeUrl: `/world/${worldId}/skill/new` }
 
-  return { ...breadcrumbData, worldId: worldId as WorldId, textures }
+  return { ...breadcrumbData, worldId: worldId as WorldId, textures, llms }
 }
 
 export default function NewScene() {
-  const { worldId, textures } = useLoaderData<typeof loader>();
-  const comboxitems = textures.map<ConvexComboxItem<TextureTable>>(t => ({
+  const { worldId, textures, llms } = useLoaderData<typeof loader>();
+  const textureItems = textures.map<ConvexComboxItem<TextureTable>>(t => ({
     key: t._id, text: t.name, icon: t.url
+  }))
+  const llmItems = llms.map<ConvexComboxItem<LLMTable>>(t => ({
+    key: t._id, text: t.name
   }))
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
@@ -99,12 +122,14 @@ export default function NewScene() {
   }
   return (
     <div className="h-full">
-      <ConvexComboxProvider value={{ items: comboxitems }}>
-        <SkillForm errors={errors} onClientErrors={onClientErrors} schema={createSchema} >
-          <Toolbar isSubmitting={isSubmitting} entityName={table} />
-          <Separator />
-        </SkillForm>
-      </ConvexComboxProvider>
+
+      <SkillForm
+        textureItems={textureItems}
+        llmItems={llmItems}
+        errors={errors} onClientErrors={onClientErrors} schema={createSchema} >
+        <Toolbar isSubmitting={isSubmitting} entityName={table} />
+        <Separator />
+      </SkillForm>
     </div>
   )
 }
