@@ -1,9 +1,11 @@
 import { ObjectType, v } from 'convex/values';
+import { QueryMutationCtx } from '../shared/context';
 import { defineTable } from "convex/server";
 import { mutation, query } from '../_generated/server';
 import { Doc, Id } from "../_generated/dataModel";
 import { idScene } from "./scenes"
-import { idCharacter, CharacterExtendDoc } from "./characters"
+import { idCharacter } from "./character/schema";
+import { CharacterExtendDoc } from "./character/extend";
 import { api, internal } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
 import { idWorld } from '../worlds';
@@ -102,13 +104,25 @@ export const listEx = query({
 export const listByCharacter = query({
   args: { characterId: idCharacter },
   handler: async (ctx, args) => {
-    const { characterId } = args
-    return await ctx.db.query(table).withIndex(indexName_ByCharacterId, (q) =>
-      q
-        .eq("characterId", characterId)
-    ).collect();
+    return await _listByCharacter(ctx, args);
+    // const { characterId } = args
+    // return await ctx.db.query(table).withIndex(indexName_ByCharacterId, (q) =>
+    //   q
+    //     .eq("characterId", characterId)
+    // ).collect();
   },
 })
+
+export const listByCharacterArgs = { characterId: idCharacter }
+export type ListByCharacterArgs = ObjectType<typeof listByCharacterArgs>;
+
+export async function _listByCharacter(ctx: QueryMutationCtx, args: ListByCharacterArgs) {
+  const { characterId } = args
+  return await ctx.db.query(table).withIndex(indexName_ByCharacterId, (q) =>
+    q
+      .eq("characterId", characterId)
+  ).collect();
+}
 
 export const update = mutation({
   args: updateArgs,

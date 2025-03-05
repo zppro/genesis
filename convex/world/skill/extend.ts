@@ -1,5 +1,5 @@
 import { SkillDoc } from "./schema"
-import { LLMDoc, read as readTexture } from "../llms"
+import { LLMDoc } from "../llms"
 
 export type SkillExtendDoc = SkillDoc & {
   textureUrl: string,

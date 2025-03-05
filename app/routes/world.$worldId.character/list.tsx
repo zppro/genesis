@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Search, Plus } from "lucide-react"
 import { Input } from "~/components/ui/input"
 import { WorldId } from "@/worlds";
-import { CharacterDoc } from "@/world/characters";
+import { type CharacterDoc } from "@/world/character/schema";
 import {
   Pagination,
   PaginationContent,

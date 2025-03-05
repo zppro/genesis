@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { deleteWorldCharacter } from "~/data/convexProxy/character.server"
-import { type CharacterId } from "@/world/characters";
+import { type CharacterId } from "@/world/character/schema";
 import { ConvexError } from "convex/values";
 
 export const action = async ({

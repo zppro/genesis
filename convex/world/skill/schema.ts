@@ -14,7 +14,6 @@ export type SkillTable = typeof table
 export type SkillId = Id<SkillTable>
 export type SkillDoc = Doc<SkillTable>
 
-
 export const skillFields = {
   modifyTime: v.number(),
   syncTime: v.optional(v.number()),
@@ -26,7 +25,6 @@ export const skillFields = {
   functionName: v.string(),
   systemPrompt: v.string(),
 };
-
 
 export const tableSchema = defineTable(skillFields)
   .index(indexName_ByWorldId, ["worldId"])

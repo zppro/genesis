@@ -8,7 +8,8 @@ import CharacterForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/wo
 import { z } from "zod";
 import { getWorldCharacter, updateWorldCharacter } from "~/data/convexProxy/character.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server"
-import { type CharacterId, type UpdateArgs, table } from "@/world/characters";
+import { type CharacterId, table } from "@/world/character/schema";
+import { type UpdateArgs } from "@/world/character/args";
 import { type SpritesheetTable } from "@/world/spritesheets";
 import { WorldId } from "@/worlds";
 import formcssHref from "~/form.css?url";
@@ -122,7 +123,7 @@ export async function action({
     // make json str => json object
     (_formData["settingsVariant"] as Record<string, any>)["settings"] = data;
     const formPayload = { ..._formData, id: characterId as CharacterId }
-  
+
     // payload z schema validation
     const result = updateSchema.safeParse(formPayload);
     if (result.success) {
@@ -140,7 +141,7 @@ export async function action({
     }
   }
 
-  
+
 
   return { serverErrors, sheetClose }
 }
@@ -155,7 +156,7 @@ export async function loader({
   if (!characterId) {
     throw new Error("invalid characterId param!");
   }
-  
+
   let character = null
   try {
     character = await getWorldCharacter(characterId as CharacterId)
@@ -179,7 +180,7 @@ export async function loader({
     const spritesheetExs = await listWorldSpritesheetExtendsByType(worldId as WorldId, "character")
     const breadcrumbData = { routeName: `edit character (${character.name})`, routeUrl: `/world/${worldId}/character/${character._id}/edit` }
 
-    return {...breadcrumbData, character, llms, spritesheetExs }
+    return { ...breadcrumbData, character, llms, spritesheetExs }
   }
 }
 
@@ -233,28 +234,28 @@ export default function EditScene() {
   return (
     <div className="h-full">
       <ConvexComboxProvider value={{ items: comboxitems }}>
-        <CharacterForm errors={errors} 
-          onClientErrors={onClientErrors} 
+        <CharacterForm errors={errors}
+          onClientErrors={onClientErrors}
           onMagic={onMagic}
           magicReturn={actionData?.res}
-          doc={character} 
+          doc={character}
           schema={updateSchema}>
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
         </CharacterForm>
       </ConvexComboxProvider>
       <RunLLMForm
-          errors={errors}
-          userInput={userInput}
-          setResult={setResult}
-          onClientErrors={onClientErrors}
-          schema={runLLMSchema}
-          llmItems={llmItems}
-          isSubmitting={isSubmitting}
-          open={sheetOpen}
-          setOpen={setSheetOpen}
-        >
-        </RunLLMForm>
+        errors={errors}
+        userInput={userInput}
+        setResult={setResult}
+        onClientErrors={onClientErrors}
+        schema={runLLMSchema}
+        llmItems={llmItems}
+        isSubmitting={isSubmitting}
+        open={sheetOpen}
+        setOpen={setSheetOpen}
+      >
+      </RunLLMForm>
     </div>
   )
 }

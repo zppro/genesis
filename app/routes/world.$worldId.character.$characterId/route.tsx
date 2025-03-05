@@ -4,7 +4,7 @@ import { Label } from "~/components/ui/label"
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldCharacterExtend } from "~/data/convexProxy/character.server"
-import { type CharacterId, table } from "@/world/characters";
+import { type CharacterId, table } from "@/world/character/schema";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";

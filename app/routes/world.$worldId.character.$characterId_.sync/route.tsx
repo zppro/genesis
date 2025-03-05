@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { getWorldCharacter, updateWorldCharacterSyncTime } from "~/data/convexProxy/character.server"
 import { toJSON } from "@/shared/sync";
-import { table, CharacterId } from "@/world/characters"
+import { table, type CharacterId } from "@/world/character/schema"
 import { getWorld } from "~/data/convexProxy/world.server";
 import { WorldId } from "@/worlds";
 export const action = async ({

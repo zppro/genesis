@@ -6,6 +6,9 @@ import { internalMutation, mutation, query } from '../_generated/server';
 import { api, internal } from "../_generated/api";
 import { Doc, Id } from "../_generated/dataModel";
 import { TextureDoc, read as readTexture } from "./textures"
+import { Options } from '../shared/opts';
+import { QueryMutationCtx } from '../shared/context';
+import { _readOrThrow as readTextureOrThrow } from './textures';
 
 import {
   getAll,
@@ -87,6 +90,32 @@ export const readEx = query({
     return extendEntity
   },
 });
+
+export const readArgs = { id: idSpritesheet };
+
+export type ReadArgs = ObjectType<typeof readArgs>;
+
+export async function _readOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
+  const entity = await _read(ctx, args);
+  if (!entity) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  return entity;
+}
+
+export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
+  const { id } = args;
+  return await ctx.db.get(id);
+}
+
+export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: SpritesheetDoc | SpritesheetId): Promise<SpritesheetExtendDoc> {
+  let entity: SpritesheetDoc;
+  if (typeof entityOrId === "string") {
+    entity = await _readOrThrow(ctx, { id: entityOrId })
+  } else {
+    entity = entityOrId
+  }
+  const texture = await readTextureOrThrow(ctx, { id: entity.textureId });
+  return { ...entity, texture };
+}
 
 export const list = query({
   args: { worldId: idWorld },
@@ -179,13 +208,13 @@ export const delete_ = mutation({
     }
     const objects = await ctx.runQuery(api.world.objects.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
     if (objects.length > 0) {
-      throw new ConvexError(`current spritesheet reference by objects:[${objects.map(v=>v.name).join()}]`);
+      throw new ConvexError(`current spritesheet reference by objects:[${objects.map(v => v.name).join()}]`);
     }
     const characters = await ctx.runQuery(api.world.characters.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
     if (characters.length > 0) {
-      throw new ConvexError(`current spritesheet reference by characters:[${characters.map(v=>v.name).join()}]`);
+      throw new ConvexError(`current spritesheet reference by characters:[${characters.map(v => v.name).join()}]`);
     }
-    
+
     return await ctx.db.delete(id);
   },
 });

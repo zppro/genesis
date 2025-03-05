@@ -4,7 +4,8 @@ import CharacterForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/wo
 import { z } from "zod";
 import { createWorldCharacter } from "~/data/convexProxy/character.server"
 import { listWorldSpritesheetExtendsByType } from "~/data/convexProxy/spritesheet.server";
-import { type InsertArgs, table } from "@/world/characters";
+import { table } from "@/world/character/schema";
+import { type InsertArgs } from "@/world/character/args";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
@@ -199,9 +200,9 @@ export default function NewScene() {
         <CharacterForm errors={errors}
           onMagic={onMagic}
           magicReturn={actionData?.res}
-          onClientErrors={onClientErrors} schema={createSchema} 
-          // onFormChange={onFormChange} 
-          >
+          onClientErrors={onClientErrors} schema={createSchema}
+        // onFormChange={onFormChange} 
+        >
           <Toolbar isSubmitting={isSubmitting} entityName={table} />
           <Separator />
         </CharacterForm>

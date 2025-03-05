@@ -1,5 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
-import { table as characterTable, tableSchema as characterTableSchema } from "./characters"
+import { table as characterTable, tableSchema as characterTableSchema } from "./character/schema"
 import { table as llmTable, tableSchema as llmTableSchema } from "./llms"
 import { table as sceneTable, tableSchema as sceneTableSchema } from "./scenes"
 import { table as sceneAnimationTable, tableSchema as sceneAnimationTableSchema } from "./sceneAnimations"
