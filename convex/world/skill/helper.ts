@@ -1,11 +1,15 @@
 import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
+import { asyncMap } from "convex-helpers";
 import { table, SkillDoc, SkillId, indexName_ByWorldId } from "./schema";
 import { SkillExtendDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
 import { _readOrThrow as readLLMOrThrow } from '../llms';
-import { InsertArgs, UpdateArgs, PatchArgs, DeleteArgs, ReadArgs, ListArgs, } from "./args";
+import {
+  ReadArgs, ListArgs, ListByIdsArgs,
+  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
+} from "./args";
 import { Options } from '../../shared/opts';
 
 
@@ -39,6 +43,35 @@ export async function _list(ctx: QueryMutationCtx, args: ListArgs) {
   return await ctx.db.query(table)
     .withIndex(indexName_ByWorldId, (q) => q.eq("worldId", worldId))
     .collect();
+}
+
+export async function _listEx(ctx: QueryMutationCtx, args: ListArgs) {
+  const entityExs: SkillExtendDoc[] = await asyncMap(
+    await _list(ctx, args),
+    async (entity) => {
+      return await _readExByIdOrEntity(ctx, entity);
+    }
+  );
+  return entityExs
+}
+
+export async function _listByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
+  const { ids } = args
+  // may be db.get(id) faster than  filter ids
+  const entities = await Promise.all(ids.map(async (id) => {
+    return await ctx.db.get(id)
+  }))
+  return entities.filter(v => !!v)
+}
+
+export async function _listExByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
+  const entityExs: SkillExtendDoc[] = await asyncMap(
+    await _listByIds(ctx, args),
+    async (entity) => {
+      return await _readExByIdOrEntity(ctx, entity);
+    }
+  );
+  return entityExs
 }
 
 

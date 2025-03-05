@@ -1,6 +1,9 @@
 import { internalMutation, mutation } from '../../_generated/server';
-import { _create, _update, _patch, _delete } from './helper';
-import { insertArgs, updateArgs, deleteArgs, updateTimeArgs } from "./args";
+import { _readOrThrow, _create, _update, _patch, _delete } from './helper';
+import {
+  insertArgs, updateArgs, deleteArgs, updateTimeArgs,
+  addSkillArgs, removeSkillArgs
+} from "./args";
 
 
 export const create = mutation({
@@ -37,5 +40,34 @@ export const updateSyncTime = mutation({
     const { id } = args
     const syncTime = +new Date()
     return await _patch(ctx, { id, syncTime });
+  },
+});
+
+export const addSkill = mutation({
+  args: addSkillArgs,
+  handler: async (ctx, args) => {
+    const { id, skillId } = args
+    let { skillIds } = await _readOrThrow(ctx, { id })
+    if (skillIds.includes(skillId)) {
+      return
+    }
+    const syncTime = +new Date()
+    skillIds.push(skillId)
+    return await _patch(ctx, { id, syncTime, skillIds });
+  },
+});
+
+export const removeSkill = mutation({
+  args: removeSkillArgs,
+  handler: async (ctx, args) => {
+    const { id, skillId } = args
+    let { skillIds } = await _readOrThrow(ctx, { id })
+    const idx = skillIds.indexOf(skillId)
+    if (idx === -1) {
+      return
+    }
+    const syncTime = +new Date()
+    skillIds.splice(idx, 1)
+    return await _patch(ctx, { id, syncTime, skillIds });
   },
 });

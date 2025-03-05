@@ -27,7 +27,7 @@ import { numberKeys, decimalKeys } from "~/routes/world.$worldId.scene.$sceneId.
 import { createSceneNPC, updateSceneNPC, listSceneNPCExtends } from "~/data/convexProxy/sceneNPC.server"
 import { type InsertArgs, type UpdateArgs, SceneNPCDoc, SceneNPCId } from "@/world/sceneNPCs";
 import { listWorldCharacterExtends } from "~/data/convexProxy/character.server";
-import { CharacterTable } from "@/world/characters";
+import { type CharacterTable } from "@/world/character/schema";
 import PixiAnimationObject from "~/components/pixi/animation-object";
 import { PixiSpritesheet } from "@/shared/spritesheet";
 import { Size } from "@/shared/frame";

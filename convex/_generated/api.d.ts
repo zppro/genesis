@@ -35,7 +35,6 @@ import type * as world_character_extend from "../world/character/extend.js";
 import type * as world_character_helper from "../world/character/helper.js";
 import type * as world_character_mutation from "../world/character/mutation.js";
 import type * as world_character_query from "../world/character/query.js";
-import type * as world_characters from "../world/characters.js";
 import type * as world_events from "../world/events.js";
 import type * as world_llms from "../world/llms.js";
 import type * as world_llmsAction from "../world/llmsAction.js";
@@ -85,7 +84,6 @@ declare const fullApi: ApiFromModules<{
   "world/character/helper": typeof world_character_helper;
   "world/character/mutation": typeof world_character_mutation;
   "world/character/query": typeof world_character_query;
-  "world/characters": typeof world_characters;
   "world/events": typeof world_events;
   "world/llms": typeof world_llms;
   "world/llmsAction": typeof world_llmsAction;

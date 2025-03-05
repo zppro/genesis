@@ -17,6 +17,10 @@ export const listWorldSkills = async (worldId: WorldId) => {
   return await proxy().query(api.world.skill.query.list, { worldId })
 }
 
+export const listWorldSkillExtends = async (worldId: WorldId) => {
+  return await proxy().query(api.world.skill.query.listEx, { worldId })
+}
+
 export const createWorldSkill = async (args: InsertArgs) => {
   return await proxy().mutation(api.world.skill.mutation.create, { ...args })
 }

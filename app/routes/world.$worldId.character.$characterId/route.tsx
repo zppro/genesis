@@ -1,16 +1,15 @@
 import { format } from "date-fns/format"
 import { useLoaderData, useNavigation, Form } from "@remix-run/react";
-import { Label } from "~/components/ui/label"
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldCharacterExtend } from "~/data/convexProxy/character.server"
+import { listWorldSkillExtends } from "~/data/convexProxy/skill.server"
 import { type CharacterId, table } from "@/world/character/schema";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
 import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { ImageDialog } from "~/components/ui/image-dialog";
 import { Badge } from "~/components/ui/badge"
 import { LoaderCircle } from "lucide-react"
 import { ClientOnly } from "remix-utils/client-only"
@@ -24,6 +23,13 @@ import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
+import ChoosenSkills from "./ChoosenSkills";
+import SkillLib from "./skillLib";
+import { WorldId } from "@/worlds";
+import { SkillId } from "@/world/skill/schema";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/_generated/api"
+
 
 export const handle: Handle = {
   breadcrumb
@@ -54,7 +60,9 @@ export async function loader({
       });
     }
     const breadcrumbData = { routeName: characterEx.name, routeUrl }
-    return { ...breadcrumbData, characterEx }
+    const skillExs = await listWorldSkillExtends(worldId as WorldId)
+    // console.log('characterEx=>', characterEx)
+    return { ...breadcrumbData, characterEx, skillExs }
   }
 }
 
@@ -63,16 +71,32 @@ export function ErrorBoundary() {
 }
 
 export default function Index() {
-  const { characterEx } = useLoaderData<typeof loader>();
+  const { characterEx, skillExs } = useLoaderData<typeof loader>();
+  const characterExResponsive = useQuery(api.world.character.query.readEx, { id: characterEx._id });
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
-  const isSynced = characterEx.syncTime && characterEx.modifyTime && characterEx.modifyTime < characterEx.syncTime
+  const isSynced = characterEx?.syncTime && characterEx?.modifyTime && characterEx.modifyTime < characterEx.syncTime
 
   const data = characterEx?.spritesheet?.data
   const pixiSpriteSheet = parsePixiSpritesheet(data)
   const sourceSize = parsePixiAnmimationSourceSize(pixiSpriteSheet)
   const animationNames = parsePixiAnmimationAnimationNames(pixiSpriteSheet)
+
+  const addSkill = useMutation(api.world.character.mutation.addSkill);
+  const removeSkill = useMutation(api.world.character.mutation.removeSkill);
+
+
+  function onAddSkillToCharacter(skillId: SkillId) {
+    // { ...actionData?.serverErrors, ...clientErrors }
+    console.log('onAddSkillToCharacter:', skillId)
+    addSkill({ id: characterEx._id, skillId })
+  }
+  function onRemoveSkillFromCharacter(skillId: SkillId) {
+    // { ...actionData?.serverErrors, ...clientErrors }
+    console.log('onRemoveSkillFromCharacter:', skillId)
+    removeSkill({ id: characterEx._id, skillId })
+  }
 
   return (
     <div className="flex h-full items-start flex-col">
@@ -111,6 +135,12 @@ export default function Index() {
               className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
             >
               Settings
+            </TabsTrigger>
+            <TabsTrigger
+              value="skills"
+              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            >
+              Skills
             </TabsTrigger>
           </TabsList>
           <TabsContent value="ui">
@@ -158,7 +188,20 @@ export default function Index() {
                 <div className="whitespace-pre-wrap"><JsonPretty data={JSON.stringify(characterEx?.settingsVariant?.settings, null, 2)} className="w-[450px]" /></div>
               </div>
             </ScrollArea>
-
+          </TabsContent>
+          <TabsContent value="skills">
+            <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-260px)]">
+              <ChoosenSkills
+                skillExs={characterExResponsive?.skillExs || []}
+                onRemoveSkillFromCharacter={onRemoveSkillFromCharacter}
+              />
+              <Separator className="my-2" />
+              <SkillLib
+                choosenSkillIds={characterExResponsive?.skillIds || []}
+                skillExs={skillExs}
+                onAddSkillToCharacter={onAddSkillToCharacter}
+              />
+            </ScrollArea>
           </TabsContent>
         </Tabs>
 

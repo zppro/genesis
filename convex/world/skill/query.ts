@@ -1,5 +1,5 @@
 import { query } from '../../_generated/server';
-import { _read, _readExByIdOrEntity, _list } from './helper';
+import { _read, _readExByIdOrEntity, _list, _listEx } from './helper';
 import { readArgs, listArgs } from "./args";
 
 
@@ -21,5 +21,12 @@ export const list = query({
   args: listArgs,
   handler: async (ctx, args) => {
     return await _list(ctx, args);
+  },
+});
+
+export const listEx = query({
+  args: listArgs,
+  handler: async (ctx, args) => {
+    return await _listEx(ctx, args);
   },
 });

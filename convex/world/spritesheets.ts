@@ -9,14 +9,6 @@ import { TextureDoc, read as readTexture } from "./textures"
 import { Options } from '../shared/opts';
 import { QueryMutationCtx } from '../shared/context';
 import { _readOrThrow as readTextureOrThrow } from './textures';
-
-import {
-  getAll,
-  getOneFrom,
-  getOneFromOrThrow,
-  getManyFrom,
-  getManyVia,
-} from "convex-helpers/server/relationships";
 import { asyncMap } from "convex-helpers";
 
 
@@ -191,9 +183,9 @@ export const update = mutation({
     const modifyTime = +new Date()
     await ctx.db.patch(id, { ...patchData, modifyTime });
     // make ref entity updateModifyTime
-    const characters = await ctx.runQuery(api.world.characters.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
+    const characters = await ctx.runQuery(api.world.character.query.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
     await Promise.all(characters.map(async (character) => {
-      await ctx.runMutation(internal.world.characters.updateModifyTime, { id: character._id })
+      await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
     }))
   },
 });
@@ -210,7 +202,7 @@ export const delete_ = mutation({
     if (objects.length > 0) {
       throw new ConvexError(`current spritesheet reference by objects:[${objects.map(v => v.name).join()}]`);
     }
-    const characters = await ctx.runQuery(api.world.characters.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
+    const characters = await ctx.runQuery(api.world.character.query.listBySpritesheet, { worldId: entity.worldId, spritesheetId: entity._id })
     if (characters.length > 0) {
       throw new ConvexError(`current spritesheet reference by characters:[${characters.map(v => v.name).join()}]`);
     }

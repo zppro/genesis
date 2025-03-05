@@ -93,7 +93,7 @@ export const listEx = query({
     const entityExs: SceneNPCExtendDoc[] = await asyncMap(
       await list(ctx, args),
       async (entity) => {
-        const characterEx = await ctx.runQuery(api.world.characters.readEx, { id: entity.characterId })
+        const characterEx = await ctx.runQuery(api.world.character.query.readEx, { id: entity.characterId })
         return { ...entity, characterEx: characterEx! }
       }
     );

@@ -4,6 +4,7 @@ import { Doc, Id } from "../../_generated/dataModel";
 import { idWorld } from '../../worlds';
 import { idSpritesheet } from "../spritesheets";
 import { characterSettingsVariantSerialized } from '../../shared/characterSettings';
+import { idSkill } from '../skill/schema';
 
 
 export const table = 'characters';
@@ -25,6 +26,7 @@ export const characterFields = {
   // spritesheet as pixijs definition 
   spritesheetId: idSpritesheet,
   settingsVariant: v.optional(characterSettingsVariantSerialized),
+  skillIds: v.array(idSkill),
 };
 
 export const tableSchema = defineTable(characterFields)

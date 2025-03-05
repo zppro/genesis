@@ -6,10 +6,10 @@ import { table, CharacterDoc, CharacterId, indexName_ByWorldId, indexName_ByWorl
 import { CharacterExtendDoc } from "./extend";
 import { _readExByIdOrEntity as readSpritesheetExOrThrow } from '../spritesheets';
 import { _listByCharacter } from '../sceneNPCs';
-import { _readOrThrow as readLLMOrThrow } from '../llms';
+import { _listExByIds as listSkillExsByIds } from '../skill/helper';
 import {
   ReadArgs, ListArgs, ListBySpritesheetArgs,
-  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs
+  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
 import { Options } from '../../shared/opts';
 
@@ -35,8 +35,8 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Cha
     entity = entityOrId
   }
   const { texture, ...spritesheet } = await readSpritesheetExOrThrow(ctx, entity.spritesheetId);
-  // const llm = await readLLMOrThrow(ctx, entity.llmId)
-  return { ...entity, spritesheet, textureUrl: texture.url };
+  const skillExs = await listSkillExsByIds(ctx, { ids: entity.skillIds })
+  return { ...entity, spritesheet, textureUrl: texture.url, skillExs };
 }
 
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {
@@ -64,7 +64,6 @@ export async function _listEx(ctx: QueryMutationCtx, args: ListArgs) {
   );
   return entityExs
 }
-
 
 
 /*** mutation helper ***/
