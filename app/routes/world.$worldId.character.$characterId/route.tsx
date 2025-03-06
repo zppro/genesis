@@ -24,7 +24,7 @@ import { CloudUpload, Check, TriangleAlert } from "lucide-react"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 import ChoosenSkills from "./ChoosenSkills";
-import SkillLib from "./skillLib";
+import SkillLib from "./SkillLib";
 import { WorldId } from "@/worlds";
 import { SkillId } from "@/world/skill/schema";
 import { useQuery, useMutation } from "convex/react";
@@ -76,7 +76,7 @@ export default function Index() {
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
-  const isSynced = characterEx?.syncTime && characterEx?.modifyTime && characterEx.modifyTime < characterEx.syncTime
+  const isSynced = characterExResponsive?.syncTime && characterExResponsive?.modifyTime && characterExResponsive.modifyTime < characterExResponsive.syncTime
 
   const data = characterEx?.spritesheet?.data
   const pixiSpriteSheet = parsePixiSpritesheet(data)

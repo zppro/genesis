@@ -1,8 +1,6 @@
 import { v, ObjectType } from 'convex/values';
 import { idWorld } from '../../worlds';
 import { idSpritesheet } from '../spritesheets';
-import { idLLM } from '../llms';
-import { llmMessages, llmTools } from "../../shared/type";
 import { idCharacter, CharacterId, characterFields } from './schema';
 import { idSkill } from '../skill/schema';
 
@@ -12,10 +10,12 @@ import { idSkill } from '../skill/schema';
 export const readArgs = { id: idCharacter };
 export const listArgs = { worldId: idWorld };
 export const listBySpritesheetArgs = { worldId: idWorld, spritesheetId: idSpritesheet }
+export const listBySkillArgs = { worldId: idWorld, skillId: idSkill }
 
 export type ReadArgs = ObjectType<typeof readArgs>;
 export type ListArgs = ObjectType<typeof listArgs>;
 export type ListBySpritesheetArgs = ObjectType<typeof listBySpritesheetArgs>;
+export type ListBySkillArgs = ObjectType<typeof listBySkillArgs>;
 
 
 /*** mutation args ***/

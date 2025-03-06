@@ -88,20 +88,24 @@ export const update = mutation({
       throw new ConvexError(`Invalid \`${table}\` ID: ${args.id}`);
     }
     const modifyTime = +new Date()
+    let needNotifyUpstream = false
     if (args.storageId !== entity.storageId) {
       const url = await ctx.storage.getUrl(args.storageId);
       await ctx.db.patch(id, { ...patchData, url: url ?? "", modifyTime });
       await ctx.storage.delete(entity.storageId)
       // 删除旧的stoargeId
+      needNotifyUpstream = true
     } else {
       await ctx.db.patch(id, { ...patchData, modifyTime });
     }
 
-    // make ref entity updateModifyTime
-    const spritesheets = await ctx.runQuery(api.world.spritesheets.listByTexture, { worldId: entity.worldId, textureId: entity._id })
-    await Promise.all(spritesheets.map(async (spritesheet) => {
-      await ctx.runMutation(internal.world.spritesheets.updateModifyTime, { id: spritesheet._id })
-    }))
+    if (needNotifyUpstream) {
+      // make ref entity updateModifyTime
+      const spritesheets = await ctx.runQuery(api.world.spritesheets.listByTexture, { worldId: entity.worldId, textureId: entity._id })
+      await Promise.all(spritesheets.map(async (spritesheet) => {
+        await ctx.runMutation(internal.world.spritesheets.updateModifyTime, { id: spritesheet._id })
+      }))
+    }
   },
 });
 
@@ -116,6 +120,10 @@ export const delete_ = mutation({
     const spritesheets = await ctx.runQuery(api.world.spritesheets.listByTexture, { worldId: entity.worldId, textureId: entity._id })
     if (spritesheets.length > 0) {
       throw new ConvexError(`current texture reference by spritesheets:[${spritesheets.map(v => v.name).join()}]`);
+    }
+    const skills = await ctx.runQuery(api.world.skill.query.listByTexture, { worldId: entity.worldId, textureId: entity._id })
+    if (skills.length > 0) {
+      throw new ConvexError(`current texture reference by skills:[${skills.map(v => v.name).join()}]`);
     }
     await ctx.db.delete(id);
     await ctx.storage.delete(entity.storageId)

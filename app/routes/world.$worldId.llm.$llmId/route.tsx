@@ -1,5 +1,5 @@
 import { format } from "date-fns/format"
-import { useLoaderData, Outlet, Link, useLocation, } from "@remix-run/react";
+import { useLoaderData, Outlet, Link, useLocation, useNavigation } from "@remix-run/react";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator"
 import { getWorldLLM } from "~/data/convexProxy/llm.server"
@@ -7,6 +7,11 @@ import { type LLMId, table } from "@/world/llms";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
+import ToolItem from "~/components/toolbars/tool-item"
+import { Form } from "@remix-run/react";
+import { Button } from "~/components/ui//button";
+import { CloudUpload, Check, TriangleAlert } from "lucide-react"
+import { useRedirectToast } from "~/hooks/use-redirectToast";
 import SlimTab, { TabOptions } from "~/components/ui/slim-tab";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
@@ -75,9 +80,24 @@ export default function Index() {
     baseUrl: routeUrl,
     prefetch: "render",
   }]
+  const state = useRedirectToast("sync")
+  const navigation = useNavigation()
+  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${llm?.worldId}/llm/${llm?._id}/sync`;
+  const isSynced = llm.syncTime && llm.modifyTime && llm.modifyTime < llm.syncTime
+
   return (
     <div className="flex h-full items-start flex-col">
-      <Toolbar entityName={table} />
+      <Toolbar entityName={table}>
+        <ToolItem itemTip="sync to the world">
+          <Form method="post" action="sync">
+            <Button variant="ghost" size="default" className="border" type="submit" disabled={isSyncing} >
+              <CloudUpload className="h-4 w-4" />
+              <span>{isSyncing ? "Syncing..." : "Sync"}</span>
+              {isSynced ? <Check className="text-green-500" /> : <TriangleAlert className="text-yellow-500" />}
+            </Button>
+          </Form>
+        </ToolItem>
+      </Toolbar>
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4 ">

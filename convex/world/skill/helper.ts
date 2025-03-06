@@ -2,14 +2,19 @@ import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
 import { asyncMap } from "convex-helpers";
-import { table, SkillDoc, SkillId, indexName_ByWorldId } from "./schema";
+import {
+  table, SkillDoc, SkillId,
+  indexName_ByWorldId, indexName_ByWorldIdAndTextureId, indexName_ByWorldIdAndLLMId
+} from "./schema";
 import { SkillExtendDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
 import { _readOrThrow as readLLMOrThrow } from '../llms';
 import {
-  ReadArgs, ListArgs, ListByIdsArgs,
+  ReadArgs, ListArgs, ListByIdsArgs, ListByTextureArgs, ListByLLMArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
+import { api, internal } from "../../_generated/api";
+import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
 
 
@@ -74,6 +79,23 @@ export async function _listExByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
   return entityExs
 }
 
+export async function _listByTexture(ctx: QueryMutationCtx, args: ListByTextureArgs) {
+  const { worldId, textureId } = args
+  return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndTextureId, (q) =>
+    q
+      .eq("worldId", worldId)
+      .eq("textureId", textureId)
+  ).collect();
+}
+
+export async function _listByLLM(ctx: QueryMutationCtx, args: ListByLLMArgs) {
+  const { worldId, llmId } = args
+  return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndLLMId, (q) =>
+    q
+      .eq("worldId", worldId)
+      .eq("llmId", llmId)
+  ).collect();
+}
 
 /*** mutation helper ***/
 
@@ -84,17 +106,51 @@ export async function _create(ctx: MutationCtx, args: InsertArgs) {
 
 export async function _update(ctx: MutationCtx, args: UpdateArgs) {
   const { id, ...patchData } = args
+  const entity = await ctx.db.get(id);
+  if (!entity) {
+    throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+  }
   const modifyTime = +new Date()
+  let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
+    "name", "textureId", "llmId", "functionName", "systemPrompt")
+
   await ctx.db.patch(id, { ...patchData, modifyTime });
+  if (needNotifyUpstream) {
+    const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
+    await Promise.all(characters.map(async (character) => {
+      await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
+    }))
+  }
 }
 
 export async function _patch(ctx: MutationCtx, args: PatchArgs) {
   const { id, ...patchData } = args
+  const entity = await ctx.db.get(id);
+  if (!entity) {
+    throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+  }
   const modifyTime = +new Date()
+  let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
+    "name", "textureId", "llmId", "functionName", "systemPrompt")
+
   await ctx.db.patch(id, { ...patchData, modifyTime });
+  if (needNotifyUpstream) {
+    const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
+    await Promise.all(characters.map(async (character) => {
+      await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
+    }))
+  }
 }
 
 export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
   const { id } = args
+  const entity = await ctx.db.get(id);
+  if (!entity) {
+    throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
+  }
+  const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
+  if (characters.length > 0) {
+    throw new ConvexError(`current skill reference by characters:[${characters.map(v => v.name).join()}]`);
+  }
   await ctx.db.delete(id);
 }

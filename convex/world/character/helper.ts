@@ -2,16 +2,20 @@ import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
 import { asyncMap } from "convex-helpers";
-import { table, CharacterDoc, CharacterId, indexName_ByWorldId, indexName_ByWorldIdAndSpritesheetId } from "./schema";
+import {
+  table, CharacterDoc, CharacterId,
+  indexName_ByWorldId, indexName_ByWorldIdAndSpritesheetId,
+} from "./schema";
 import { CharacterExtendDoc } from "./extend";
 import { _readExByIdOrEntity as readSpritesheetExOrThrow } from '../spritesheets';
 import { _listByCharacter } from '../sceneNPCs';
 import { _listExByIds as listSkillExsByIds } from '../skill/helper';
 import {
-  ReadArgs, ListArgs, ListBySpritesheetArgs,
+  ReadArgs, ListArgs, ListBySpritesheetArgs, ListBySkillArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
 import { Options } from '../../shared/opts';
+import { checkNeedNotifyUpstream } from "../../shared/sync";
 
 
 /*** query helper ***/
@@ -53,6 +57,12 @@ export async function _listBySpritesheet(ctx: QueryMutationCtx, args: ListBySpri
       .eq("worldId", worldId)
       .eq("spritesheetId", spritesheetId)
   ).collect();
+}
+
+export async function _listBySkill(ctx: QueryMutationCtx, args: ListBySkillArgs) {
+  const { worldId, skillId } = args;
+  const entities = await _list(ctx, { worldId });
+  return entities.filter(e => e.skillIds.includes(skillId))
 }
 
 export async function _listEx(ctx: QueryMutationCtx, args: ListArgs) {

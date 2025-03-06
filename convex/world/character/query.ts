@@ -1,6 +1,6 @@
 import { query } from '../../_generated/server';
-import { _read, _readExByIdOrEntity, _list, _listEx, _listBySpritesheet } from './helper';
-import { readArgs, listArgs, listBySpritesheetArgs } from "./args";
+import { _read, _readExByIdOrEntity, _list, _listEx, _listBySpritesheet, _listBySkill } from './helper';
+import { readArgs, listArgs, listBySpritesheetArgs, listBySkillArgs } from "./args";
 
 
 export const read = query({
@@ -35,5 +35,12 @@ export const listBySpritesheet = query({
   args: listBySpritesheetArgs,
   handler: async (ctx, args) => {
     return await _listBySpritesheet(ctx, args);
+  },
+});
+
+export const listBySkill = query({
+  args: listBySkillArgs,
+  handler: async (ctx, args) => {
+    return await _listBySkill(ctx, args);
   },
 });

@@ -2,6 +2,8 @@ import { v, ObjectType } from 'convex/values';
 import { idWorld } from '../../worlds';
 import { llmMessages, llmTools } from "../../shared/type";
 import { idSkill, SkillId, skillFields } from './schema';
+import { idLLM } from '../llms';
+import { idTexture } from '../textures';
 
 
 /*** query args ***/
@@ -9,10 +11,14 @@ import { idSkill, SkillId, skillFields } from './schema';
 export const readArgs = { id: idSkill };
 export const listArgs = { worldId: idWorld };
 export const listByIdsArgs = { ids: v.array(idSkill) };
+export const listByTextureArgs = { worldId: idWorld, textureId: idTexture };
+export const listByLLMArgs = { worldId: idWorld, llmId: idLLM };
 
 export type ReadArgs = ObjectType<typeof readArgs>;
 export type ListArgs = ObjectType<typeof listArgs>;
 export type ListByIdsArgs = ObjectType<typeof listByIdsArgs>;
+export type ListByTextureArgs = ObjectType<typeof listByTextureArgs>;
+export type ListByLLMArgs = ObjectType<typeof listByLLMArgs>;
 
 
 /*** mutation args ***/

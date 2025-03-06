@@ -1,7 +1,7 @@
 import { proxy } from "~/data/convexProxy/index.server"
 import { api } from "@/_generated/api";
 import { type WorldId } from "@/worlds"
-import type { LLMId, InsertArgs, UpdateArgs, DeleteArgs } from "@/world/llms";
+import type { LLMId, InsertArgs, UpdateArgs, DeleteArgs, UpdateTimeArgs } from "@/world/llms";
 import { RunLLMArgs, RunLLMWithFunctionCallingArgs } from "@/world/llmsAction"
 
 export const getWorldLLM = async (id: LLMId) => {
@@ -23,6 +23,10 @@ export const updateWorldLLM = async (args: UpdateArgs) => {
 
 export const deleteWorldLLM = async (args: DeleteArgs) => {
   await proxy().mutation(api.world.llms.delete_, args)
+}
+
+export const updateWorldLLMSyncTime = async (args: UpdateTimeArgs) => {
+  await proxy().mutation(api.world.llms.updateSyncTime, args)
 }
 
 export const runLLM = async (args: RunLLMArgs) => {

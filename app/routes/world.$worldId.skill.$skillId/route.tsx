@@ -137,7 +137,7 @@ export default function Index() {
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx?.worldId}/skill/${skillEx?._id}/sync`;
-  const isSynced = skillEx.syncTime && skillEx.modifyTime && skillEx.modifyTime < skillEx.syncTime
+  const isSynced = skillEx.syncTime && skillEx.modifyTime && skillEx.modifyTime <= skillEx.syncTime
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx.worldId}/skill/${skillEx._id}`;
   return (
     <div className="flex h-full items-start flex-col">
