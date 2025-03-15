@@ -174,7 +174,7 @@ export default function Index() {
                   </ClientOnly>
                   {/* <ImageDialog src={characterEx?.textureUrl} maxWidth={400} maxHeight={300} /> */}
                 </div>
-                <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[450px]" /></div>
+                <div className="whitespace-pre-wrap"><JsonPretty data={characterEx?.spritesheet?.data} className="w-[450px] h-[450px]" /></div>
               </div>
             </ScrollArea>
           </TabsContent>

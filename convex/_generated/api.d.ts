@@ -28,6 +28,7 @@ import type * as shared_sync from "../shared/sync.js";
 import type * as shared_tilemap from "../shared/tilemap.js";
 import type * as shared_type from "../shared/type.js";
 import type * as skills_index from "../skills/index.js";
+import type * as skills_topic from "../skills/topic.js";
 import type * as skills_weather from "../skills/weather.js";
 import type * as users from "../users.js";
 import type * as world_character_args from "../world/character/args.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   "shared/tilemap": typeof shared_tilemap;
   "shared/type": typeof shared_type;
   "skills/index": typeof skills_index;
+  "skills/topic": typeof skills_topic;
   "skills/weather": typeof skills_weather;
   users: typeof users;
   "world/character/args": typeof world_character_args;
