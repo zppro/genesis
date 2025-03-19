@@ -62,8 +62,8 @@ export const appNavItems = (worldId: WorldId) => {
           url: `${baseUrl}/llm`,
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "mcpServer",
+          url:`${baseUrl}/mcpServer`,
         },
         {
           title: "Quantum",

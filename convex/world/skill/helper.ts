@@ -111,10 +111,11 @@ export async function _update(ctx: MutationCtx, args: UpdateArgs) {
     throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
   }
   const modifyTime = +new Date()
+  await ctx.db.patch(id, { ...patchData, modifyTime });
+
   let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
     "name", "textureId", "llmId", "functionName", "systemPrompt")
 
-  await ctx.db.patch(id, { ...patchData, modifyTime });
   if (needNotifyUpstream) {
     const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
     await Promise.all(characters.map(async (character) => {
@@ -130,10 +131,11 @@ export async function _patch(ctx: MutationCtx, args: PatchArgs) {
     throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
   }
   const modifyTime = +new Date()
+  await ctx.db.patch(id, { ...patchData, modifyTime });
+  
   let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
     "name", "textureId", "llmId", "functionName", "systemPrompt")
 
-  await ctx.db.patch(id, { ...patchData, modifyTime });
   if (needNotifyUpstream) {
     const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
     await Promise.all(characters.map(async (character) => {
