@@ -1,6 +1,6 @@
 import { format } from "date-fns/format"
 import { useActionData, useLoaderData, useNavigation, Form } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { parseFormError } from "~/lib/error.server"
 import { ServerErrors } from "~/components/convex/type";
@@ -9,7 +9,6 @@ import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
 import debounce from "debounce"
 import { convertFormDataToObject } from "~/lib/form";
-import formcssHref from "~/form.css?url";
 import { z } from "zod";
 import { Separator } from "~/components/ui/separator"
 import { getWorldSkillExtend, testSkill } from "~/data/convexProxy/skill.server"
@@ -28,7 +27,28 @@ import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 import { cn } from "~/lib/utils";
 import { TestSkillArgs } from "@/world/skill/args";
-import { Switch } from "~/components/ui/switch"
+import { Switch } from "~/components/ui/switch";
+import { useMcp, type StdErrNotification, type PendingRequest } from "~/hooks/use-mcp";
+import {
+  ClientRequest,
+  CompatibilityCallToolResult,
+  CompatibilityCallToolResultSchema,
+  CreateMessageResult,
+  EmptyResultSchema,
+  GetPromptResultSchema,
+  ListPromptsResultSchema,
+  ListResourcesResultSchema,
+  ListResourceTemplatesResultSchema,
+  ListToolsResultSchema,
+  ReadResourceResultSchema,
+  Resource,
+  ResourceTemplate,
+  Root,
+  ServerNotification,
+  Tool,
+} from "@modelcontextprotocol/sdk/types.js";
+import { useAction } from "convex/react";
+import { api } from "@/_generated/api";
 
 
 export const handle: Handle = {
@@ -113,6 +133,98 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
   const [isTestSkill, setIsTestSkill] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [notifications, setNotifications] = useState<ServerNotification[]>([]);
+  const [stdErrNotifications, setStdErrNotifications] = useState<
+    StdErrNotification[]
+  >([]);
+  const [roots, setRoots] = useState<Root[]>([]);
+  const sseUrl = `https://proper-lapwing-331.convex.site/sse`
+  const env = {}, bearerToken = ""
+  const [pendingSampleRequests, setPendingSampleRequests] = useState<
+    Array<
+      PendingRequest & {
+        resolve: (result: CreateMessageResult) => void;
+        reject: (error: Error) => void;
+      }
+    >
+  >([]);
+  const nextRequestId = useRef(0);
+  const rootsRef = useRef<Root[]>([]);
+  const {
+    connectionStatus,
+    serverCapabilities,
+    mcpClient,
+    requestHistory,
+    makeRequest: makeConnectionRequest,
+    sendNotification,
+    handleCompletion,
+    completionsSupported,
+    connect: connectMcpServer,
+  } = useMcp({
+    sseUrl,
+    env,
+    bearerToken,
+    onNotification: (notification) => {
+      setNotifications((prev) => [...prev, notification as ServerNotification]);
+    },
+    onStdErrNotification: (notification) => {
+      setStdErrNotifications((prev) => [
+        ...prev,
+        notification as StdErrNotification,
+      ]);
+    },
+    onPendingRequest: (request, resolve, reject) => {
+      setPendingSampleRequests((prev) => [
+        ...prev,
+        { id: nextRequestId.current++, request, resolve, reject },
+      ]);
+    },
+    getRoots: () => rootsRef.current,
+  });
+
+  const [nextToolCursor, setNextToolCursor] = useState<string | undefined>();
+  const listTools = async () => {
+    const response = await makeConnectionRequest(
+      {
+        method: "tools/list" as const,
+        params: nextToolCursor ? { cursor: nextToolCursor } : undefined,
+      },
+      ListToolsResultSchema,
+    );
+    setNextToolCursor(response.nextCursor);
+    return response.tools;
+  };
+
+  const testMcpSkillAction = useAction(api.world.skill.nodeAction.testMcpSkillInNode);
+  const handleConnectByServer = async () => {
+    testMcpSkillAction({ id: skillEx._id, messages: [] });
+  }
+
+
+  const handleConnectClick = async () => {
+
+    if (connectionStatus === "connected") {
+      console.warn("mcpClient connected!")
+      return;
+    }
+    await connectMcpServer()
+    console.log("connectMcpServer done!")
+
+  };
+
+
+  const handleToolListClick = async () => {
+    if (!mcpClient) {
+      console.warn("mcpClient is null")
+      return
+    }
+    const tools = await mcpClient.listTools()
+    const tools2 = await listTools()
+    console.log('tools=>', tools)
+    console.log('tools2=>', tools2)
+  }
+
   useEffect(() => {
     if (actionData && "serverErrors" in actionData) {
       setErrors(actionData.serverErrors)
@@ -169,7 +281,26 @@ export default function Index() {
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
           <div className="flex flex-col space-y-2">
             <div>
-
+            <Button variant="ghost" className="border" onClick={handleConnectByServer} >
+                  <Play className="h-4 w-4" />
+                  connect by server 
+                </Button>
+            </div>
+            <div>
+              <Button variant="ghost" className="border" onClick={handleConnectClick} >
+                <Play className="h-4 w-4" />
+                <span className={cn(connectionStatus === "connected" ? "bg-green-400" : "bg-red-400")}>
+                  {connectionStatus}
+                </span>
+              </Button>
+            </div>
+            <div>
+              {connectionStatus === "connected" &&
+                <Button variant="ghost" className="border" onClick={handleToolListClick} >
+                  <Play className="h-4 w-4" />
+                  get tools
+                </Button>
+              }
             </div>
             <div className="flex flex-col space-y-2">
               <h2>LLM:</h2>

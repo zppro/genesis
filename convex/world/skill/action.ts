@@ -10,6 +10,9 @@ import OpenAI from "openai";
 import { ConvexError } from "convex/values";
 import { handleToolCalls, ZodFunctionHandler, toTool, parseArguments } from "openai-zod-functions";
 import { skillFunctions } from "../../skills";
+import { createBMIClient } from "../../mcp/client/bmi";
+import { api } from "../../_generated/api";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
 
 export const _beforeTestSkill = internalMutation({
@@ -96,3 +99,17 @@ export const testSkill = action({
     }
   },
 });
+
+
+// export const testMcpSkill = action({
+//   handler: async (ctx) => {
+//     console.log('testMcpSkill..')
+//     const client: Client | null = await ctx.runAction(api.mcp.client.session.nodeAction.createClientInNode, { name: "bmi", sseUrl: `https://proper-lapwing-331.convex.site/sse` })
+//     if (client) {
+//       const tools = await client.listTools()
+//       console.log("tools=>", tools)
+//     } else {
+//       console.log("run node runtime action from convex runtime failed")
+//     }
+//   }
+// });

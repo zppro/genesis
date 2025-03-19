@@ -40,3 +40,7 @@ export const updateWorldSkillSyncTime = async (args: UpdateTimeArgs) => {
 export const testSkill = async (args: TestSkillArgs) => {
   return await proxy().action(api.world.skill.action.testSkill, args)
 }
+
+export const testMcpSkill = async (args: TestSkillArgs) => {
+  return await proxy().action(api.world.skill.action.testMcpSkill, args)
+}
