@@ -5,11 +5,6 @@ import { Label } from "~/components/ui/label"
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
-import { z } from "zod";
-import debounce from "debounce"
-import Combobox, { ConvexComboxItem } from "~/components/ui/combox"
-import { FormProps, FormErrorTip, useFormError } from "~/components/convex/form"
-import { convertFormDataToObject } from "~/lib/form";
 import {
   Sheet,
   SheetClose,
@@ -23,11 +18,6 @@ import {
 import { Button } from "~/components/ui/button"
 import type { McpServerToolDoc } from "@/world/mcpServerTool/schema"
 import { Plus, Play } from "lucide-react"
-import { SpritesheetDoc } from "@/world/spritesheets";
-import { PixiSpritesheet } from "@/shared/spritesheet";
-import JSON5 from "json5"
-import { FormErrors } from "~/components/convex/type";
-import { ClientErrors } from "~/components/convex/type";
 import JsonPretty from "~/components/ui/json-pretty";
 import { useAction } from "convex/react";
 import { api } from "@/_generated/api";
