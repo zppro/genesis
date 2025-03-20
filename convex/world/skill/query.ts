@@ -1,6 +1,6 @@
 import { query } from '../../_generated/server';
-import { _read, _readExByIdOrEntity, _list, _listEx, _listByTexture, _listByLLM } from './helper';
-import { readArgs, listArgs, listByTextureArgs, listByLLMArgs } from "./args";
+import { _read, _readExByIdOrEntity, _list, _listByIds, _listEx, _listByTexture, _listByLLM } from './helper';
+import { readArgs, listArgs, listByIdsArgs, listByTextureArgs, listByLLMArgs } from "./args";
 
 
 export const read = query({
@@ -28,6 +28,13 @@ export const listEx = query({
   args: listArgs,
   handler: async (ctx, args) => {
     return await _listEx(ctx, args);
+  },
+});
+
+export const listByIds = query({
+  args: listByIdsArgs,
+  handler: async (ctx, args) => {
+    return await _listByIds(ctx, args);
   },
 });
 

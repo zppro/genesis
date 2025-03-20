@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { table as characterTable, tableSchema as characterTableSchema } from "./character/schema"
 import { table as llmTable, tableSchema as llmTableSchema } from "./llms"
 import { table as mcpServerTable, tableSchema as mcpServerTableSchema } from "./mcpServer/schema"
+import { table as mcpServerToolTable, tableSchema as mcpServerToolTableSchema } from "./mcpServerTool/schema"
 import { table as sceneTable, tableSchema as sceneTableSchema } from "./scenes"
 import { table as sceneAnimationTable, tableSchema as sceneAnimationTableSchema } from "./sceneAnimations"
 import { table as sceneNPCTable, tableSchema as sceneNPCTableSchema } from "./sceneNPCs"
@@ -18,6 +19,7 @@ export const worldTables = {
   [eventTable]: eventTableSchema, // 修改为 events 表
   [llmTable]: llmTableSchema,
   [mcpServerTable]: mcpServerTableSchema,
+  [mcpServerToolTable]: mcpServerToolTableSchema,
   [objectTable]: objectTableSchema,
   [resourceTable]: resourceTableSchema,
   [sceneTable]: sceneTableSchema,

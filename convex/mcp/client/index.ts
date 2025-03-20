@@ -102,12 +102,34 @@ export const validateAndCallTool = async (ctx: ActionCtx, client: Client, toolNa
 
   try {
     // Create schema and validate input
+    console.log('tool.inputSchema=>', tool.inputSchema)
     const schema = createZodSchema(tool.inputSchema);
     const validatedInput = schema.parse(inputData);
     console.log("validatedInput=>", validatedInput)
     // Call the tool with validated input
     return await client.callTool({
       name: tool.name,
+      arguments: validatedInput
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      console.error('Validation error:', error.errors);
+      throw new Error(`Invalid input for tool ${toolName}: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
+export const validateAndCallToolLocal = async (ctx: ActionCtx, client: Client, toolName: string, inputSchema: any, inputData: any) => {
+  // Get tool schema
+  try {
+    // Create schema and validate input
+    const schema = createZodSchema(inputSchema);
+    const validatedInput = schema.parse(inputData);
+    console.log("validatedInput=>", validatedInput)
+    // Call the tool with validated input
+    return await client.callTool({
+      name: toolName,
       arguments: validatedInput
     });
   } catch (error) {

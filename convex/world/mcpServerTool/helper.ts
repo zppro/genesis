@@ -2,11 +2,11 @@ import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
 import {
-  table, McpServerDoc, McpServerId,
-  indexName_ByWorldId, indexName_ByWorldIdAndType
+  table, McpServerToolDoc, McpServerToolId,
+  indexName_ByWorldId, indexName_ByMcpServerId, indexName_ByMcpServerIdAndName,
 } from "./schema";
 import {
-  ReadArgs, ListArgs, ListByIdsArgs,
+  ReadArgs, ReadByMcpServerAndNameArgs, ListArgs, ListByIdsArgs, ListByMcpServerArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
 // import { api, internal } from "../../_generated/api";
@@ -27,6 +27,15 @@ export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
   return await ctx.db.get(id);
 }
 
+export async function _readByMcpServerAndName(ctx: QueryMutationCtx, args: ReadByMcpServerAndNameArgs) {
+  const { mcpServerId, name } = args
+  return await ctx.db.query(table).withIndex(indexName_ByMcpServerIdAndName, (q) =>
+    q
+      .eq("mcpServerId", mcpServerId)
+      .eq("name", name)
+  ).first();
+}
+
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {
   const { worldId } = args;
   return await ctx.db.query(table)
@@ -41,6 +50,14 @@ export async function _listByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
     return await ctx.db.get(id)
   }))
   return entities.filter(v => !!v)
+}
+
+export async function _listByMcpServer(ctx: QueryMutationCtx, args: ListByMcpServerArgs) {
+  const { mcpServerId } = args
+  return await ctx.db.query(table).withIndex(indexName_ByMcpServerId, (q) =>
+    q
+      .eq("mcpServerId", mcpServerId)
+  ).collect();
 }
 
 
@@ -100,4 +117,22 @@ export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
   //   throw new ConvexError(`current skill reference by characters:[${characters.map(v => v.name).join()}]`);
   // }
   await ctx.db.delete(id);
+}
+
+
+export async function _batchSequenceUpsert(ctx: MutationCtx, args: InsertArgs[]) {
+  const modifyTime = +new Date()
+  const batchUpsertedIds: McpServerToolId[] = []
+  for (const itemArgs of args) {
+    const entity = await _readByMcpServerAndName(ctx, itemArgs)
+    if (entity) {
+      await ctx.db.patch(entity._id, { ...itemArgs, modifyTime });
+      batchUpsertedIds.push(entity._id)
+    } else {
+      batchUpsertedIds.push(
+        await ctx.db.insert(table, { ...itemArgs, modifyTime })
+      )
+    }
+  }
+  return batchUpsertedIds;
 }
