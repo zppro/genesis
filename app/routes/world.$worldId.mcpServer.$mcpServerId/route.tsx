@@ -78,12 +78,12 @@ export default function Index() {
     name: "resources",
     url: "resources",
     baseUrl: routeUrl,
-    prefetch: "render",
+    prefetch: "intent",
   }, {
     name: "prompts",
     url: "prompts",
     baseUrl: routeUrl,
-    prefetch: "render",
+    prefetch: "intent",
   }]
   const state = useRedirectToast("sync")
   const navigation = useNavigation()

@@ -19,7 +19,9 @@ export async function loader({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const breadcrumbData = { routeName: "basic", routeUrl: "#" }
+  const { worldId, mcpServerId } = params;
+  const routeUrl = `/world/${worldId}/mcpServer/${mcpServerId}/basic`;
+  const breadcrumbData = { routeName: "basic", routeUrl }
   return { ...breadcrumbData }
 }
 

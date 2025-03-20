@@ -12,10 +12,12 @@ import { WorldId } from "@/worlds"
 import { McpServerId } from "@/world/mcpServer/schema";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui//button";
-import { Binoculars } from "lucide-react"
+import { Binoculars, CirclePlay, PlayCircle } from "lucide-react"
 import { useState } from "react";
 import { useToast } from "~/hooks/use-toast";
 import JsonPretty from "~/components/ui/json-pretty";
+import RunTool from "~/routes/world.$worldId.mcpServer.$mcpServerId.tools/runTool"
+import type { McpServerToolDoc } from "@/world/mcpServerTool/schema"
 
 
 export const handle: Handle = {
@@ -30,9 +32,9 @@ export async function loader({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const { mcpServerId } = params;
-
-  const breadcrumbData = { routeName: "tools", routeUrl: "#" }
+  const { worldId, mcpServerId } = params;
+  const routeUrl = `/world/${worldId}/mcpServer/${mcpServerId}/basic`;
+  const breadcrumbData = { routeName: "tools", routeUrl }
   return { ...breadcrumbData, mcpServerId: mcpServerId as McpServerId }
 }
 
@@ -40,6 +42,8 @@ export default function ToolsTab() {
   // const { mcpServer } = useRouteLoaderData<typeof mcpServerLoader>("routes/world.$worldId.mcpServer.$mcpServerId")!;
   const { mcpServerId } = useLoaderData<typeof loader>();
   const [isLoading, setIsLoading] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [tool, setTool] = useState<McpServerToolDoc | null>(null)
   const { toast } = useToast()
 
   const mcpServerTools = useQuery(api.world.mcpServerTool.query.listByMcpServer, { mcpServerId });
@@ -60,6 +64,12 @@ export default function ToolsTab() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function openRunToolSheet(tool: McpServerToolDoc) {
+    console.log('tool=>', tool)
+    setTool(tool)
+    setSheetOpen(true)
   }
 
   return (
@@ -90,13 +100,16 @@ export default function ToolsTab() {
                         : "text-muted-foreground"
                     )}
                   >
-                    [field1]
+                    <Button variant="outline" className="border h-6 w-6"
+                      disabled={isLoading}
+                      onClick={() => {
+                        openRunToolSheet(item)
+                      }} >
+                      <CirclePlay className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="text-xs font-medium">{item.name}</div>
-              </div>
-              <div className="line-clamp-2 text-xs text-muted-foreground">
-                {item.desc}
+                <div className="line-clamp-2 text-xs text-muted-foreground">{item.desc}</div>
               </div>
               <div className="whitespace-pre-wrap" >
                 <JsonPretty
@@ -107,6 +120,15 @@ export default function ToolsTab() {
           ))}
         </div>
       </ScrollArea>
+      {
+        tool &&
+        <RunTool
+          tool={tool}
+          open={sheetOpen}
+          setOpen={setSheetOpen}
+        >
+        </RunTool>
+      }
     </div>
   )
 }
