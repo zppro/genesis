@@ -58,10 +58,12 @@ export type ComboxProps<T extends ConvexTables> = {
   showSelectedTextWithIcon?: boolean;
   height?: number;
   defaultItemKey?: Id<T>;
+  buttonPlaceholder?: string
+  searchPlaceholder?: string
   onSelectChange: (item: ConvexComboxItem<T>) => void;
 }
 
-export default function Combox<T extends ConvexTables>({ errClass, items, showSelectedTextWithIcon, height, defaultItemKey, onSelectChange }: ComboxProps<T>) {
+export default function Combox<T extends ConvexTables>({ errClass, items, showSelectedTextWithIcon, height, defaultItemKey, buttonPlaceholder, searchPlaceholder, onSelectChange }: ComboxProps<T>) {
   const [open, setOpen] = useState(false)
   const defaultItem = items?.find(i => i.key === defaultItemKey)
   const [selectItem, setSelectItem] = useState(defaultItem)
@@ -91,13 +93,13 @@ export default function Combox<T extends ConvexTables>({ errClass, items, showSe
           }
           {selectItem
             ? items?.find((item) => item.key === selectItem.key)?.text
-            : "Select item..."}
+            : buttonPlaceholder ?? "Select item..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" style={{ pointerEvents: "auto" }}>
         <Command>
-          <CommandInput placeholder="Search data..." className="h-9" />
+          <CommandInput placeholder={searchPlaceholder ?? "Search data..."} className="h-9" />
           <CommandList>
             <CommandEmpty>No data found.</CommandEmpty>
             <CommandGroup>

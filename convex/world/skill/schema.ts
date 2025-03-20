@@ -1,7 +1,8 @@
-import { v, ObjectType } from 'convex/values';
+import { v, ObjectType, Infer } from 'convex/values';
 import { defineTable } from "convex/server";
 import { idWorld } from '../../worlds';
 import { idTexture } from "../textures";
+import { idMcpServerTool, mcpServerToolFields } from '../mcpServerTool/schema';
 import { idLLM } from '../llms';
 import { Doc, Id } from "../../_generated/dataModel";
 // import { functionDef } from "../../shared/type";
@@ -16,6 +17,20 @@ export type SkillTable = typeof table
 export type SkillId = Id<SkillTable>
 export type SkillDoc = Doc<SkillTable>
 
+
+export const skillTypeMcpTool = 'mcp_tool' as const;
+// export const skillTypeMcpResource = 'mcp_resource' as const;
+// export const skillTypeMcpPrompt = 'mcp_resource' as const;
+export const skillTypeCustomFunction = 'custom_function' as const;
+
+export const skillTypes = v.union(v.literal(skillTypeMcpTool), v.literal(skillTypeCustomFunction));
+export type SkillTypes = Infer<typeof skillTypes>
+export const slimTool = v.object({
+  id: idMcpServerTool,
+  name: mcpServerToolFields.name,
+})
+export type SlimTool = Infer<typeof slimTool>
+
 export const skillFields = {
   modifyTime: v.number(),
   syncTime: v.optional(v.number()),
@@ -24,8 +39,21 @@ export const skillFields = {
   textureId: idTexture,
   llmId: idLLM,
   // functionDef,
-  functionName: v.string(),
-  systemPrompt: v.string(),
+  // functionName: v.string(),
+  // systemPrompt: v.string(),
+
+  data: v.union(
+    // Setting up dynamics data
+    v.object({
+      type: v.literal(skillTypeMcpTool),
+      tools: v.array(slimTool),
+    }),
+    v.object({
+      type: v.literal(skillTypeCustomFunction),
+      functionName: v.string(),
+      systemPrompt: v.string(),
+    }),
+  ),
 };
 
 export const tableSchema = defineTable(skillFields)

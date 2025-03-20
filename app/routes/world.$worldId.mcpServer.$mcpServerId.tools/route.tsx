@@ -101,7 +101,6 @@ export default function ToolsTab() {
                     )}
                   >
                     <Button variant="outline" className="border h-6 w-6"
-                      disabled={isLoading}
                       onClick={() => {
                         openRunToolSheet(item)
                       }} >

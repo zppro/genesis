@@ -10,7 +10,7 @@ import { z } from "zod";
 import { getWorldSkill, updateWorldSkill } from "~/data/convexProxy/skill.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
 import { listWorldLLMs } from "~/data/convexProxy/llm.server";
-import { type SkillId, table } from "@/world/skill/schema";
+import { type SkillId, table, skillTypeCustomFunction, skillTypeMcpTool } from "@/world/skill/schema";
 import { type UpdateArgs } from "@/world/skill/args";
 import { type TextureTable } from "@/world/textures";
 import { type LLMTable } from "@/world/llms";
@@ -39,8 +39,24 @@ const updateSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   textureId: z.string().min(1, { message: "Texture is required" }),
   llmId: z.string().min(1, { message: "LLM is required" }),
-  functionName: z.string().min(1, { message: "Function name is required" }),
-  systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
+  data: z.discriminatedUnion("type", [
+    z.object({
+      type: z.literal(skillTypeCustomFunction),
+      functionName: z.string().min(1, { message: "Function name is required" }),
+      systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
+    }),
+    z.object({
+      type: z.literal(skillTypeMcpTool),
+      tools: z.array(
+        z.object({
+          id: z.string().min(1, { message: "mcp server tool id is required" }),
+          name: z.string().min(1, { message: "mcp server tool name is required" })
+        })
+      ).nonempty(),
+    }),
+  ]),
+  // functionName: z.string().min(1, { message: "Function name is required" }),
+  // systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
   // functionDef: z.object({
   //   name: z.string(),
   //   description: z.string(),

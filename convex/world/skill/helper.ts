@@ -114,7 +114,7 @@ export async function _update(ctx: MutationCtx, args: UpdateArgs) {
   await ctx.db.patch(id, { ...patchData, modifyTime });
 
   let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-    "name", "textureId", "llmId", "functionName", "systemPrompt")
+    "name", "textureId", "llmId", "data")
 
   if (needNotifyUpstream) {
     const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
@@ -134,7 +134,7 @@ export async function _patch(ctx: MutationCtx, args: PatchArgs) {
   await ctx.db.patch(id, { ...patchData, modifyTime });
   
   let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-    "name", "textureId", "llmId", "functionName", "systemPrompt")
+    "name", "textureId", "llmId", "data")
 
   if (needNotifyUpstream) {
     const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })

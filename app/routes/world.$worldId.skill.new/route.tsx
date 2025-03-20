@@ -7,7 +7,7 @@ import { createWorldSkill } from "~/data/convexProxy/skill.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
 import { listWorldLLMs } from "~/data/convexProxy/llm.server";
 import { type InsertArgs } from "@/world/skill/args";
-import { table } from "@/world/skill/schema";
+import { table, skillTypeCustomFunction, skillTypeMcpTool } from "@/world/skill/schema";
 import formcssHref from "~/form.css?url";
 import Toolbar from "~/components/toolbars/entity-save-toolbar";
 import { Separator } from "~/components/ui/separator"
@@ -22,6 +22,7 @@ import { convertFormDataToObject } from "~/lib/form";
 import JSON5 from "json5";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
+import reactCheckboxTreeCssHref from 'react-checkbox-tree/lib/react-checkbox-tree.css?url';
 
 export const handle: Handle = {
   breadcrumb
@@ -29,13 +30,31 @@ export const handle: Handle = {
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
+  { rel: "stylesheet", href: reactCheckboxTreeCssHref },
+  { rel: "stylesheet", href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" }
 ];
 const createSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   textureId: z.string().min(1, { message: "Texture is required" }),
   llmId: z.string().min(1, { message: "LLM is required" }),
-  functionName: z.string().min(1, { message: "Function name is required" }),
-  systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
+  data: z.discriminatedUnion("type", [
+    z.object({
+      type: z.literal(skillTypeCustomFunction),
+      functionName: z.string().min(1, { message: "Function name is required" }),
+      systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
+    }),
+    z.object({
+      type: z.literal(skillTypeMcpTool),
+      tools: z.array(
+        z.object({
+          id: z.string().min(1, { message: "mcp server tool id is required" }),
+          name: z.string().min(1, { message: "mcp server tool name is required" })
+        })
+      ).nonempty(),
+    }),
+  ]),
+  // functionName: z.string().min(1, { message: "Function name is required" }),
+  // systemPrompt: z.string().min(1, { message: "SystemPrompt is required" }),
   // functionDef: z.object({
   //   name: z.string(),
   //   description: z.string(),

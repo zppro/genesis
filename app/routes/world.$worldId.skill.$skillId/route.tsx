@@ -6,13 +6,14 @@ import { parseFormError } from "~/lib/error.server"
 import { ServerErrors } from "~/components/convex/type";
 import { useFormError, FormErrorTip } from "~/components/convex/form";
 import { Label } from "~/components/ui/label"
+import { Badge } from "~/components/ui/badge"
 import { Textarea } from "~/components/ui/textarea"
 import debounce from "debounce"
 import { convertFormDataToObject } from "~/lib/form";
 import { z } from "zod";
 import { Separator } from "~/components/ui/separator"
 import { getWorldSkillExtend, testSkill } from "~/data/convexProxy/skill.server"
-import { type SkillId, table } from "@/world/skill/schema";
+import { type SkillId, table, skillTypeMcpTool, skillTypeCustomFunction } from "@/world/skill/schema";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
@@ -267,7 +268,7 @@ export default function Index() {
       <Separator />
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4">
-          <div className="font-semibold text-lg">{skillEx?.name}</div>
+          <div className="font-semibold text-lg">{skillEx?.name}<Badge className="ml-2">{skillEx?.data.type}</Badge></div>
           <div className="pl-2">
             <ImageDialog src={skillEx?.textureUrl} className={cn('max-w-[40px]', 'max-h-[30px]')} />
           </div>
@@ -281,10 +282,10 @@ export default function Index() {
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
           <div className="flex flex-col space-y-2">
             <div>
-            <Button variant="ghost" className="border" onClick={handleConnectByServer} >
-                  <Play className="h-4 w-4" />
-                  connect by server 
-                </Button>
+              <Button variant="ghost" className="border" onClick={handleConnectByServer} >
+                <Play className="h-4 w-4" />
+                connect by server
+              </Button>
             </div>
             <div>
               <Button variant="ghost" className="border" onClick={handleConnectClick} >
@@ -306,42 +307,58 @@ export default function Index() {
               <h2>LLM:</h2>
               <p className="text-lg indent-2 pb-2">{skillEx?.llm.name}</p>
             </div>
-            <div className="flex flex-col space-y-2">
-              <h2>Function name:</h2>
-              <p className="text-lg indent-2 pb-2">{skillEx?.functionName}</p>
-            </div>
+            {
+              skillEx?.data.type === skillTypeCustomFunction &&
+              <div className="flex flex-col space-y-2">
+                <h2>Function name:</h2>
+                <p className="text-lg indent-2 pb-2">{skillEx?.data.functionName}</p>
+              </div>
+            }
             <div className="flex space-x-2 items-center">
               <Switch id="isTestSkill" defaultChecked={isTestSkill} onCheckedChange={(v: boolean) => {
                 setIsTestSkill(v);
               }} /><Label htmlFor="isTestSkill">Test skill</Label>
             </div>
             {
-              isTestSkill &&
-              <div className="flex flex-col space-y-1.5">
-                <Form method="post" onChange={handleChange} className="flex flex-col h-full">
-                  {/* <input name="llmId" type="hidden" defaultValue={skillEx.llmId} />
-                  <input name="funcName" type="hidden" defaultValue={skillEx.functionDef.name} /> */}
-                  <div className="w-[480px] p-2 pl-0.5">
-                    <div className="flex flex-col space-y-1.5 pb-2">
-                      <Label htmlFor="system">System</Label>
-                      <Textarea id="system" name="system" defaultValue={skillEx.systemPrompt} placeholder="You are a helpful assistent." className={errors?.system ? "form-input-err" : undefined} />
-                      {errors?.system ? <FormErrorTip tip={errors?.system} /> : null}
-                    </div>
-                    <div className="flex flex-col space-y-1.5 pb-2">
-                      <Label htmlFor="user">User</Label>
-                      <Textarea id="user" name="user" placeholder="Question" className={errors?.user ? "form-input-err" : undefined} />
-                      {errors?.user ? <FormErrorTip tip={errors?.user} /> : null}
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="border w-36" type="submit" disabled={isSubmitting} >
-                    <Play className="h-4 w-4" />
-                    <span >{isSubmitting ? "Invoking..." : "Invoke"}</span>
-                  </Button>
-                </Form>
-                <div className="whitespace-pre-wrap">
-                  {actionData?.res && <JsonPretty data={actionData.res} className="w-[450px]" />}
+              isTestSkill && (
+                skillEx?.data.type === skillTypeMcpTool &&
+                <div className="flex space-x-1.5" >
+                  {
+                    skillEx.data.tools.map(item => <Badge key={item.id}>{item.name}</Badge>)
+                  }
                 </div>
-              </div>
+              )
+            }
+            {
+              isTestSkill &&
+              (
+                skillEx?.data.type === skillTypeCustomFunction &&
+                <div className="flex flex-col space-y-1.5">
+                  <Form method="post" onChange={handleChange} className="flex flex-col h-full">
+                    {/* <input name="llmId" type="hidden" defaultValue={skillEx.llmId} />
+                  <input name="funcName" type="hidden" defaultValue={skillEx.functionDef.name} /> */}
+                    <div className="w-[480px] p-2 pl-0.5">
+                      <div className="flex flex-col space-y-1.5 pb-2">
+                        <Label htmlFor="system">System</Label>
+                        <Textarea id="system" name="system" defaultValue={skillEx.data.systemPrompt} placeholder="You are a helpful assistent." className={errors?.system ? "form-input-err" : undefined} />
+                        {errors?.system ? <FormErrorTip tip={errors?.system} /> : null}
+                      </div>
+                      <div className="flex flex-col space-y-1.5 pb-2">
+                        <Label htmlFor="user">User</Label>
+                        <Textarea id="user" name="user" placeholder="Question" className={errors?.user ? "form-input-err" : undefined} />
+                        {errors?.user ? <FormErrorTip tip={errors?.user} /> : null}
+                      </div>
+                    </div>
+                    <Button variant="ghost" className="border w-36" type="submit" disabled={isSubmitting} >
+                      <Play className="h-4 w-4" />
+                      <span >{isSubmitting ? "Invoking..." : "Invoke"}</span>
+                    </Button>
+                  </Form>
+                  <div className="whitespace-pre-wrap">
+                    {actionData?.res && <JsonPretty data={actionData.res} className="w-[450px]" />}
+                  </div>
+                </div>
+              )
             }
           </div>
         </ScrollArea>

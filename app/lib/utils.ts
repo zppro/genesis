@@ -36,3 +36,17 @@ export const getRandomInteger = (min: number, max: number) => {
 export function array2Map<T>(array: Array<T>, key: keyof T) {
   return new Map(array.map(obj => [obj[key] as string, obj]));
 }
+
+export type Flatable = {
+  children?: Flatable[]
+}
+
+export function flat<T extends Flatable>(nodes: T[]) {
+  return nodes.reduce((acc: T[], n) => {
+    acc.push(n)
+    if (n.children) {
+      acc.push(...flat(n.children as T[]))
+    }
+    return acc
+  }, [])
+}
