@@ -8,7 +8,7 @@ import { Doc, Id } from "../../_generated/dataModel";
 export const table = 'mcpServerTools';
 export const indexName_ByWorldId = 'by_worldId';
 export const indexName_ByMcpServerId = 'by_mcpServerId';
-export const indexName_ByMcpServerIdAndName = 'by_worldIdMcpServerIdAndName';
+export const indexName_ByMcpServerIdAndName = 'by_mcpServerIdAndName';
 export const idMcpServerTool = v.id(table);
 
 export type McpServerToolTable = typeof table
