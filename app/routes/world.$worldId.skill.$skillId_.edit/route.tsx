@@ -5,7 +5,7 @@ import { parseIsNotFoundRecordError } from "@/error";
 import { useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 // import SkillForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/world.$worldId.skill/form"
-import SkillForm from "~/routes/world.$worldId.skill/form"
+import SkillForm, { validateFormData } from "~/routes/world.$worldId.skill/form"
 import { z } from "zod";
 import { getWorldSkill, updateWorldSkill } from "~/data/convexProxy/skill.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
@@ -22,8 +22,9 @@ import { parseFormError } from "~/lib/error.server"
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { useState, useEffect } from 'react'
 import { type ConvexComboxItem } from "~/components/ui/combox"
-import { convertFormDataToObject } from "~/lib/form";
-import JSON5 from "json5";
+import { useQuery } from "convex/react";
+import { api } from "@/_generated/api";
+import reactCheckboxTreeCssHref from 'react-checkbox-tree/lib/react-checkbox-tree.css?url';
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -33,6 +34,8 @@ export const handle: Handle = {
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: formcssHref },
+  { rel: "stylesheet", href: reactCheckboxTreeCssHref },
+  { rel: "stylesheet", href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" }
 ];
 
 const updateSchema = z.object({
@@ -52,7 +55,7 @@ const updateSchema = z.object({
           id: z.string().min(1, { message: "mcp server tool id is required" }),
           name: z.string().min(1, { message: "mcp server tool name is required" })
         })
-      ).nonempty(),
+      ).nonempty({ message: "at least choose one tool" }),
     }),
   ]),
   // functionName: z.string().min(1, { message: "Function name is required" }),
@@ -76,20 +79,12 @@ export async function action({
     throw new Error("invalid skillId param!");
   }
   let serverErrors: ServerErrors = {}
-
   const formData = await request.formData();
-  // const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsObject }, formatters);
-  // if (typeof (_formData.functionDef as Record<string, any>).schema === 'string') {
-  //   const schemaRawVal = (_formData.functionDef as Record<string, any>).schema as string
-  //   (_formData.functionDef as Record<string, any>).schema = JSON5.parse(schemaRawVal)
-  // }
-  const _formData = convertFormDataToObject(formData);
-  const formPayload = { ..._formData, id: skillId as SkillId, worldId }
-
-  // payload z schema validation
-  const result = updateSchema.safeParse(formPayload);
-  if (result.success) {
+  console.log('in action edit')
+  const [errors, success, _formData] = validateFormData(formData, updateSchema)
+  if (success) {
     try {
+      const formPayload = { ..._formData, id: skillId as SkillId, worldId }
       await updateWorldSkill(formPayload as UpdateArgs)
       return redirect(`/world/${worldId}/skill/${skillId}`)
     } catch (error) {
@@ -98,10 +93,29 @@ export async function action({
       serverErrors = parseFormError(error, fields)
     }
   } else {
-    // Handle validation errors
-    serverErrors = { ...result.error.formErrors.fieldErrors }
-
+    console.log(errors)
+    serverErrors = errors
   }
+
+  // const _formData = convertFormDataToObject(formData);
+  // const formPayload = { ..._formData, id: skillId as SkillId, worldId }
+
+  // // payload z schema validation
+  // const result = updateSchema.safeParse(formPayload);
+  // if (result.success) {
+  //   try {
+  //     await updateWorldSkill(formPayload as UpdateArgs)
+  //     return redirect(`/world/${worldId}/skill/${skillId}`)
+  //   } catch (error) {
+  //     // {field1: errorMessage, ...}
+  //     const fields = Object.keys(updateSchema.keyof().Values)
+  //     serverErrors = parseFormError(error, fields)
+  //   }
+  // } else {
+  //   // Handle validation errors
+  //   serverErrors = { ...result.error.formErrors.fieldErrors }
+
+  // }
 
   return { serverErrors }
 }
@@ -140,7 +154,7 @@ export async function loader({
     const llms = await listWorldLLMs(worldId as WorldId)
     const breadcrumbData = { routeName: `edit skill (${skill.name})`, routeUrl: `/world/${worldId}/skill/${skill._id}/edit` }
 
-    return { ...breadcrumbData, skill, textures, llms }
+    return { ...breadcrumbData, worldId: worldId as WorldId, skill, textures, llms }
   }
 }
 
@@ -150,7 +164,7 @@ export function ErrorBoundary() {
 
 
 export default function EditSkill() {
-  const { skill, textures, llms } = useLoaderData<typeof loader>();
+  const { worldId, skill, textures, llms } = useLoaderData<typeof loader>();
   const textureItems = textures.map<ConvexComboxItem<TextureTable>>(t => ({
     key: t._id, text: t.name, icon: t.url
   }))
@@ -171,6 +185,7 @@ export default function EditSkill() {
     console.log('onClientErrors', clientErrors)
     setErrors(clientErrors)
   }
+  let nodes: any = useQuery(api.trees.index.mcpToolTree, { worldId, nodeIdKey: "value", nodeNameKey: "label" }) ?? []
 
   const navigation = useNavigation();
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${skill?.worldId}/skill/${skill?._id}/edit`;
@@ -179,6 +194,7 @@ export default function EditSkill() {
       <SkillForm
         textureItems={textureItems}
         llmItems={llmItems}
+        nodes={nodes}
         errors={errors} onClientErrors={onClientErrors} doc={skill} schema={updateSchema}>
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />

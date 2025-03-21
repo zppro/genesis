@@ -2,7 +2,7 @@ import { v, ObjectType, Infer } from 'convex/values';
 import { defineTable } from "convex/server";
 import { idWorld } from '../../worlds';
 import { idTexture } from "../textures";
-import { idMcpServerTool, mcpServerToolFields } from '../mcpServerTool/schema';
+import { slimServerTool } from '../mcpServerTool/slim';
 import { idLLM } from '../llms';
 import { Doc, Id } from "../../_generated/dataModel";
 // import { functionDef } from "../../shared/type";
@@ -25,11 +25,6 @@ export const skillTypeCustomFunction = 'custom_function' as const;
 
 export const skillTypes = v.union(v.literal(skillTypeMcpTool), v.literal(skillTypeCustomFunction));
 export type SkillTypes = Infer<typeof skillTypes>
-export const slimTool = v.object({
-  id: idMcpServerTool,
-  name: mcpServerToolFields.name,
-})
-export type SlimTool = Infer<typeof slimTool>
 
 export const skillFields = {
   modifyTime: v.number(),
@@ -46,7 +41,7 @@ export const skillFields = {
     // Setting up dynamics data
     v.object({
       type: v.literal(skillTypeMcpTool),
-      tools: v.array(slimTool),
+      tools: v.array(slimServerTool),
     }),
     v.object({
       type: v.literal(skillTypeCustomFunction),

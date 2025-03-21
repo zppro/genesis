@@ -13,6 +13,7 @@ import { skillFunctions } from "../../skills";
 import { createBMIClient } from "../../mcp/client/bmi";
 import { api } from "../../_generated/api";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { skillTypeCustomFunction } from "./schema";
 
 
 export const _beforeTestSkill = internalMutation({
@@ -36,11 +37,14 @@ export const _beforeTestSkill = internalMutation({
 export const testSkill = action({
   args: testSkillArgs,
   handler: async (ctx, args) => {
-    const { apiKey, baseUrl, llmLogId, messages, model, skill: { functionName } } = await ctx.runMutation(internal.world.skill.action._beforeTestSkill, args);
-
-    const skillFunction = skillFunctions.find(v => v.name === functionName)
+    const { apiKey, baseUrl, llmLogId, messages, model, skill } = await ctx.runMutation(internal.world.skill.action._beforeTestSkill, args);
+    const { data } = skill
+    if (data.type !== skillTypeCustomFunction) {
+      throw new ConvexError(`not custome function`)
+    }
+    const skillFunction = skillFunctions.find(v => v.name === data.functionName)
     if (!skillFunction) {
-      throw new ConvexError(`function calling(${functionName}) is not found in predefined`);
+      throw new ConvexError(`function calling(${data.functionName}) is not found in predefined`);
     }
 
     const openai: any = new OpenAI({

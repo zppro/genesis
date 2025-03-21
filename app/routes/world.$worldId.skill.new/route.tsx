@@ -1,7 +1,7 @@
 import { useNavigation, useLoaderData, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs, LinksFunction } from "@remix-run/node";
 // import SkillForm, { mergeNamePrefixsAsObject, formatters } from "~/routes/world.$worldId.skill/form"
-import SkillForm from "~/routes/world.$worldId.skill/form"
+import SkillForm, { validateFormData } from "~/routes/world.$worldId.skill/form"
 import { z } from "zod";
 import { createWorldSkill } from "~/data/convexProxy/skill.server"
 import { listWorldTextures } from "~/data/convexProxy/texture.server"
@@ -18,11 +18,13 @@ import { type LLMTable } from "@/world/llms";
 import { useState, useEffect } from 'react'
 import { ServerErrors, ClientErrors } from "~/components/convex/type";
 import { ConvexComboxProvider, type ConvexComboxItem } from "~/components/ui/combox"
-import { convertFormDataToObject } from "~/lib/form";
-import JSON5 from "json5";
+import { useQuery } from "convex/react";
+import { api } from "@/_generated/api";
+import reactCheckboxTreeCssHref from 'react-checkbox-tree/lib/react-checkbox-tree.css?url';
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
-import reactCheckboxTreeCssHref from 'react-checkbox-tree/lib/react-checkbox-tree.css?url';
+
+
 
 export const handle: Handle = {
   breadcrumb
@@ -50,7 +52,7 @@ const createSchema = z.object({
           id: z.string().min(1, { message: "mcp server tool id is required" }),
           name: z.string().min(1, { message: "mcp server tool name is required" })
         })
-      ).nonempty(),
+      ).nonempty({ message: "at least choose one tool" }),
     }),
   ]),
   // functionName: z.string().min(1, { message: "Function name is required" }),
@@ -71,22 +73,12 @@ export async function action({
     throw new Error("invalid world params!");
   }
   let serverErrors: ServerErrors = {}
-
   const formData = await request.formData();
-  // const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsObject }, formatters);
-  // if (typeof (_formData.functionDef as Record<string, any>).schema === 'string') {
-  //   const schemaRawVal = (_formData.functionDef as Record<string, any>).schema as string
-  //   (_formData.functionDef as Record<string, any>).schema = JSON5.parse(schemaRawVal)
-  // }
 
-  const _formData = convertFormDataToObject(formData);
-  const formPayload = { ..._formData, worldId }
-  console.log('new formPayload=>', formPayload)
-
-  // payload z schema validation
-  const result = createSchema.safeParse(formPayload);
-  if (result.success) {
+  const [errors, success, _formData] = validateFormData(formData, createSchema)
+  if (success) {
     try {
+      const formPayload = { ..._formData, worldId }
       const newSkillId = await createWorldSkill(formPayload as InsertArgs)
       return redirect(`/world/${worldId}/skill/${newSkillId}`)
     } catch (error) {
@@ -96,10 +88,32 @@ export async function action({
       serverErrors = parseFormError(error, fields)
     }
   } else {
-    // Handle validation errors
-    console.log(result.error)
-    serverErrors = { ...result.error.formErrors.fieldErrors }
+    console.log(errors)
+    serverErrors = errors
   }
+
+  // const _formData = convertFormDataToObject(formData, { mergeNamePrefixsAsObject }, formatters);
+
+  // const formPayload = { ..._formData, worldId }
+  // console.log('new formPayload=>', formPayload)
+
+  // // payload z schema validation
+  // const result = createSchema.safeParse(formPayload);
+  // if (result.success) {
+  //   try {
+  //     const newSkillId = await createWorldSkill(formPayload as InsertArgs)
+  //     return redirect(`/world/${worldId}/skill/${newSkillId}`)
+  //   } catch (error) {
+  //     // {field1: errorMessage, ...}
+  //     console.log('error:', error)
+  //     const fields = Object.keys(createSchema.keyof().Values)
+  //     serverErrors = parseFormError(error, fields)
+  //   }
+  // } else {
+  //   // Handle validation errors
+  //   console.log(result.error)
+  //   serverErrors = { ...result.error.formErrors.fieldErrors }
+  // }
 
   return { serverErrors }
 }
@@ -139,12 +153,16 @@ export default function NewScene() {
     // { ...actionData?.serverErrors, ...clientErrors }
     setErrors(clientErrors)
   }
+
+  let nodes: any = useQuery(api.trees.index.mcpToolTree, { worldId, nodeIdKey: "value", nodeNameKey: "label" }) ?? []
+
   return (
     <div className="h-full">
 
       <SkillForm
         textureItems={textureItems}
         llmItems={llmItems}
+        nodes={nodes}
         errors={errors} onClientErrors={onClientErrors} schema={createSchema} >
         <Toolbar isSubmitting={isSubmitting} entityName={table} />
         <Separator />
