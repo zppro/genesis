@@ -40,4 +40,5 @@ export function useFormError(errors?: FormErrors, errKey: string = "__err__") {
     }
     return () => { }
   }, [errors?.[errKey]])
+  return [toast]
 }

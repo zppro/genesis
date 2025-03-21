@@ -29,12 +29,27 @@ import { breadcrumb } from "~/components/app-breadcrumb";
 import { cn } from "~/lib/utils";
 import { TestSkillArgs } from "@/world/skill/args";
 import { Switch } from "~/components/ui/switch";
-import { CirclePlay } from "lucide-react"
-import { McpServerToolDoc } from "@/world/mcpServerTool/schema";
-import { useQuery } from "convex/react";
+import { useMcp, type StdErrNotification, type PendingRequest } from "~/hooks/use-mcp";
+import {
+  ClientRequest,
+  CompatibilityCallToolResult,
+  CompatibilityCallToolResultSchema,
+  CreateMessageResult,
+  EmptyResultSchema,
+  GetPromptResultSchema,
+  ListPromptsResultSchema,
+  ListResourcesResultSchema,
+  ListResourceTemplatesResultSchema,
+  ListToolsResultSchema,
+  ReadResourceResultSchema,
+  Resource,
+  ResourceTemplate,
+  Root,
+  ServerNotification,
+  Tool,
+} from "@modelcontextprotocol/sdk/types.js";
+import { useAction } from "convex/react";
 import { api } from "@/_generated/api";
-import RunTool from "~/routes/world.$worldId.mcpServer.$mcpServerId.tools/runTool"
-import { SlimServerTool } from "@/world/mcpServerTool/slim";
 
 
 export const handle: Handle = {
@@ -119,8 +134,97 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   const [errors, setErrors] = useState(actionData?.serverErrors)
   const [isTestSkill, setIsTestSkill] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [tool, setTool] = useState<McpServerToolDoc | null>(null)
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [notifications, setNotifications] = useState<ServerNotification[]>([]);
+  const [stdErrNotifications, setStdErrNotifications] = useState<
+    StdErrNotification[]
+  >([]);
+  const [roots, setRoots] = useState<Root[]>([]);
+  const sseUrl = `https://proper-lapwing-331.convex.site/sse`
+  const env = {}, bearerToken = ""
+  const [pendingSampleRequests, setPendingSampleRequests] = useState<
+    Array<
+      PendingRequest & {
+        resolve: (result: CreateMessageResult) => void;
+        reject: (error: Error) => void;
+      }
+    >
+  >([]);
+  const nextRequestId = useRef(0);
+  const rootsRef = useRef<Root[]>([]);
+  const {
+    connectionStatus,
+    serverCapabilities,
+    mcpClient,
+    requestHistory,
+    makeRequest: makeConnectionRequest,
+    sendNotification,
+    handleCompletion,
+    completionsSupported,
+    connect: connectMcpServer,
+  } = useMcp({
+    sseUrl,
+    env,
+    bearerToken,
+    onNotification: (notification) => {
+      setNotifications((prev) => [...prev, notification as ServerNotification]);
+    },
+    onStdErrNotification: (notification) => {
+      setStdErrNotifications((prev) => [
+        ...prev,
+        notification as StdErrNotification,
+      ]);
+    },
+    onPendingRequest: (request, resolve, reject) => {
+      setPendingSampleRequests((prev) => [
+        ...prev,
+        { id: nextRequestId.current++, request, resolve, reject },
+      ]);
+    },
+    getRoots: () => rootsRef.current,
+  });
+
+  const [nextToolCursor, setNextToolCursor] = useState<string | undefined>();
+  const listTools = async () => {
+    const response = await makeConnectionRequest(
+      {
+        method: "tools/list" as const,
+        params: nextToolCursor ? { cursor: nextToolCursor } : undefined,
+      },
+      ListToolsResultSchema,
+    );
+    setNextToolCursor(response.nextCursor);
+    return response.tools;
+  };
+
+  const testMcpSkillAction = useAction(api.world.skill.nodeAction.testMcpSkillInNode);
+  const handleConnectByServer = async () => {
+    testMcpSkillAction({ id: skillEx._id, messages: [] });
+  }
+
+
+  const handleConnectClick = async () => {
+
+    if (connectionStatus === "connected") {
+      console.warn("mcpClient connected!")
+      return;
+    }
+    await connectMcpServer()
+    console.log("connectMcpServer done!")
+
+  };
+
+
+  const handleToolListClick = async () => {
+    if (!mcpClient) {
+      console.warn("mcpClient is null")
+      return
+    }
+    const tools = await mcpClient.listTools()
+    const tools2 = await listTools()
+    console.log('tools=>', tools)
+    console.log('tools2=>', tools2)
+  }
 
   useEffect(() => {
     if (actionData && "serverErrors" in actionData) {
@@ -128,7 +232,6 @@ export default function Index() {
     }
 
   }, [actionData])
-
   function validateFormData(formData: FormData) {
     const formPayload = convertFormDataToObject(formData)
     // form number
@@ -143,23 +246,7 @@ export default function Index() {
   function handleChange(e: React.FormEvent<HTMLFormElement>) {
     debouncedHandleChange(new FormData(e.currentTarget));
   }
-  const [toast] = useFormError(errors);
-
-  function openRunToolSheet(slimTool: SlimServerTool) {
-    console.log('slimTool=>', slimTool)
-    console.log('skillEx=>', skillEx)
-    const tool = skillEx.mcpServerTools!.find(mt => mt._id === slimTool.id)
-    if (!tool) {
-      toast({
-        title: "openRunToolSheet  error:",
-        description: `tool(${slimTool.name}) not found`,
-        variant: "destructive",
-      })
-      return
-    }
-    setTool(tool)
-    setSheetOpen(true)
-  }
+  useFormError(errors);
   const state = useRedirectToast("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx?.worldId}/skill/${skillEx?._id}/sync`;
@@ -182,6 +269,9 @@ export default function Index() {
       <div className="w-full flex flex-1 flex-col">
         <div className="w-full flex items-start flex-row p-4">
           <div className="font-semibold text-lg">{skillEx?.name}<Badge className="ml-2">{skillEx?.data.type}</Badge></div>
+          <div className="pl-2">
+            <ImageDialog src={skillEx?.textureUrl} className={cn('max-w-[40px]', 'max-h-[30px]')} />
+          </div>
           {skillEx._creationTime && (
             <div className="ml-auto text-xs h-full text-muted-foreground flex items-center">
               {format(new Date(skillEx._creationTime), "PPpp")}
@@ -191,8 +281,27 @@ export default function Index() {
         <Separator />
         <ScrollArea className="p-4 h-full w-full max-h-[calc(100vh-200px)]">
           <div className="flex flex-col space-y-2">
-            <div className="flex">
-              <ImageDialog src={skillEx?.textureUrl} className={cn('max-w-[40px]', 'max-h-[30px]')} />
+            <div>
+              <Button variant="ghost" className="border" onClick={handleConnectByServer} >
+                <Play className="h-4 w-4" />
+                connect by server
+              </Button>
+            </div>
+            <div>
+              <Button variant="ghost" className="border" onClick={handleConnectClick} >
+                <Play className="h-4 w-4" />
+                <span className={cn(connectionStatus === "connected" ? "bg-green-400" : "bg-red-400")}>
+                  {connectionStatus}
+                </span>
+              </Button>
+            </div>
+            <div>
+              {connectionStatus === "connected" &&
+                <Button variant="ghost" className="border" onClick={handleToolListClick} >
+                  <Play className="h-4 w-4" />
+                  get tools
+                </Button>
+              }
             </div>
             <div className="flex flex-col space-y-2">
               <h2>LLM:</h2>
@@ -213,57 +322,11 @@ export default function Index() {
             {
               isTestSkill && (
                 skillEx?.data.type === skillTypeMcpTool &&
-                <>
-
-                  <ScrollArea className="h-full w-full max-h-[calc(100vh-180px)]">
-                    <div className="flex flex-col gap-2 p-4 pt-0">
-                      {(skillEx.data.tools ?? []).map((item) => (
-                        <div key={item.id} className="flex flex-col space-y-1">
-                          <div className="flex w-full flex-col gap-1">
-                            <div className="flex items-center">
-                              <div className="flex items-center gap-2">
-                                <div className="font-semibold">{item.name}</div>
-                              </div>
-                              <div
-                                className={cn(
-                                  "ml-auto text-xs",
-                                  false
-                                    ? "text-foreground"
-                                    : "text-muted-foreground"
-                                )}
-                              >
-                                <Button variant="outline" className="border h-6 w-6"
-                                  onClick={() => {
-                                    openRunToolSheet(item)
-                                  }} >
-                                  <CirclePlay className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                <div className="flex space-x-1.5" >
                   {
-                    tool &&
-                    <RunTool
-                      tool={tool}
-                      open={sheetOpen}
-                      setOpen={setSheetOpen}
-                    >
-                    </RunTool>
+                    skillEx.data.tools.map(item => <Badge key={item.id}>{item.name}</Badge>)
                   }
-                </>
-
-
-                // <div className="flex space-x-1.5" >
-                //   {
-                //     skillEx.data.tools.map(item => <Badge key={item.id}>{item.name}</Badge>)
-                //   }
-                // </div>
-
+                </div>
               )
             }
             {

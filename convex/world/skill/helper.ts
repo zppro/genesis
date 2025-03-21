@@ -4,7 +4,8 @@ import { MutationCtx } from '../../_generated/server';
 import { asyncMap } from "convex-helpers";
 import {
   table, SkillDoc, SkillId,
-  indexName_ByWorldId, indexName_ByWorldIdAndTextureId, indexName_ByWorldIdAndLLMId
+  indexName_ByWorldId, indexName_ByWorldIdAndTextureId, indexName_ByWorldIdAndLLMId,
+  skillTypeMcpTool
 } from "./schema";
 import { SkillExtendDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
@@ -16,6 +17,8 @@ import {
 import { api, internal } from "../../_generated/api";
 import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
+import { _listByIds as listMcpServerToolsByIds } from "../mcpServerTool/helper"
+import type { McpServerToolDoc } from '../mcpServerTool/schema';
 
 
 /*** query helper ***/
@@ -40,7 +43,13 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Ski
   }
   const { url } = await readTextureOrThrow(ctx, { id: entity.textureId });
   const llm = await readLLMOrThrow(ctx, entity.llmId)
-  return { ...entity, textureUrl: url, llm };
+
+  let mcpServerTools: McpServerToolDoc[] | undefined = undefined
+  if (entity.data.type === skillTypeMcpTool) {
+    const mcpServerToolIds = entity.data.tools.map(t => t.id)
+    mcpServerTools = await listMcpServerToolsByIds(ctx, { ids: mcpServerToolIds })
+  }
+  return { ...entity, textureUrl: url, llm, mcpServerTools };
 }
 
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {
@@ -132,7 +141,7 @@ export async function _patch(ctx: MutationCtx, args: PatchArgs) {
   }
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
-  
+
   let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
     "name", "textureId", "llmId", "data")
 
