@@ -9,7 +9,7 @@ import {
   ReadArgs, ListArgs, ListByIdsArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
-// import { api, internal } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 // import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
 
@@ -53,40 +53,14 @@ export async function _create(ctx: MutationCtx, args: InsertArgs) {
 
 export async function _update(ctx: MutationCtx, args: UpdateArgs) {
   const { id, ...patchData } = args
-  const entity = await ctx.db.get(id);
-  if (!entity) {
-    throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-  }
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
-
-  // let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-  //   "name", "textureId", "llmId", "functionName", "systemPrompt")
-  // if (needNotifyUpstream) {
-  //   const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  //   await Promise.all(characters.map(async (character) => {
-  //     await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
-  //   }))
-  // }
 }
 
 export async function _patch(ctx: MutationCtx, args: PatchArgs) {
   const { id, ...patchData } = args
-  const entity = await ctx.db.get(id);
-  if (!entity) {
-    throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
-  }
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
-
-  // let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-  //   "name", "textureId", "llmId", "functionName", "systemPrompt")
-  // if (needNotifyUpstream) {
-  //   const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  //   await Promise.all(characters.map(async (character) => {
-  //     await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
-  //   }))
-  // }
 }
 
 export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
@@ -95,9 +69,8 @@ export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
   if (!entity) {
     throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
   }
-  // const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  // if (characters.length > 0) {
-  //   throw new ConvexError(`current skill reference by characters:[${characters.map(v => v.name).join()}]`);
-  // }
+  const mcpServerTools = await ctx.runQuery(api.world.mcpServerTool.query.listByMcpServer, { mcpServerId: entity._id })
+  const ids = mcpServerTools.map(t => t._id)
+  await ctx.runMutation(api.world.mcpServerTool.mutation.batchDelete, { worldId: entity.worldId, ids })
   await ctx.db.delete(id);
 }

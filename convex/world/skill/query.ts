@@ -1,6 +1,12 @@
 import { query } from '../../_generated/server';
-import { _read, _readExByIdOrEntity, _list, _listByIds, _listEx, _listByTexture, _listByLLM } from './helper';
-import { readArgs, listArgs, listByIdsArgs, listByTextureArgs, listByLLMArgs } from "./args";
+import {
+  _read, _readExByIdOrEntity, _list, _listByIds,
+  _listEx, _listByTexture, _listByLLM, _listByMcpServerTool, _listByMcpServerTools
+} from './helper';
+import {
+  readArgs, listArgs, listByIdsArgs,
+  listByTextureArgs, listByLLMArgs, listByMcpServerToolArgs, listByMcpServerToolsArgs
+} from "./args";
 
 
 export const read = query({
@@ -49,5 +55,19 @@ export const listByLLM = query({
   args: listByLLMArgs,
   handler: async (ctx, args) => {
     return await _listByLLM(ctx, args);
+  },
+});
+
+export const listByMcpServerTool = query({
+  args: listByMcpServerToolArgs,
+  handler: async (ctx, args) => {
+    return await _listByMcpServerTool(ctx, args);
+  },
+});
+
+export const listByMcpServerTools = query({
+  args: listByMcpServerToolsArgs,
+  handler: async (ctx, args) => {
+    return await _listByMcpServerTools(ctx, args);
   },
 });

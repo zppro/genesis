@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, internalMutation } from '../../_generated/server';
-import { _create, _update, _patch, _delete, _batchSequenceUpsert } from './helper';
-import { insertArgs, updateArgs, deleteArgs, updateTimeArgs } from "./args";
+import { _create, _update, _patch, _delete, _batchDelete, _batchSequenceUpsert } from './helper';
+import { insertArgs, updateArgs, deleteArgs, batchDeleteArgs, updateTimeArgs } from "./args";
 
 
 export const create = mutation({
@@ -40,6 +40,13 @@ export const updateSyncTime = mutation({
     const { id } = args
     const syncTime = +new Date()
     return await _patch(ctx, { id, syncTime });
+  },
+});
+
+export const batchDelete = mutation({
+  args: batchDeleteArgs,
+  handler: async (ctx, args) => {
+    return await _batchDelete(ctx, args)
   },
 });
 

@@ -1,6 +1,6 @@
 import { mutation, internalMutation } from '../../_generated/server';
-import { _create, _update, _patch, _delete } from './helper';
-import { insertArgs, updateArgs, deleteArgs, updateTimeArgs } from "./args";
+import { _create, _update, _patch, _delete, _batchUpdateModifyTime } from './helper';
+import { insertArgs, updateArgs, deleteArgs, updateTimeArgs, batchUpdateTimeArgs } from "./args";
 
 
 export const create = mutation({
@@ -39,5 +39,12 @@ export const updateSyncTime = mutation({
     const { id } = args
     const syncTime = +new Date()
     return await _patch(ctx, { id, syncTime });
+  },
+});
+
+export const batchUpdateSyncTime = internalMutation({
+  args: batchUpdateTimeArgs,
+  handler: async (ctx, args) => {
+    return await _batchUpdateModifyTime(ctx, args);
   },
 });

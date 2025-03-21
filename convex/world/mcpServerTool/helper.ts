@@ -7,10 +7,10 @@ import {
 } from "./schema";
 import {
   ReadArgs, ReadByMcpServerAndNameArgs, ListArgs, ListByIdsArgs, ListByMcpServerArgs,
-  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
+  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs, BatchDeleteArgs,
 } from "./args";
-// import { api, internal } from "../../_generated/api";
-// import { checkNeedNotifyUpstream } from "../../shared/sync";
+import { api, internal } from "../../_generated/api";
+import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
 
 
@@ -77,14 +77,13 @@ export async function _update(ctx: MutationCtx, args: UpdateArgs) {
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
 
-  // let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-  //   "name", "textureId", "llmId", "functionName", "systemPrompt")
-  // if (needNotifyUpstream) {
-  //   const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  //   await Promise.all(characters.map(async (character) => {
-  //     await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
-  //   }))
-  // }
+  let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
+    "name", "desc", "inputSchema")
+  if (needNotifyUpstream) {
+    const skills = await ctx.runQuery(api.world.skill.query.listByMcpServerTool, { worldId: entity.worldId, mcpServerToolId: entity._id })
+    const ids = skills.map(s => s._id)
+    await ctx.runMutation(internal.world.skill.mutation.batchUpdateSyncTime, { ids })
+  }
 }
 
 export async function _patch(ctx: MutationCtx, args: PatchArgs) {
@@ -96,14 +95,13 @@ export async function _patch(ctx: MutationCtx, args: PatchArgs) {
   const modifyTime = +new Date()
   await ctx.db.patch(id, { ...patchData, modifyTime });
 
-  // let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
-  //   "name", "textureId", "llmId", "functionName", "systemPrompt")
-  // if (needNotifyUpstream) {
-  //   const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  //   await Promise.all(characters.map(async (character) => {
-  //     await ctx.runMutation(internal.world.character.mutation.updateModifyTime, { id: character._id })
-  //   }))
-  // }
+  let needNotifyUpstream = checkNeedNotifyUpstream(entity, patchData,
+    "name", "desc", "inputSchema")
+  if (needNotifyUpstream) {
+    const skills = await ctx.runQuery(api.world.skill.query.listByMcpServerTool, { worldId: entity.worldId, mcpServerToolId: entity._id })
+    const ids = skills.map(s => s._id)
+    await ctx.runMutation(internal.world.skill.mutation.batchUpdateSyncTime, { ids })
+  }
 }
 
 export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
@@ -112,13 +110,22 @@ export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
   if (!entity) {
     throw new Error(`Invalid \`${table}\` ID: ${args.id}`);
   }
-  // const characters = await ctx.runQuery(api.world.character.query.listBySkill, { worldId: entity.worldId, skillId: entity._id })
-  // if (characters.length > 0) {
-  //   throw new ConvexError(`current skill reference by characters:[${characters.map(v => v.name).join()}]`);
-  // }
+  const skills = await ctx.runQuery(api.world.skill.query.listByMcpServerTool, { worldId: entity.worldId, mcpServerToolId: entity._id })
+  if (skills.length > 0) {
+    throw new ConvexError(`current mcpServerTool reference by skills:[${skills.map(v => v.name).join()}]`);
+  }
   await ctx.db.delete(id);
 }
 
+export async function _batchDelete(ctx: MutationCtx, args: BatchDeleteArgs) {
+  const skills = await ctx.runQuery(api.world.skill.query.listByMcpServerTools, args)
+  if (skills.length > 0) {
+    throw new ConvexError(`have mcpServerTools reference by skills:[${skills.map(v => v.name).join()}]`);
+  }
+  for (const id of args.ids) {
+    await ctx.db.delete(id);
+  }
+}
 
 export async function _batchSequenceUpsert(ctx: MutationCtx, args: InsertArgs[]) {
   const modifyTime = +new Date()
@@ -126,9 +133,12 @@ export async function _batchSequenceUpsert(ctx: MutationCtx, args: InsertArgs[])
   for (const itemArgs of args) {
     const entity = await _readByMcpServerAndName(ctx, itemArgs)
     if (entity) {
-      await ctx.db.patch(entity._id, { ...itemArgs, modifyTime });
+      // 更新数据
+      // await ctx.db.patch(entity._id, { ...itemArgs, modifyTime });
+      await _update(ctx, { id: entity._id, ...itemArgs })
       batchUpsertedIds.push(entity._id)
     } else {
+      // 新数据不用修改上游引用skill
       batchUpsertedIds.push(
         await ctx.db.insert(table, { ...itemArgs, modifyTime })
       )

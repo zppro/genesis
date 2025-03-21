@@ -4,15 +4,17 @@ import { MutationCtx } from '../../_generated/server';
 import { asyncMap } from "convex-helpers";
 import {
   table, SkillDoc, SkillId,
-  indexName_ByWorldId, indexName_ByWorldIdAndTextureId, indexName_ByWorldIdAndLLMId,
+  indexName_ByWorldId, indexName_ByWorldIdAndTextureId,
+  indexName_ByWorldIdAndLLMId, indexName_ByWorldIdAndType,
   skillTypeMcpTool
 } from "./schema";
 import { SkillExtendDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
 import { _readOrThrow as readLLMOrThrow } from '../llms';
 import {
-  ReadArgs, ListArgs, ListByIdsArgs, ListByTextureArgs, ListByLLMArgs,
-  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
+  ReadArgs, ListArgs, ListByIdsArgs, ListByTextureArgs,
+  ListByLLMArgs, ListByMcpServerToolArgs, ListByMcpServerToolsArgs,
+  InsertArgs, UpdateArgs, PatchArgs, DeleteArgs, BatchUpdateTimeArgs,
 } from "./args";
 import { api, internal } from "../../_generated/api";
 import { checkNeedNotifyUpstream } from "../../shared/sync";
@@ -106,6 +108,26 @@ export async function _listByLLM(ctx: QueryMutationCtx, args: ListByLLMArgs) {
   ).collect();
 }
 
+export async function _listByMcpServerTool(ctx: QueryMutationCtx, args: ListByMcpServerToolArgs) {
+  const { worldId, mcpServerToolId } = args
+  const entities = await ctx.db.query(table).withIndex(indexName_ByWorldIdAndType, (q) =>
+    q
+      .eq("worldId", worldId)
+      .eq("data.type", skillTypeMcpTool)
+  ).collect();
+  return entities.filter(e => e.data.type === skillTypeMcpTool && e.data.tools.some(t => t.id === mcpServerToolId))
+}
+
+export async function _listByMcpServerTools(ctx: QueryMutationCtx, args: ListByMcpServerToolsArgs) {
+  const { worldId, ids } = args
+  const entities = await ctx.db.query(table).withIndex(indexName_ByWorldIdAndType, (q) =>
+    q
+      .eq("worldId", worldId)
+      .eq("data.type", skillTypeMcpTool)
+  ).collect();
+  return entities.filter(e => e.data.type === skillTypeMcpTool && e.data.tools.some(t => ids.includes(t.id)))
+}
+
 /*** mutation helper ***/
 
 export async function _create(ctx: MutationCtx, args: InsertArgs) {
@@ -164,4 +186,12 @@ export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
     throw new ConvexError(`current skill reference by characters:[${characters.map(v => v.name).join()}]`);
   }
   await ctx.db.delete(id);
+}
+
+export async function _batchUpdateModifyTime(ctx: MutationCtx, args: BatchUpdateTimeArgs) {
+  const modifyTime = +new Date()
+  const { ids } = args
+  for (const id of ids) {
+    await ctx.db.patch(id, { modifyTime });
+  }
 }

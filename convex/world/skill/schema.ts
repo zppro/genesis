@@ -11,6 +11,7 @@ export const table = 'skills';
 export const indexName_ByWorldId = 'by_worldId';
 export const indexName_ByWorldIdAndTextureId = 'by_worldIdAndTextureId';
 export const indexName_ByWorldIdAndLLMId = 'by_worldIdAndLLMId';
+export const indexName_ByWorldIdAndType = 'by_worldIdAndType';
 export const idSkill = v.id(table);
 
 export type SkillTable = typeof table
@@ -55,3 +56,4 @@ export const tableSchema = defineTable(skillFields)
   .index(indexName_ByWorldId, ["worldId"])
   .index(indexName_ByWorldIdAndTextureId, ["worldId", "textureId"])
   .index(indexName_ByWorldIdAndLLMId, ["worldId", "llmId"])
+  .index(indexName_ByWorldIdAndType, ["worldId", "data.type"])

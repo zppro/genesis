@@ -15,7 +15,7 @@ export const mcpToolTree = query({
     const nodes = mcpServers.map(s => ({
       [nodeIdKey]: s._id,
       [nodeNameKey]: s.name,
-      children: mcpServerTools.map(t => ({
+      children: mcpServerTools.filter(t => t.mcpServerId === s._id).map(t => ({
         [nodeIdKey]: t._id, [nodeNameKey]: t.name
       }))
     }))

@@ -25,10 +25,12 @@ export const { modifyTime, ...insertArgs } = mcpServerToolFields
 const { ..._updateArgs } = insertArgs
 export const updateArgs = { id: idMcpServerTool, ..._updateArgs }
 export const deleteArgs = { id: idMcpServerTool }
+export const batchDeleteArgs = { worldId: idWorld, ids: v.array(idMcpServerTool) };
 export const updateTimeArgs = { id: idMcpServerTool }
 
 export type InsertArgs = ObjectType<typeof insertArgs>;
 export type UpdateArgs = ObjectType<typeof updateArgs>;
 export type PatchArgs = { id: McpServerToolId } & Partial<ObjectType<typeof _updateArgs>>;
 export type DeleteArgs = ObjectType<typeof deleteArgs>;
+export type BatchDeleteArgs = ObjectType<typeof batchDeleteArgs>;
 export type UpdateTimeArgs = ObjectType<typeof updateTimeArgs>;
