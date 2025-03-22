@@ -39,7 +39,12 @@ export default function McpServer() {
   const data = useLoaderData<typeof loader>();
   useRedirectToastEx([{
     method: "DELETE",
+    actionCheck: "/delete",
     desc: "delete mcpServer ok",
+  }, {
+    method: "POST",
+    actionCheck: "/sync",
+    desc: "sync mcpServer ok",
   }])
   return (
     <>

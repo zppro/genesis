@@ -4,7 +4,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip"
 import { CreateConfirm } from "~/lib/utils"
-import { Form } from "@remix-run/react";
+import { Form, useNavigation } from "@remix-run/react";
 import { Button } from "~/components/ui/button"
 // import { Separator } from "~/components/ui/separator"
 import {
@@ -13,6 +13,9 @@ import {
 } from "lucide-react"
 
 export default function Toolbar({ entityName, children }: { entityName: string, children?: React.ReactNode }) {
+  const navigation = useNavigation()
+  const isDeleting = navigation.state === "submitting" && navigation.formMethod === "DELETE" && navigation.formAction.endsWith("/delete")
+
   return (
     <div className="flex items-center gap-2 p-2">
       <Tooltip>
@@ -31,9 +34,9 @@ export default function Toolbar({ entityName, children }: { entityName: string, 
           <Form action="delete" method="DELETE"
             onSubmit={CreateConfirm("Please confirm you want to delete this record.")}
           >
-            <Button variant="ghost" className="border" type="submit">
+            <Button variant="ghost" className="border" type="submit" disabled={isDeleting}>
               <Trash2 className="h-4 w-4" />
-              <span>Delete</span>
+              <span>{isDeleting ? "Deleting..." : "Delete"}</span>
             </Button>
           </Form>
         </TooltipTrigger>

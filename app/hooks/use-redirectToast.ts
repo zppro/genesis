@@ -67,7 +67,7 @@ export function useRedirectToast(actionMethod: string, actionCheck: string, desc
 export type RedirectAction = {
   method: Uppercase<FormMethod>;
   state?: "loading" | "idle" | "submitting";
-  // actionCheck: string; // last paret is op
+  actionCheck: string; // last paret is op
   desc?: string;
 }
 
@@ -83,18 +83,20 @@ export function useRedirectToastEx(actions: RedirectAction[]) {
       const _err = searchParams.get("_err")
       const _notifyUrl = searchParams.get("_notifyUrl")
       const _actionUrl = searchParams.get("_actionUrl")
-
-      // console.log('searchParams:', _err, _notifyUrl, _actionUrl)
-      // console.log("navigation:", navigation.state, navigation.location, navigation.formMethod, navigation.formAction)
-      // console.log("----method compare:", navigation.formMethod === redirectAction.method, navigation.formMethod, redirectAction.method)
-      // console.log("----state compare:", navigation.state === redirectAction.state, navigation.state, redirectAction.state)
-      // console.log("----location compare:", navigation.location?.pathname === `${_notifyUrl}`, navigation.location?.pathname, `${_notifyUrl}`)
-      // console.log("----formAction compare:", navigation.formAction === `${_actionUrl}`, navigation.formAction, `${_actionUrl}`)
+      const redirectActionState = (redirectAction.state ?? "loading")
+      console.log('searchParams:', _err, _notifyUrl, _actionUrl)
+      console.log("navigation:", navigation.state, navigation.location, navigation.formMethod, navigation.formAction)
+      console.log("----method compare:", navigation.formMethod === redirectAction.method, navigation.formMethod, redirectAction.method)
+      console.log("----state compare:", navigation.state === redirectActionState, navigation.state, redirectActionState)
+      console.log("----location compare:", navigation.location?.pathname === `${_notifyUrl}`, navigation.location?.pathname, `${_notifyUrl}`)
+      console.log("----actionCheck compare:", _actionUrl?.endsWith(redirectAction.actionCheck), _actionUrl, redirectAction.actionCheck)
+      console.log("----formAction compare:", navigation.formAction === `${_actionUrl}`, navigation.formAction, `${_actionUrl}`)
 
       if (
         navigation.formMethod === redirectAction.method &&
-        navigation.state === (redirectAction.state ?? "loading") &&
+        navigation.state === redirectActionState &&
         navigation.location?.pathname === `${_notifyUrl}` &&
+        _actionUrl?.endsWith(redirectAction.actionCheck) &&
         navigation.formAction === `${_actionUrl}`
       ) {
         let op = navigation.formAction.slice(navigation.formAction.lastIndexOf("/") + 1, navigation.formAction.length);
