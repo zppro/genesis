@@ -8,7 +8,7 @@ import {
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import SkillScrollList from "./list"
-import { useRedirectToastEx, useRedirectToastExOld } from "~/hooks/use-redirectToast";
+import { useRedirectToast, useRedirectToastExOld } from "~/hooks/use-redirectToast";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
@@ -32,7 +32,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function Skill() {
-  useRedirectToastExOld("DELETE", `/delete`, "delete skill ok")
+  // useRedirectToastExOld("DELETE", `/delete`, "delete skill ok")
+  useRedirectToast([{
+    method: "DELETE",
+    actionCheck: "/delete",
+  }/*, {
+    method: "POST",
+    actionCheck: "/sync",
+  }*/])
   const data = useLoaderData<typeof loader>();
   return (
     <>

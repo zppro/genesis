@@ -41,7 +41,7 @@ export const action = async ({
   const result = await rawResponse.json();
   if (result.err) {
     // throw new Error("sync failed!", result.err);
-    return redirect(`${redirectUrl}&_err=${result.err}`);
+    return redirect(`${redirectUrl}&_err=${encodeURIComponent(result.err)}`);
   }
   console.log(`sync mcpServer("${mcpServerId}") ok!`)
 

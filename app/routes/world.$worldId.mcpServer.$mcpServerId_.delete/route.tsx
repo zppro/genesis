@@ -20,7 +20,7 @@ export const action = async ({
       //   status: 500,
       // })
       notifyUrl = notifyUrl + `/${mcpServerId}/basic`
-      return redirect(`${notifyUrl}?_notifyUrl=${notifyUrl}&_actionUrl=${actionUrl}&_err=${e.data}`);
+      return redirect(`${notifyUrl}?_notifyUrl=${notifyUrl}&_actionUrl=${actionUrl}&_err=${encodeURIComponent(e.data)}`);
       // return { serverErrors: e.data }
     } else {
       throw new Error("Something went wrong!");
