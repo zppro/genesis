@@ -9,7 +9,7 @@ import {
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import SceneScrollList from "./list"
-import { useRedirectToastEx, useRedirectToastExOld } from "~/hooks/use-redirectToast";
+import { useRedirectToast } from "~/hooks/use-redirectToast";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 
 export function ErrorBoundary() {
@@ -28,7 +28,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function Scene() {
-  useRedirectToastExOld("DELETE", `/delete`, "delete spritesheet ok")
+  // useRedirectToastExOld("DELETE", `/delete`, "delete spritesheet ok")
+  useRedirectToast([{
+    method: "DELETE",
+    actionCheck: "/delete",
+  }, {
+    method: "POST",
+    actionCheck: "/sync",
+  }])
   const data = useLoaderData<typeof loader>();
   return (
     <>

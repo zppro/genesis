@@ -19,7 +19,6 @@ export const action = async ({
       // throw new Response(e.data, {
       //   status: 500,
       // })
-      console.log('e.data=>', e.data)
       notifyUrl = notifyUrl + `/${skillId}`
       return redirect(`${notifyUrl}?_notifyUrl=${notifyUrl}&_actionUrl=${actionUrl}&_err=${encodeURIComponent(e.data)}`);
     } else {
