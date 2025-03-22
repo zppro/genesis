@@ -17,7 +17,7 @@ import { Badge } from "~/components/ui/badge"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
-import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
+import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 
 export async function loader({
   params,

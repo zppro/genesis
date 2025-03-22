@@ -11,7 +11,7 @@ import ToolItem from "~/components/toolbars/tool-item"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
-import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
+import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 import SlimTab, { TabOptions } from "~/components/ui/slim-tab";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";

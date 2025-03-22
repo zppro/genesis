@@ -17,7 +17,7 @@ import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
 import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 import { TabsList, Tabs, TabsTrigger, TabsContent } from "~/components/ui/tabs"
-import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
+import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 import ToolItem from "~/components/toolbars/tool-item"
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"

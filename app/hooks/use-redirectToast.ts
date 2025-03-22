@@ -28,42 +28,6 @@ export function useRedirectToastExOld(method: string, actionCheck: string, desc?
   return state === "submitting" && navigation.formMethod === method && navigation.formAction?.endsWith(actionCheck)
 }
 
-export function useRedirectToast(actionMethod: string, actionCheck: string, desc?: string) {
-  const { toast } = useToast()
-  const navigation = useNavigation();
-  useEffect(() => {
-    console.log("actionCheck:", actionCheck)
-    if (
-      navigation.state === "loading" &&
-      navigation.formMethod === actionMethod &&
-      navigation.formAction?.endsWith(actionCheck)
-    ) {
-      console.log("navigation:", navigation.state, navigation.location, navigation.formMethod, navigation.formAction)
-      if (!navigation.location) {
-        return
-      }
-      const searchParams = new URLSearchParams(navigation.location.search)
-      const _op = searchParams.get("_op")
-      const _err = searchParams.get("_err")
-      console.log('searchParams:', _op, _err)
-      // const searchParams =  navigation.location.search
-      if (_err) {
-        toast({
-          title: `operation(${_op}) failed`,
-          description: _err,
-          variant: "destructive",
-        })
-      } else {
-        toast({
-          title: `operation(${_op}) success`,
-          description: desc ? desc : `ok`,
-        })
-      }
-    }
-  }, [navigation]);
-  return navigation
-}
-
 export type RedirectAction = {
   method: Uppercase<FormMethod>;
   state?: "loading" | "idle" | "submitting";
@@ -71,7 +35,7 @@ export type RedirectAction = {
   desc?: string;
 }
 
-export function useRedirectToastEx(actions: RedirectAction[]) {
+export function useRedirectToast(actions: RedirectAction[]) {
   const { toast } = useToast()
   const navigation = useNavigation();
   useEffect(() => {
@@ -84,13 +48,14 @@ export function useRedirectToastEx(actions: RedirectAction[]) {
       const _notifyUrl = searchParams.get("_notifyUrl")
       const _actionUrl = searchParams.get("_actionUrl")
       const redirectActionState = (redirectAction.state ?? "loading")
-      console.log('searchParams:', _err, _notifyUrl, _actionUrl)
-      console.log("navigation:", navigation.state, navigation.location, navigation.formMethod, navigation.formAction)
-      console.log("----method compare:", navigation.formMethod === redirectAction.method, navigation.formMethod, redirectAction.method)
-      console.log("----state compare:", navigation.state === redirectActionState, navigation.state, redirectActionState)
-      console.log("----location compare:", navigation.location?.pathname === `${_notifyUrl}`, navigation.location?.pathname, `${_notifyUrl}`)
-      console.log("----actionCheck compare:", _actionUrl?.endsWith(redirectAction.actionCheck), _actionUrl, redirectAction.actionCheck)
-      console.log("----formAction compare:", navigation.formAction === `${_actionUrl}`, navigation.formAction, `${_actionUrl}`)
+
+      // console.log('searchParams:', _err, _notifyUrl, _actionUrl)
+      // console.log("navigation:", navigation.state, navigation.location, navigation.formMethod, navigation.formAction)
+      // console.log("----method compare:", navigation.formMethod === redirectAction.method, navigation.formMethod, redirectAction.method)
+      // console.log("----state compare:", navigation.state === redirectActionState, navigation.state, redirectActionState)
+      // console.log("----location compare:", navigation.location?.pathname === `${_notifyUrl}`, navigation.location?.pathname, `${_notifyUrl}`)
+      // console.log("----actionCheck compare:", _actionUrl?.endsWith(redirectAction.actionCheck), _actionUrl, redirectAction.actionCheck)
+      // console.log("----formAction compare:", navigation.formAction === `${_actionUrl}`, navigation.formAction, `${_actionUrl}`)
 
       if (
         navigation.formMethod === redirectAction.method &&

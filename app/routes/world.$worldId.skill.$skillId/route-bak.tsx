@@ -19,7 +19,7 @@ import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
 import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
+import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 import ToolItem from "~/components/toolbars/tool-item"
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert, Play } from "lucide-react"
