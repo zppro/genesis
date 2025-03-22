@@ -1,5 +1,5 @@
 import { listWorldMcpServers } from "~/data/convexProxy/mcpServer.server"
-import { useLoaderData, Outlet } from "@remix-run/react";
+import { useLoaderData, useLocation, useActionData, Outlet } from "@remix-run/react";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -8,10 +8,11 @@ import {
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import MpcServerScrollList from "./list"
-import { useRedirectToastEx } from "~/hooks/use-redirectToast";
+import { useRedirectToastEx, useRedirectToastExOld } from "~/hooks/use-redirectToast";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
+
 
 export const handle: Handle = {
   breadcrumb
@@ -26,14 +27,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
+  let url = new URL(request.url);
+  console.log("url.pathname", url.pathname)
+
   const mcpServers = await listWorldMcpServers(worldId as WorldId)
   const breadcrumbData = { routeName: "mcpServer", routeUrl: `/world/${worldId}/mcpServer` }
   return { ...breadcrumbData, worldId: worldId as WorldId, mcpServers }
 }
 
-export default function Skill() {
-  useRedirectToastEx("DELETE", `/delete`, "delete mcpServer ok")
+export default function McpServer() {
   const data = useLoaderData<typeof loader>();
+  useRedirectToastEx([{
+    method: "DELETE",
+    desc: "delete mcpServer ok",
+  }])
   return (
     <>
       <ResizablePanelGroup

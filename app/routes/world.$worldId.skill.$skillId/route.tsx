@@ -19,7 +19,7 @@ import { parseIsNotFoundRecordError } from "@/error";
 import JsonPretty from "~/components/ui/json-pretty";
 import { ScrollArea } from "~/components/ui/scroll-area"
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { useRedirectToast } from "~/hooks/use-redirectToast";
+import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
 import ToolItem from "~/components/toolbars/tool-item"
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert, Play } from "lucide-react"
@@ -160,7 +160,7 @@ export default function Index() {
     setTool(tool)
     setSheetOpen(true)
   }
-  const state = useRedirectToast("sync")
+  const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx?.worldId}/skill/${skillEx?._id}/sync`;
   const isSynced = skillEx.syncTime && skillEx.modifyTime && skillEx.modifyTime <= skillEx.syncTime

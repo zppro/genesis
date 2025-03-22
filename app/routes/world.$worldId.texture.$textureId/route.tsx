@@ -9,7 +9,6 @@ import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
 import { FileJson, FileAudio } from "lucide-react"
 import { ImageDialog }  from "~/components/ui/image-dialog";
-import { useRedirectToastEx } from "~/hooks/use-redirectToast";
 
 export async function loader({
   params,

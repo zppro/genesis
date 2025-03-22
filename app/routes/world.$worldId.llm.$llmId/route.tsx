@@ -11,7 +11,7 @@ import ToolItem from "~/components/toolbars/tool-item"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
-import { useRedirectToast } from "~/hooks/use-redirectToast";
+import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
 import SlimTab, { TabOptions } from "~/components/ui/slim-tab";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
@@ -80,7 +80,7 @@ export default function Index() {
     baseUrl: routeUrl,
     prefetch: "render",
   }]
-  const state = useRedirectToast("sync")
+  const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${llm?.worldId}/llm/${llm?._id}/sync`;
   const isSynced = llm.syncTime && llm.modifyTime && llm.modifyTime < llm.syncTime

@@ -17,7 +17,7 @@ import { Badge } from "~/components/ui/badge"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
-import { useRedirectToast } from "~/hooks/use-redirectToast";
+import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
 
 export async function loader({
   params,
@@ -73,7 +73,7 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { spritesheet, texture } = useLoaderData<typeof loader>();
-  const state = useRedirectToast("sync")
+  const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${spritesheet?.worldId}/spritesheet/${spritesheet?._id}/sync`;
   const isSynced = spritesheet.syncTime && spritesheet.modifyTime && spritesheet.modifyTime < spritesheet.syncTime

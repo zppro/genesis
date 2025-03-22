@@ -8,7 +8,7 @@ import {
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import SceneScrollList from "./list"
-import { useRedirectToastEx } from "~/hooks/use-redirectToast";
+import { useRedirectToastEx, useRedirectToastExOld } from "~/hooks/use-redirectToast";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
@@ -32,7 +32,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function Scene() {
-  useRedirectToastEx("DELETE", `/delete`, "delete llm ok")
+  useRedirectToastExOld("DELETE", `/delete`, "delete llm ok")
   const data = useLoaderData<typeof loader>();
   return (
     <>

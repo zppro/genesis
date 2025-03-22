@@ -8,7 +8,7 @@ import { type McpServerId, table } from "@/world/mcpServer/schema";
 import { GetOneErrorBoundary } from "~/components/error-boundary"
 import { parseIsNotFoundRecordError } from "@/error";
 import Toolbar from "~/components/toolbars/entity-detail-toolbar";
-import { useRedirectToast } from "~/hooks/use-redirectToast";
+import { useRedirectToast, useRedirectToastOld } from "~/hooks/use-redirectToast";
 import ToolItem from "~/components/toolbars/tool-item"
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert, Play } from "lucide-react"
@@ -29,7 +29,8 @@ export async function loader({
   const routeUrl = `/world/${worldId}/mcpServer/${mcpServerId}`
   let url = new URL(request.url);
   if (url.pathname === routeUrl) {
-    return redirect(`basic`);
+    // return redirect(`basic`);
+    return redirect(`basic${url.search}`);
   }
   let mcpServer = null
   try {
@@ -85,7 +86,7 @@ export default function Index() {
     baseUrl: routeUrl,
     prefetch: "intent",
   }]
-  const state = useRedirectToast("sync")
+  const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
   const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${mcpServer?.worldId}/mcpServer/${mcpServer?._id}/sync`;
   const isSynced = mcpServer.syncTime && mcpServer.modifyTime && mcpServer.modifyTime <= mcpServer.syncTime
