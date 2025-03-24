@@ -17,7 +17,6 @@ import PixiAnimationObject from "~/components/pixi/animation-object";
 import { Stage } from '@pixi/react';
 import { parsePixiSpritesheet, parsePixiAnmimationAnimationNames, parsePixiAnmimationSourceSize } from "~/zod/spritesheet";
 import { TabsList, Tabs, TabsTrigger, TabsContent } from "~/components/ui/tabs"
-import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 import ToolItem from "~/components/toolbars/tool-item"
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
@@ -73,10 +72,10 @@ export function ErrorBoundary() {
 export default function Index() {
   const { characterEx, skillExs } = useLoaderData<typeof loader>();
   const characterExResponsive = useQuery(api.world.character.query.readEx, { id: characterEx._id });
-  const state = useRedirectToastOld("sync")
+  
   const navigation = useNavigation()
-  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
-  const isSynced = characterExResponsive?.syncTime && characterExResponsive?.modifyTime && characterExResponsive.modifyTime < characterExResponsive.syncTime
+  const isSyncing = navigation.state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
+  const isSynced = characterExResponsive?.syncTime && characterExResponsive?.modifyTime && characterExResponsive.modifyTime <= characterExResponsive.syncTime
 
   const data = characterEx?.spritesheet?.data
   const pixiSpriteSheet = parsePixiSpritesheet(data)

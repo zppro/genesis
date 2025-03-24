@@ -6,10 +6,10 @@ import {
   table, CharacterDoc, CharacterId,
   indexName_ByWorldId, indexName_ByWorldIdAndSpritesheetId,
 } from "./schema";
-import { CharacterExtendDoc } from "./extend";
+import { CharacterExtendDoc, CharacterSyncDoc } from "./extend";
 import { _readExByIdOrEntity as readSpritesheetExOrThrow } from '../spritesheets';
 import { _listByCharacter } from '../sceneNPCs';
-import { _listExByIds as listSkillExsByIds } from '../skill/helper';
+import { _listExByIds as listSkillExsByIds, _listSyncByIds as listSkillSyncsByIds } from '../skill/helper';
 import {
   ReadArgs, ListArgs, ListBySpritesheetArgs, ListBySkillArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
@@ -41,6 +41,18 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Cha
   const { texture, ...spritesheet } = await readSpritesheetExOrThrow(ctx, entity.spritesheetId);
   const skillExs = await listSkillExsByIds(ctx, { ids: entity.skillIds })
   return { ...entity, spritesheet, textureUrl: texture.url, skillExs };
+}
+
+export async function _readSyncByIdOrEntity(ctx: QueryMutationCtx, entityOrId: CharacterDoc | CharacterId): Promise<CharacterSyncDoc> {
+  let entity: CharacterDoc;
+  if (typeof entityOrId === "string") {
+    entity = await _readOrThrow(ctx, { id: entityOrId })
+  } else {
+    entity = entityOrId
+  }
+  const { texture, ...spritesheet } = await readSpritesheetExOrThrow(ctx, entity.spritesheetId);
+  const skillSyncs = await listSkillSyncsByIds(ctx, { ids: entity.skillIds })
+  return { ...entity, spritesheet, textureUrl: texture.url, skillSyncs };
 }
 
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {

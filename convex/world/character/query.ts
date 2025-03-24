@@ -1,5 +1,8 @@
 import { query } from '../../_generated/server';
-import { _read, _readExByIdOrEntity, _list, _listEx, _listBySpritesheet, _listBySkill } from './helper';
+import {
+  _read, _readExByIdOrEntity, _readSyncByIdOrEntity,
+  _list, _listEx, _listBySpritesheet, _listBySkill
+} from './helper';
 import { readArgs, listArgs, listBySpritesheetArgs, listBySkillArgs } from "./args";
 
 
@@ -14,6 +17,13 @@ export const readEx = query({
   args: readArgs,
   handler: async (ctx, args) => {
     return await _readExByIdOrEntity(ctx, args.id);
+  },
+});
+
+export const readSync = query({
+  args: readArgs,
+  handler: async (ctx, args) => {
+    return await _readSyncByIdOrEntity(ctx, args.id);
   },
 });
 

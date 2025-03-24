@@ -112,6 +112,16 @@ export async function _listExByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
   return entityExs
 }
 
+export async function _listSyncByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
+  const entitySyncs: SkillSyncDoc[] = await asyncMap(
+    await _listByIds(ctx, args),
+    async (entity) => {
+      return await _readSyncByIdOrEntity(ctx, entity);
+    }
+  );
+  return entitySyncs
+}
+
 export async function _listByTexture(ctx: QueryMutationCtx, args: ListByTextureArgs) {
   const { worldId, textureId } = args
   return await ctx.db.query(table).withIndex(indexName_ByWorldIdAndTextureId, (q) =>

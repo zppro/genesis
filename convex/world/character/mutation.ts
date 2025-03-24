@@ -51,9 +51,8 @@ export const addSkill = mutation({
     if (skillIds.includes(skillId)) {
       return
     }
-    const syncTime = +new Date()
     skillIds.push(skillId)
-    return await _patch(ctx, { id, syncTime, skillIds });
+    return await _patch(ctx, { id, skillIds });
   },
 });
 
@@ -66,8 +65,7 @@ export const removeSkill = mutation({
     if (idx === -1) {
       return
     }
-    const syncTime = +new Date()
     skillIds.splice(idx, 1)
-    return await _patch(ctx, { id, syncTime, skillIds });
+    return await _patch(ctx, { id, skillIds });
   },
 });
