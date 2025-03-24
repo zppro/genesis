@@ -5,7 +5,7 @@ import { table as mcpServerTable, tableSchema as mcpServerTableSchema } from "./
 import { table as mcpServerToolTable, tableSchema as mcpServerToolTableSchema } from "./mcpServerTool/schema"
 import { table as sceneTable, tableSchema as sceneTableSchema } from "./scenes"
 import { table as sceneAnimationTable, tableSchema as sceneAnimationTableSchema } from "./sceneAnimations"
-import { table as sceneNPCTable, tableSchema as sceneNPCTableSchema } from "./sceneNPCs"
+import { table as sceneNPCTable, tableSchema as sceneNPCTableSchema } from "./sceneNPC/schema"
 import { table as objectTable, tableSchema as objectTableSchema } from "./objects"
 import { table as resourceTable, tableSchema as resourceTableSchema } from "./resources"
 import { table as skillTable, tableSchema as skillTableSchema } from "./skill/schema";

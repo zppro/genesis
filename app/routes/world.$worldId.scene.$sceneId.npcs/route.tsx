@@ -25,7 +25,8 @@ import { parseFormError } from "~/lib/error.server"
 import { convertFormDataToObject } from "~/lib/form";
 import { numberKeys, decimalKeys } from "~/routes/world.$worldId.scene.$sceneId.npcs/form"
 import { createSceneNPC, updateSceneNPC, listSceneNPCExtends } from "~/data/convexProxy/sceneNPC.server"
-import { type InsertArgs, type UpdateArgs, SceneNPCDoc, SceneNPCId } from "@/world/sceneNPCs";
+import type { SceneNPCDoc, SceneNPCId } from "@/world/sceneNPC/schema";
+import type { InsertArgs, UpdateArgs, } from "@/world/sceneNPC/args";
 import { listWorldCharacterExtends } from "~/data/convexProxy/character.server";
 import { type CharacterTable } from "@/world/character/schema";
 import PixiAnimationObject from "~/components/pixi/animation-object";
@@ -44,6 +45,7 @@ export const links: LinksFunction = () => [
 ];
 
 const saveSchema = {
+  worldId: z.string(),
   name: z.string().min(1, { message: "Name is required" }),
   // animation x axis in map
   x: z.number().int().gt(0),
@@ -80,7 +82,7 @@ export async function action({
 
   const formData = await request.formData();
   const _formData = convertFormDataToObject(formData, { numberKeys, decimalKeys });
-  const formPayload = isUpdate ? { ..._formData } : { ..._formData, sceneId, id: undefined }
+  const formPayload = isUpdate ? { ..._formData, worldId } : { ..._formData, sceneId, id: undefined, worldId }
   console.log('formPayload=>', formPayload)
   // payload z schema validation
   const validateSchema = isUpdate ? updateSceneNPCFormSchema : createSceneNPCFormSchema;

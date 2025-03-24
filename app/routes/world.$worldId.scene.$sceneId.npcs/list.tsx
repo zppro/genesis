@@ -2,7 +2,8 @@
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { cn } from "~/lib/utils"
-import { SceneNPCId, type SceneNPCExtendDoc } from "@/world/sceneNPCs"
+import type { SceneNPCId } from "@/world/sceneNPC/schema"
+import type {SceneNPCExtendDoc} from "@/world/sceneNPC/extend"
 import {
   Pencil,
   Trash2,

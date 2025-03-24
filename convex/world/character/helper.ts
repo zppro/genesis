@@ -2,13 +2,13 @@ import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
 import { asyncMap } from "convex-helpers";
+import { api, internal } from "../../_generated/api";
 import {
   table, CharacterDoc, CharacterId,
   indexName_ByWorldId, indexName_ByWorldIdAndSpritesheetId,
 } from "./schema";
 import { CharacterExtendDoc, CharacterSyncDoc } from "./extend";
 import { _readExByIdOrEntity as readSpritesheetExOrThrow } from '../spritesheets';
-import { _listByCharacter } from '../sceneNPCs';
 import { _listExByIds as listSkillExsByIds, _listSyncByIds as listSkillSyncsByIds } from '../skill/helper';
 import {
   ReadArgs, ListArgs, ListBySpritesheetArgs, ListBySkillArgs,
@@ -31,6 +31,12 @@ export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
   return await ctx.db.get(id);
 }
 
+export async function _readExOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
+  const entityEx = await _readExByIdOrEntity(ctx, args.id);
+  if (!entityEx) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  return entityEx;
+}
+
 export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: CharacterDoc | CharacterId): Promise<CharacterExtendDoc> {
   let entity: CharacterDoc;
   if (typeof entityOrId === "string") {
@@ -41,6 +47,12 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Cha
   const { texture, ...spritesheet } = await readSpritesheetExOrThrow(ctx, entity.spritesheetId);
   const skillExs = await listSkillExsByIds(ctx, { ids: entity.skillIds })
   return { ...entity, spritesheet, textureUrl: texture.url, skillExs };
+}
+
+export async function _readSyncOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
+  const entitySync = await _readSyncByIdOrEntity(ctx, args.id);
+  if (!entitySync) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  return entitySync;
 }
 
 export async function _readSyncByIdOrEntity(ctx: QueryMutationCtx, entityOrId: CharacterDoc | CharacterId): Promise<CharacterSyncDoc> {
@@ -109,7 +121,7 @@ export async function _patch(ctx: MutationCtx, args: PatchArgs) {
 
 export async function _delete(ctx: MutationCtx, args: DeleteArgs) {
   const { id } = args
-  const sceneNPCs = await _listByCharacter(ctx, { characterId: id })
+  const sceneNPCs = await ctx.runQuery(api.world.sceneNPC.query.listByCharacter, { characterId: id })
   if (sceneNPCs.length > 0) {
     throw new ConvexError(`current character reference by sceneNPCs:[${sceneNPCs.map(v => v.name).join()}]`);
   }

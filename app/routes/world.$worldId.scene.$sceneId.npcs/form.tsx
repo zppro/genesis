@@ -1,8 +1,9 @@
 import { Form } from "@remix-run/react";
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import { SceneNPCTable } from "@/world/sceneNPCs";
-import { CharacterTable, CharacterExtendDoc } from "@/world/characters";
+import { SceneNPCTable } from "@/world/sceneNPC/schema";
+import { CharacterTable } from "@/world/character/schema";
+import { CharacterExtendDoc } from "@/world/character/extend";
 import { useToast } from "~/hooks/use-toast"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react";
