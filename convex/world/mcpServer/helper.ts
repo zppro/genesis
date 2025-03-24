@@ -1,6 +1,7 @@
 import { ConvexError } from 'convex/values';
 import { QueryMutationCtx } from '../../shared/context';
 import { MutationCtx } from '../../_generated/server';
+import { asyncMap } from "convex-helpers";
 import {
   table, McpServerDoc, McpServerId,
   indexName_ByWorldId, indexName_ByWorldIdAndType
@@ -9,6 +10,8 @@ import {
   ReadArgs, ListArgs, ListByIdsArgs,
   InsertArgs, UpdateArgs, PatchArgs, DeleteArgs,
 } from "./args";
+import { McpServerExtendDoc } from "./extend"
+import { _listByMcpServer as listMcpServerTools } from "../mcpServerTool/helper"
 import { api, internal } from "../../_generated/api";
 // import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
@@ -27,11 +30,32 @@ export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
   return await ctx.db.get(id);
 }
 
+export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: McpServerDoc | McpServerId): Promise<McpServerExtendDoc> {
+  let entity: McpServerDoc;
+  if (typeof entityOrId === "string") {
+    entity = await _readOrThrow(ctx, { id: entityOrId })
+  } else {
+    entity = entityOrId
+  }
+  const mcpServerTools = await listMcpServerTools(ctx, { mcpServerId: entity._id })
+  return { ...entity, mcpServerTools };
+}
+
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {
   const { worldId } = args;
   return await ctx.db.query(table)
     .withIndex(indexName_ByWorldId, (q) => q.eq("worldId", worldId))
     .collect();
+}
+
+export async function _listEx(ctx: QueryMutationCtx, args: ListArgs) {
+  const entityExs: McpServerExtendDoc[] = await asyncMap(
+    await _list(ctx, args),
+    async (entity) => {
+      return await _readExByIdOrEntity(ctx, entity);
+    }
+  );
+  return entityExs
 }
 
 export async function _listByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
@@ -43,6 +67,15 @@ export async function _listByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
   return entities.filter(v => !!v)
 }
 
+export async function _listExByIds(ctx: QueryMutationCtx, args: ListByIdsArgs) {
+  const entityExs: McpServerExtendDoc[] = await asyncMap(
+    await _listByIds(ctx, args),
+    async (entity) => {
+      return await _readExByIdOrEntity(ctx, entity);
+    }
+  );
+  return entityExs
+}
 
 /*** mutation helper ***/
 

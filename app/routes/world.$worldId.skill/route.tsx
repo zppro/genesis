@@ -36,10 +36,10 @@ export default function Skill() {
   useRedirectToast([{
     method: "DELETE",
     actionCheck: "/delete",
-  }/*, {
+  }, {
     method: "POST",
     actionCheck: "/sync",
-  }*/])
+  }])
   const data = useLoaderData<typeof loader>();
   return (
     <>

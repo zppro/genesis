@@ -50,6 +50,7 @@ import type * as world_events from "../world/events.js";
 import type * as world_llms from "../world/llms.js";
 import type * as world_llmsAction from "../world/llmsAction.js";
 import type * as world_mcpServer_args from "../world/mcpServer/args.js";
+import type * as world_mcpServer_extend from "../world/mcpServer/extend.js";
 import type * as world_mcpServer_helper from "../world/mcpServer/helper.js";
 import type * as world_mcpServer_mutation from "../world/mcpServer/mutation.js";
 import type * as world_mcpServer_query from "../world/mcpServer/query.js";
@@ -121,6 +122,7 @@ declare const fullApi: ApiFromModules<{
   "world/llms": typeof world_llms;
   "world/llmsAction": typeof world_llmsAction;
   "world/mcpServer/args": typeof world_mcpServer_args;
+  "world/mcpServer/extend": typeof world_mcpServer_extend;
   "world/mcpServer/helper": typeof world_mcpServer_helper;
   "world/mcpServer/mutation": typeof world_mcpServer_mutation;
   "world/mcpServer/query": typeof world_mcpServer_query;

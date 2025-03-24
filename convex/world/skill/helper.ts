@@ -8,7 +8,7 @@ import {
   indexName_ByWorldIdAndLLMId, indexName_ByWorldIdAndType,
   skillTypeMcpTool
 } from "./schema";
-import { SkillExtendDoc } from "./extend";
+import { SkillExtendDoc, SkillSyncDoc } from "./extend";
 import { _readOrThrow as readTextureOrThrow } from '../textures';
 import { _readOrThrow as readLLMOrThrow } from '../llms';
 import {
@@ -19,6 +19,8 @@ import {
 import { api, internal } from "../../_generated/api";
 import { checkNeedNotifyUpstream } from "../../shared/sync";
 import { Options } from '../../shared/opts';
+import { _listExByIds as listMcpServersByIds } from '../mcpServer/helper';
+import type { McpServerExtendDoc } from "../mcpServer/extend";
 import { _listByIds as listMcpServerToolsByIds } from "../mcpServerTool/helper"
 import type { McpServerToolDoc } from '../mcpServerTool/schema';
 
@@ -52,6 +54,26 @@ export async function _readExByIdOrEntity(ctx: QueryMutationCtx, entityOrId: Ski
     mcpServerTools = await listMcpServerToolsByIds(ctx, { ids: mcpServerToolIds })
   }
   return { ...entity, textureUrl: url, llm, mcpServerTools };
+}
+
+export async function _readSyncByIdOrEntity(ctx: QueryMutationCtx, entityOrId: SkillDoc | SkillId): Promise<SkillSyncDoc> {
+  let entity: SkillDoc;
+  if (typeof entityOrId === "string") {
+    entity = await _readOrThrow(ctx, { id: entityOrId })
+  } else {
+    entity = entityOrId
+  }
+  const { url } = await readTextureOrThrow(ctx, { id: entity.textureId });
+  const llm = await readLLMOrThrow(ctx, entity.llmId)
+
+  let mcpServerExs: McpServerExtendDoc[] | undefined = undefined
+  if (entity.data.type === skillTypeMcpTool) {
+    const mcpServerToolIds = entity.data.tools.map(t => t.id)
+    let mcpServerTools = await listMcpServerToolsByIds(ctx, { ids: mcpServerToolIds })
+    const mcpServerIds = [...new Set(mcpServerTools.map(t => t.mcpServerId))]
+    mcpServerExs = await listMcpServersByIds(ctx, { ids: mcpServerIds })
+  }
+  return { ...entity, textureUrl: url, llm, mcpServerExs };
 }
 
 export async function _list(ctx: QueryMutationCtx, args: ListArgs) {

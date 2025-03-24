@@ -1,6 +1,6 @@
 import { query } from '../../_generated/server';
 import {
-  _read, _readExByIdOrEntity, _list, _listByIds,
+  _read, _readExByIdOrEntity, _readSyncByIdOrEntity, _list, _listByIds,
   _listEx, _listByTexture, _listByLLM, _listByMcpServerTool, _listByMcpServerTools
 } from './helper';
 import {
@@ -20,6 +20,13 @@ export const readEx = query({
   args: readArgs,
   handler: async (ctx, args) => {
     return await _readExByIdOrEntity(ctx, args.id);
+  },
+});
+
+export const readSync = query({
+  args: readArgs,
+  handler: async (ctx, args) => {
+    return await _readSyncByIdOrEntity(ctx, args.id);
   },
 });
 

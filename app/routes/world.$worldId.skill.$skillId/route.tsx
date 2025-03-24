@@ -160,9 +160,9 @@ export default function Index() {
     setTool(tool)
     setSheetOpen(true)
   }
-  const state = useRedirectToastOld("sync")
+  // const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
-  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx?.worldId}/skill/${skillEx?._id}/sync`;
+  const isSyncing = navigation.state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx?.worldId}/skill/${skillEx?._id}/sync`;
   const isSynced = skillEx.syncTime && skillEx.modifyTime && skillEx.modifyTime <= skillEx.syncTime
   const isSubmitting = navigation.formMethod === "POST" && navigation.formAction === `/world/${skillEx.worldId}/skill/${skillEx._id}`;
   return (
@@ -205,66 +205,68 @@ export default function Index() {
                 <p className="text-lg indent-2 pb-2">{skillEx?.data.functionName}</p>
               </div>
             }
+
             <div className="flex space-x-2 items-center">
               <Switch id="isTestSkill" defaultChecked={isTestSkill} onCheckedChange={(v: boolean) => {
                 setIsTestSkill(v);
               }} /><Label htmlFor="isTestSkill">Test skill</Label>
             </div>
             {
-              isTestSkill && (
-                skillEx?.data.type === skillTypeMcpTool &&
-                <>
 
-                  <ScrollArea className="h-full w-full max-h-[calc(100vh-180px)]">
-                    <div className="flex flex-col gap-2 p-4 pt-0">
-                      {(skillEx.data.tools ?? []).map((item) => (
-                        <div key={item.id} className="flex flex-col space-y-1">
-                          <div className="flex w-full flex-col gap-1">
-                            <div className="flex items-center">
-                              <div className="flex items-center gap-2">
-                                <div className="font-semibold">{item.name}</div>
-                              </div>
-                              <div
-                                className={cn(
-                                  "ml-auto text-xs",
-                                  false
-                                    ? "text-foreground"
-                                    : "text-muted-foreground"
-                                )}
-                              >
-                                <Button variant="outline" className="border h-6 w-6"
+              skillEx?.data.type === skillTypeMcpTool &&
+              <>
+                <ScrollArea className="h-full w-full max-h-[calc(100vh-180px)]">
+                  <div className="flex flex-col gap-2 p-4 pt-0">
+                    {(skillEx.data.tools ?? []).map((item) => (
+                      <div key={item.id} className="flex flex-col space-y-1">
+                        <div className="flex w-full flex-col gap-1">
+                          <div className="flex items-center">
+                            <div className="flex items-center gap-2">
+                              <div className="font-semibold">{item.name}</div>
+                            </div>
+                            <div
+                              className={cn(
+                                "ml-auto text-xs",
+                                false
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              {
+                                isTestSkill && <Button variant="outline" className="border h-6 w-6"
                                   onClick={() => {
                                     openRunToolSheet(item)
                                   }} >
                                   <CirclePlay className="h-4 w-4" />
                                 </Button>
-                              </div>
+                              }
                             </div>
-
                           </div>
+
                         </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  {
-                    tool &&
-                    <RunTool
-                      tool={tool}
-                      open={sheetOpen}
-                      setOpen={setSheetOpen}
-                    >
-                    </RunTool>
-                  }
-                </>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+                {
+                  tool &&
+                  <RunTool
+                    tool={tool}
+                    open={sheetOpen}
+                    setOpen={setSheetOpen}
+                  >
+                  </RunTool>
+                }
+              </>
 
 
-                // <div className="flex space-x-1.5" >
-                //   {
-                //     skillEx.data.tools.map(item => <Badge key={item.id}>{item.name}</Badge>)
-                //   }
-                // </div>
+              // <div className="flex space-x-1.5" >
+              //   {
+              //     skillEx.data.tools.map(item => <Badge key={item.id}>{item.name}</Badge>)
+              //   }
+              // </div>
 
-              )
+
             }
             {
               isTestSkill &&
