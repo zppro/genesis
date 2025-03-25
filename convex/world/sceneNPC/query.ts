@@ -1,7 +1,7 @@
 import { query } from '../../_generated/server';
 import {
   _read, _readExByIdOrEntity, _readSyncByIdOrEntity,
-  _listByIds, _listByScene, _listExByScene, _listByCharacter,
+  _listByIds, _listByScene, _listExByScene, _listSyncByScene, _listByCharacter,
 } from './helper';
 import { readArgs, listByIdsArgs, listBySceneArgs, listByCharacterArgs } from "./args";
 
@@ -45,6 +45,13 @@ export const listExByScene = query({
   args: listBySceneArgs,
   handler: async (ctx, args) => {
     return await _listExByScene(ctx, args);
+  },
+});
+
+export const listSyncByScene = query({
+  args: listBySceneArgs,
+  handler: async (ctx, args) => {
+    return await _listSyncByScene(ctx, args);
   },
 });
 

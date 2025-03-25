@@ -71,9 +71,15 @@ export function ErrorBoundary() {
 
 export default function Index() {
   const { characterEx, skillExs } = useLoaderData<typeof loader>();
+  const navigation = useNavigation()
+
+  // this if statements save the useQuery error when delete the character
+  if (navigation.formMethod === "DELETE" && navigation.state === "loading") {
+    return null
+  }
+
   const characterExResponsive = useQuery(api.world.character.query.readEx, { id: characterEx._id });
   
-  const navigation = useNavigation()
   const isSyncing = navigation.state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${characterEx?.worldId}/character/${characterEx?._id}/sync`;
   const isSynced = characterExResponsive?.syncTime && characterExResponsive?.modifyTime && characterExResponsive.modifyTime <= characterExResponsive.syncTime
 

@@ -22,7 +22,7 @@ import { checkNeedNotifyUpstream } from "../../shared/sync";
 
 export async function _readOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
   const entity = await _read(ctx, args);
-  if (!entity) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  if (!entity) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` _id: ${args.id}`);
   return entity;
 }
 
@@ -33,7 +33,7 @@ export async function _read(ctx: QueryMutationCtx, args: ReadArgs) {
 
 export async function _readExOrThrow(ctx: QueryMutationCtx, args: ReadArgs, opts?: Options) {
   const entityEx = await _readExByIdOrEntity(ctx, args.id);
-  if (!entityEx) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` engineId: ${args.id}`);
+  if (!entityEx) throw new ConvexError(opts?.throwErrorMsg ? opts?.throwErrorMsg : `Invalid \`${table}\` _id: ${args.id}`);
   return entityEx;
 }
 

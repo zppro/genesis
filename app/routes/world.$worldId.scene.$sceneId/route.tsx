@@ -12,7 +12,6 @@ import ToolItem from "~/components/toolbars/tool-item"
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui//button";
 import { CloudUpload, Check, TriangleAlert } from "lucide-react"
-import { useRedirectToastOld } from "~/hooks/use-redirectToast";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -65,9 +64,9 @@ export default function Index() {
   const { sceneEx } = useLoaderData<typeof loader>();
   const location = useLocation();
   const tabValue = location.pathname.substring(location.pathname.lastIndexOf("/") + 1)
-  const state = useRedirectToastOld("sync")
+  // const state = useRedirectToastOld("sync")
   const navigation = useNavigation()
-  const isSyncing = state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${sceneEx?.worldId}/scene/${sceneEx?._id}/sync`;
+  const isSyncing = navigation.state === "submitting" && navigation.formMethod === "POST" && navigation.formAction === `/world/${sceneEx?.worldId}/scene/${sceneEx?._id}/sync`;
   const isSynced = sceneEx.syncTime && sceneEx.modifyTime < sceneEx.syncTime
   return (
     <div className="flex h-full items-start flex-col">

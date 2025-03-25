@@ -96,6 +96,7 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
       setSettings(newSettings)
     }
   }, [magicReturn])
+  console.log("errors=>", errors)
 
   // const debugDesc = `Sam Alexander is a teenager who inherits the mantle of Nova from his father, a former member of the Nova Corps. He possesses superhuman abilities and advanced technology. Sam often struggles with his new responsibilities as a superhero while dealing with the challenges of high school life.`
 
@@ -173,8 +174,9 @@ export default function CharacterForm<S extends z.AnyZodObject>({ children, erro
               <Label htmlFor="settingsVariant-settings">Settings</Label>
               <Textarea id="settingsVariant-settings" name="settingsVariant.settings" defaultValue={settings ? settings : ""}
                 placeholder="Settings of your character"
-                className={(errors?.settingsVariant && (errors?.settingsVariant as []).find((v: string) => v.startsWith("settingsVariant.settings"))) ? "form-input-err" : undefined}
+                className={(errors?.["settingsVariant.settings"]) ? "form-input-err" : undefined}
               />
+              {(errors?.["settingsVariant.settings"]) ? <FormErrorTip tip={errors["settingsVariant.settings"]} /> : null}
             </div>
           </div>
         </div>

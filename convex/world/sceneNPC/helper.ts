@@ -82,6 +82,16 @@ export async function _listExByScene(ctx: QueryMutationCtx, args: ListBySceneArg
   return entityExs
 }
 
+export async function _listSyncByScene(ctx: QueryMutationCtx, args: ListBySceneArgs) {
+  const entitySyncs: SceneNPCSyncDoc[] = await asyncMap(
+    await _listByScene(ctx, args),
+    async (entity) => {
+      return await _readSyncByIdOrEntity(ctx, entity);
+    }
+  );
+  return entitySyncs
+}
+
 export async function _listByCharacter(ctx: QueryMutationCtx, args: ListByCharacterArgs) {
   const { characterId } = args
   return await ctx.db.query(table).withIndex(indexName_ByCharacterId, (q) =>

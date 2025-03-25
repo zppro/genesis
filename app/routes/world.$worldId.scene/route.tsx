@@ -10,6 +10,7 @@ import { Input } from "~/components/ui/input"
 import { type WorldId } from "@/worlds";
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import List from "~/routes/world.$worldId.scene/list"
+import { useRedirectToast } from "~/hooks/use-redirectToast";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
 
@@ -31,6 +32,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export default function Scene() {
   const data = useLoaderData<typeof loader>();
+  useRedirectToast([{
+    method: "DELETE",
+    actionCheck: "/delete",
+  }, {
+    method: "POST",
+    actionCheck: "/sync",
+  }])
   return (
     <>
       <ResizablePanelGroup

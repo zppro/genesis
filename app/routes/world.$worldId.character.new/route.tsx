@@ -26,6 +26,7 @@ import { runLLM } from "~/data/convexProxy/llm.server";
 import { RunLLMArgs } from "@/world/llmsAction";
 import { Handle } from "~/lib/routeHandle";
 import { breadcrumb } from "~/components/app-breadcrumb";
+import { SkillId } from "@/world/skill/schema";
 
 export const handle: Handle = {
   breadcrumb
@@ -60,6 +61,7 @@ export async function action({
   if (!worldId) {
     throw new Error("invalid world params!");
   }
+
   let sheetClose = true
   let serverErrors: ServerErrors = {}
   const formData = await request.formData();
@@ -93,6 +95,7 @@ export async function action({
     }
 
   } else {
+
     const _formData = convertFormDataToObject(formData, { decimalKeys: ["speed"], mergeNamePrefixsAsObject }, formatters);
 
     // console.log('_formData:', (_formData["settingsVariant"] as Record<string, any>)["settings"])
@@ -100,23 +103,25 @@ export async function action({
     try {
       data = JSON5.parse((_formData["settingsVariant"] as Record<string, any>)["settings"]);
     } catch (ex) {
+      console.log('in new action=>', ex)
       serverErrors["settingsVariant.settings"] = "parse json err"
-      // console.log("serverErrors1=>", serverErrors)
+      console.log("serverErrors1=>", serverErrors)
       return { serverErrors, sheetClose }
     }
-
+    console.log("data=>", data)
     const result0 = zodPrimaryCharacterSettings.safeParse(data);
     if (!result0.success) {
-      serverErrors = { ...result0.error.formErrors.fieldErrors }
-      serverErrors["data"] = "parse json as character settings err: " + Object.keys(serverErrors).map(se => serverErrors[se].join()).join()
-      // console.error(serverErrors)
+      // serverErrors = { ...result0.error.formErrors.fieldErrors }
+      const characterSettingsError: Record<string, any> = { ...result0.error.formErrors.fieldErrors }
+      serverErrors["settingsVariant.settings"] = "parse json as character settings err: " + Object.keys(characterSettingsError).map(se => characterSettingsError[se].join()).join()
+      console.error("serverErrors2=>", serverErrors)
       return { serverErrors, sheetClose }
     }
 
     // make json str => json object
     (_formData["settingsVariant"] as Record<string, any>)["settings"] = data;
-    const formPayload = { ..._formData, worldId }
-    // console.log('new formPayload=>', formPayload)
+    const formPayload = { ..._formData, worldId, skillIds: [] as SkillId[] }
+    console.log('new formPayload=>', formPayload)
 
     // payload z schema validation
     const result = createSchema.safeParse(formPayload);
