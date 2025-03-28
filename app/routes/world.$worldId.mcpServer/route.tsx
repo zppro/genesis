@@ -27,8 +27,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!worldId) {
     throw new Error("invalid world params!");
   }
-  let url = new URL(request.url);
-  console.log("url.pathname", url.pathname)
 
   const mcpServers = await listWorldMcpServers(worldId as WorldId)
   const breadcrumbData = { routeName: "mcpServer", routeUrl: `/world/${worldId}/mcpServer` }
